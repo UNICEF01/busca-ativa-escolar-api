@@ -129,9 +129,11 @@ class Reports
 			array_push($report, $response['aggregations']['num_entities_null']['doc_count']);
 		}
 
-		if($dimension == 'school_last_id'){
-			$report['Não Informada'] = $report['null'];
-           unset($report['null']);
+		if ($dimension == 'school_last_id') {
+			if (array_key_exists('null', $report)) {
+				$report['NÃO INFORMADA'] = $report['null'];
+				unset($report['null']);
+			}
 		}
 
 		return [
@@ -232,11 +234,11 @@ class Reports
 		}
 
 		//print_r($report);
-		if($dimension == 'school_last_id'){
-			array_walk($report, function (& $item) {
-				$item['Não Informada'] = $item['null'];
+		if ($dimension == 'school_last_id') {
+			array_walk($report, function (&$item) {
+				$item['NÃO INFORMADA'] = $item['null'];
 				unset($item['null']);
-			 });
+			});
 		}
 
 		return [

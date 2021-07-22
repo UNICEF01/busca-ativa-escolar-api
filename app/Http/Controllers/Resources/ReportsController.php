@@ -162,6 +162,10 @@ class ReportsController extends BaseController
 
             $ids = $this->extractDimensionIDs($response['report'], $params['view']);
             $labels = $this->fetchDimensionLabels($params['dimension'], $ids);
+            if (in_array('NÃO INFORMADA', $ids) == 1) {
+                $value = array_search('NÃO INFORMADA', $ids);
+                $labels['NÃO INFORMADA'] = $ids[$value];
+            }
         } catch (\Exception $ex) {
             return $this->api_exception($ex);
         }
