@@ -190,8 +190,8 @@ class ReportsController extends BaseController
 
         return response()->json(
             [
-                //'query' => $query->getQuery(),
-                //'attempted' => $query->getAttemptedQuery(),
+                'query' => $query->getQuery(),
+                'attempted' => $query->getAttemptedQuery(),
                 'response' => $response,
                 'labels' => $labels,
             ]
