@@ -869,7 +869,7 @@ class ReportsController extends BaseController
     public function query_children_tests(){
 
         $daily_data = DB::table("daily_metrics_consolidated")
-            ->select('data_relatorio',
+            ->select('date',
                 DB::raw('SUM(out_of_school) as casos_andamento_fora_da_escola'),
                 DB::raw('SUM(in_observation) as casos_andamentto_dentro_da_escola'),
                 DB::raw('SUM(in_school) as casos_concluidos'),
