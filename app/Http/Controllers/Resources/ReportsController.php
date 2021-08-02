@@ -868,20 +868,34 @@ class ReportsController extends BaseController
 
     public function query_children_tests(){
 
-        $daily_data = DB::table("daily_tests")
+        $daily_data = DB::table("daily_metrics_consolidated")
             ->select('data_relatorio',
-                DB::raw('SUM(casos_andamento_fora_da_escola)'),
-                DB::raw('SUM(casos_andamentto_dentro_da_escola)'),
-                DB::raw('SUM(casos_concluidos)'),
-                DB::raw('SUM(casos_cancelados)'),
-                DB::raw('SUM(casos_interrompidos)'),
-                DB::raw('SUM(casos_transferidos)')
+                DB::raw('SUM(out_of_school) as casos_andamento_fora_da_escola'),
+                DB::raw('SUM(in_observation) as casos_andamentto_dentro_da_escola'),
+                DB::raw('SUM(in_school) as casos_concluidos'),
+                DB::raw('SUM(cancelled) as casos_cancelados'),
+                DB::raw('SUM(interrupted) as casos_interrompidos'),
+                DB::raw('SUM(transferred) as casos_transferidos')
             )
-            ->groupBy('data_relatorio')
-            ->where('municipio', '=', 'DOIS IRMÃOS DO TOCANTINS')
+            ->groupBy('date')
             ->get();
 
         return response()->json(['status' => 'ok', 'data' => $daily_data]);
+
+        /* $daily_data = DB::table("daily_metrics_consolidated")
+            ->select('data_relatorio',
+                DB::raw('SUM(out_of_school) as casos_andamento_fora_da_escola'),
+                DB::raw('SUM(in_observation) as casos_andamentto_dentro_da_escola'),
+                DB::raw('SUM(in_school) as casos_concluidos'),
+                DB::raw('SUM(cancelled) as casos_cancelados'),
+                DB::raw('SUM(interrupted) as casos_interrompidos'),
+                DB::raw('SUM(transferred) as casos_transferidos')
+            )
+            ->groupBy('date')
+            ->get();
+
+        return response()->json(['status' => 'ok', 'data' => $daily_data]); */
+
     }
 
 }
