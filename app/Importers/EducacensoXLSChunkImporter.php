@@ -224,6 +224,11 @@ class EducacensoXLSChunkImporter
 
     public function isHeaderEducacenso ($headerArray) {
 
+        Log::info("CABECALHO DO ARQUIVO");
+        Log::info($headerArray);
+        Log::info("---------------------");
+
+
         $headerFileEducacenso = [
             0 => 'UF',
             1 => 'Município',
