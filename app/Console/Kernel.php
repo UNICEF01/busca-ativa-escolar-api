@@ -52,8 +52,8 @@ class Kernel extends ConsoleKernel
         Commands\InsertCancelReasonDailyMetrics::class,
         Commands\PopulateDailyMetricsConsolidated::class,
         Commands\InserirDiaAusenteGraficoRematriculas::class,
-        Commands\SendEmailsActualizeFrequency::class,
-        Commands\CancelAllTenantsWithSigupsAndUsers::class,
+        Commands\SendEmailsActualizeFrequency::class
+        //Commands\CancelAllTenantsWithSigupsAndUsers::class, DESATIVADO
     ];
 
     /**
