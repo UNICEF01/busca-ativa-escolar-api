@@ -72,7 +72,7 @@ class SchoolsController extends BaseController
 
     public function openSearch(Search $search)
     {
-        $parameters = request()->only(['id', 'uf', 'ibge_city_id', 'name']);
+        $parameters = request()->only(['id', 'uf', 'city_id', 'name']);
         $parameters['uf'] = strtolower(Str::ascii($parameters['uf']));
         $parameters['name'] = Str::ascii($parameters['name']);
 
