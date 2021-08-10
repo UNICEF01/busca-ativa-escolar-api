@@ -72,13 +72,13 @@ class SchoolsController extends BaseController
 
     public function openSearch(Search $search)
     {
-        $parameters = request()->only(['id', 'uf', 'city_id', 'name']);
+        $parameters = request()->only(['id', 'uf', 'city_ibge_id', 'name']);
         $parameters['uf'] = strtolower(Str::ascii($parameters['uf']));
         $parameters['name'] = Str::ascii($parameters['name']);
 
         $query = ElasticSearchQuery::withParameters($parameters)
-            ->searchTextInColumns('name', ['name', 'id', 'ibge_city_id'])
-            ->filterByTerm('ibge_city_id', false)
+            ->searchTextInColumns('name', ['name', 'id', 'city_ibge_id'])
+            ->filterByTerm('city_ibge_id', false, 'must')
             ->filterByTerm('uf', false)
             ->getQuery();
 
