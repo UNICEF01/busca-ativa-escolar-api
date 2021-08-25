@@ -1,4 +1,5 @@
 <?php
+
 /**
  * busca-ativa-escolar-api
  * StatesController.php
@@ -22,10 +23,19 @@ use BuscaAtivaEscolar\User;
 use Carbon\Carbon;
 use Excel;
 use League\Fractal\Pagination\IlluminatePaginatorAdapter;
+use Maatwebsite\Excel\Excel as ExcelB;
+use BuscaAtivaEscolar\Exports\StateExport;
 
-class StatesController extends BaseController {
+class StatesController extends BaseController
+{
+	private $excel;
+	public function __construct(ExcelB $excel)
+	{
+		$this->excel = $excel;
+	}
 
-	public function all() {
+	public function all()
+	{
 		$max = intval(request('max', null));
 
 		$filter = request('filter', []);
@@ -34,44 +44,44 @@ class StatesController extends BaseController {
 		$states = StateSignup::query()
 			->with(['admin', 'coordinator', 'users'])
 			->where('is_approved', 1);
-			//->whereNotNull('user_id');
+		//->whereNotNull('user_id');
 
 		StateSignup::applySorting($states, $sort);
 
-		if(isset($filter['uf']) && strlen($filter['uf']) > 0) {
+		if (isset($filter['uf']) && strlen($filter['uf']) > 0) {
 			$states->where('uf', 'REGEXP', $filter['uf']);
 		}
 
-		if(isset($filter['name']) && strlen($filter['name']) > 0) {
+		if (isset($filter['name']) && strlen($filter['name']) > 0) {
 			$states->where('name', 'REGEXP', $filter['name']);
 		}
 
-		if(isset($filter['admin']) && strlen($filter['admin']) > 0) {
+		if (isset($filter['admin']) && strlen($filter['admin']) > 0) {
 			$states->whereHas('user', function ($sq) use ($filter) {
 				return $sq->where('name', 'REGEXP', $filter['admin']);
 			});
 		}
 
-		if(isset($filter['coordinator']) && strlen($filter['coordinator']) > 0) {
+		if (isset($filter['coordinator']) && strlen($filter['coordinator']) > 0) {
 			$states->whereHas('user', function ($sq) use ($filter) {
 				return $sq->where('name', 'REGEXP', $filter['coordinator']);
 			});
 		}
 
-		if(isset($filter['users']) && strlen($filter['users']) > 0) {
+		if (isset($filter['users']) && strlen($filter['users']) > 0) {
 			$states->whereHas('users', function ($sq) use ($filter) {
 				return $sq->where('name', 'REGEXP', $filter['users']);
 			});
 		}
 
-		if(isset($filter['created_at']) && strlen($filter['created_at']) > 0) {
+		if (isset($filter['created_at']) && strlen($filter['created_at']) > 0) {
 			$numDays = intval($filter['created_at']);
 			$cutoffDate = Carbon::now()->addDays(-$numDays);
 
 			$states->where('created_at', '>=', $cutoffDate->format('Y-m-d H:i:s'));
 		}
 
-		if($this->currentUser()->isRestrictedToUF()) {
+		if ($this->currentUser()->isRestrictedToUF()) {
 			$states->where('uf', $this->currentUser()->uf);
 		}
 
@@ -83,37 +93,27 @@ class StatesController extends BaseController {
 			->serializeWith(new SimpleArraySerializer())
 			->parseIncludes(request('with'));
 
-		if($max) {
+		if ($max) {
 			$results->paginateWith(new IlluminatePaginatorAdapter($states));
 		}
 
 		return $results->respond();
 	}
 
-    public function export() {
-        $query = StateSignup::query()
-            ->withTrashed()
-            ->orderBy('uf', 'ASC');
+	public function export()
+	{
+		$query = StateSignup::query()
+			->withTrashed()
+			->orderBy('uf', 'ASC');
 
-        $states = $query
-            ->get()
-            ->map(function ($state) { /* @var $state StateSignup */
-                return $state->toExportArray();
-            })
-            ->toArray();
-
-        Excel::create('buscaativaescolar_states', function($excel) use ($states) {
-
-            $excel->sheet('states', function($sheet) use ($states) {
-
-                $sheet->setOrientation('landscape');
-                $sheet->fromArray($states);
-
-            });
-
-        })->export('xls');
-    }
+		$states = $query
+			->get()
+			->map(function ($state) { /* @var $state StateSignup */
+				return $state->toExportArray();
+			})
+			->toArray();
 
 
-
+		return $this->excel->download(new StateExport($states), 'buscaativaescolar_states.xls');
+	}
 }
