@@ -36,13 +36,16 @@ use Exception;
 use League\Fractal\Pagination\IlluminatePaginatorAdapter;
 use Mail;
 use Maatwebsite\Excel\Excel as ExcelB;
+use BuscaAtivaEscolar\LGPD\Interfaces\ILgpd;
 
 class UsersController extends BaseController
 {
     private $excel;
-    public function __construct(ExcelB $excel)
+    protected $lgpdService;
+    public function __construct(ExcelB $excel, ILgpd $lgpdService)
     {
         $this->excel = $excel;
+        $this->lgpdService = $lgpdService;
     }
     public function search()
     {
@@ -458,6 +461,14 @@ class UsersController extends BaseController
             if (!$user->tenant_id && in_array($user->type, User::$TENANT_SCOPED_TYPES)) {
                 throw new Exception("tenant_id_inconsistency");
             }
+
+            //LGPD
+            $this->lgpdService->saveLgpd([
+                'plataform_id' => $user->id,
+                'name' => $user->name,
+                'ip_addr' => request()->ip()
+            ]);
+
 
             $user->save();
 
