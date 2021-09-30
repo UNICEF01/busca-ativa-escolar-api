@@ -167,21 +167,21 @@ return [
          * Package Service Providers...
          */
 
-	    Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class,
-	    Barryvdh\Debugbar\ServiceProvider::class,
-	    Maatwebsite\Excel\ExcelServiceProvider::class,
-	    Intervention\Image\ImageServiceProvider::class,
-	    Tymon\JWTAuth\Providers\LaravelServiceProvider::class,
-	    Ixudra\Curl\CurlServiceProvider::class,
-	    Spatie\Fractal\FractalServiceProvider::class,
-//	    Barryvdh\Cors\ServiceProvider::class,
-	    Geocoder\Laravel\Providers\GeocoderService::class,
-//	    Rap2hpoutre\LaravelLogViewer\LaravelLogViewerServiceProvider::class,
-	    Jenssegers\Agent\AgentServiceProvider::class,
+        Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class,
+        Barryvdh\Debugbar\ServiceProvider::class,
+        Maatwebsite\Excel\ExcelServiceProvider::class,
+        Intervention\Image\ImageServiceProvider::class,
+        Tymon\JWTAuth\Providers\LaravelServiceProvider::class,
+        Ixudra\Curl\CurlServiceProvider::class,
+        Spatie\Fractal\FractalServiceProvider::class,
+        //	    Barryvdh\Cors\ServiceProvider::class,
+        Geocoder\Laravel\Providers\GeocoderService::class,
+        //	    Rap2hpoutre\LaravelLogViewer\LaravelLogViewerServiceProvider::class,
+        Jenssegers\Agent\AgentServiceProvider::class,
 
 
 
-	    /*
+        /*
 		 * Application Service Providers...
 		 */
         BuscaAtivaEscolar\Providers\AppServiceProvider::class,
@@ -189,6 +189,7 @@ return [
         // BuscaAtivaEscolar\Providers\BroadcastServiceProvider::class,
         BuscaAtivaEscolar\Providers\EventServiceProvider::class,
         BuscaAtivaEscolar\Providers\RouteServiceProvider::class,
+        BuscaAtivaEscolar\Providers\LgpdServiceProvider::class,
         BuscaAtivaEscolar\Providers\SearchServiceProvider::class,
 
     ],
@@ -238,14 +239,14 @@ return [
         'URL' => Illuminate\Support\Facades\URL::class,
         'Validator' => Illuminate\Support\Facades\Validator::class,
         'View' => Illuminate\Support\Facades\View::class,
-	    
-	    'Excel' => Maatwebsite\Excel\Facades\Excel::class,
-	    'Image' => Intervention\Image\Facades\Image::class,
-	    'JWTAuth' => Tymon\JWTAuth\Facades\JWTAuth::class,
-	    'JWTFactory' => Tymon\JWTAuth\Facades\JWTFactory::class,
-	    'Curl' => Ixudra\Curl\Facades\Curl::class,
-	    'Fractal' => Spatie\Fractal\FractalFacade::class,
-	    'Agent' => Jenssegers\Agent\Facades\Agent::class,
+
+        'Excel' => Maatwebsite\Excel\Facades\Excel::class,
+        'Image' => Intervention\Image\Facades\Image::class,
+        'JWTAuth' => Tymon\JWTAuth\Facades\JWTAuth::class,
+        'JWTFactory' => Tymon\JWTAuth\Facades\JWTFactory::class,
+        'Curl' => Ixudra\Curl\Facades\Curl::class,
+        'Fractal' => Spatie\Fractal\FractalFacade::class,
+        'Agent' => Jenssegers\Agent\Facades\Agent::class,
 
 
     ],

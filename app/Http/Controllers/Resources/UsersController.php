@@ -24,6 +24,7 @@ use BuscaAtivaEscolar\CaseSteps\Rematricula;
 use BuscaAtivaEscolar\Exports\UsersExport;
 use BuscaAtivaEscolar\ExportUsersJob;
 use BuscaAtivaEscolar\Http\Controllers\BaseController;
+use BuscaAtivaEscolar\LGPD\Interfaces\ILgpd;
 use BuscaAtivaEscolar\Mail\UserRegisterNotification;
 use BuscaAtivaEscolar\Mailables\StateUserRegistered;
 use BuscaAtivaEscolar\Mailables\UserRegistered;
@@ -40,9 +41,11 @@ use Maatwebsite\Excel\Excel as ExcelB;
 class UsersController extends BaseController
 {
     private $excel;
-    public function __construct(ExcelB $excel)
+    protected $lgpdService;
+    public function __construct(ExcelB $excel, ILgpd $lgpdService)
     {
         $this->excel = $excel;
+        $this->lgpdService = $lgpdService;
     }
     public function search()
     {
@@ -458,6 +461,13 @@ class UsersController extends BaseController
             if (!$user->tenant_id && in_array($user->type, User::$TENANT_SCOPED_TYPES)) {
                 throw new Exception("tenant_id_inconsistency");
             }
+
+            //LGPD
+            $this->lgpdService->saveLgpd([
+                'plataform_id' => $user->id,
+                'name' => $user->name,
+                'ip_addr' => request()->ip()
+            ]);
 
             $user->save();
 
