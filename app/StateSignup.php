@@ -1,5 +1,4 @@
 <?php
-
 /**
  * busca-ativa-escolar-api
  * StateSignup.php
@@ -43,8 +42,7 @@ use Mail;
  * @property User|null $judged_by
  * @property User[]|Collection|null $users
  */
-class StateSignup extends Model
-{
+class StateSignup extends Model {
 
 	use IndexedByUUID;
 	use SoftDeletes;
@@ -72,30 +70,25 @@ class StateSignup extends Model
 		'data' => 'array',
 	];
 
-	public function admin()
-	{
+	public function admin() {
 		return $this->hasOne('BuscaAtivaEscolar\User', 'id', 'admin_id')->withTrashed();
 	}
 
-	public function coordinator()
-	{
+	public function coordinator() {
 		return $this->hasOne('BuscaAtivaEscolar\User', 'id', 'coordinator_id')->withTrashed();
 	}
 
-	public function judge()
-	{
+	public function judge() {
 		return $this->hasOne('BuscaAtivaEscolar\User', 'id', 'judged_by')->withTrashed();
 	}
 
-	public function users()
-	{
+	public function users() {
 		return $this->hasMany(User::class, 'uf', 'uf')->whereIn('type', User::$UF_SCOPED_TYPES)->withTrashed();
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
 
-	public function approve(User $judge)
-	{
+	public function approve(User $judge) {
 		$this->is_approved = true;
 		$this->judged_by = $judge->id;
 		$this->deleted_at = null;
@@ -136,8 +129,7 @@ class StateSignup extends Model
 		$this->sendNotification();
 	}
 
-	public function reject(User $judge)
-	{
+	public function reject(User $judge) {
 		$this->is_approved = false;
 		$this->judged_by = $judge->id;
 		$this->save();
@@ -147,9 +139,8 @@ class StateSignup extends Model
 		$this->sendRejectionNotification();
 	}
 
-	public function updateRegistrationEmail($type, $email)
-	{
-		if (!in_array($type, ['admin', 'coordinator'])) {
+	public function updateRegistrationEmail($type, $email) {
+		if(!in_array($type, ['admin', 'coordinator'])) {
 			throw new \InvalidArgumentException("Invalid e-mail type: {$type}; valid types are: admin | coordinator");
 		}
 
@@ -160,46 +151,14 @@ class StateSignup extends Model
 		$this->save();
 	}
 
-	public function updateDate($type, $dataTenant)
-	{
-		if (!in_array($type, ['admin', 'coordinator'])) {
-			throw new \InvalidArgumentException("Invalid data type: {$type}; valid types are: admin | coordinator");
-		}
-
-		$data = $this->data;
-		$fieldsSanitezaInteger = ['phone', 'mobile', 'cpf', 'titulo'];
-
-		array_walk($dataTenant['data'], function (&$value, $key) use ($fieldsSanitezaInteger) {
-			if (array_key_exists($key, $fieldsSanitezaInteger)) {
-				$value = filter_var($value, FILTER_SANITIZE_NUMBER_INT);
-			}
-			if ($key === 'email') {
-				$value = filter_var($value, FILTER_SANITIZE_EMAIL);
-			}
-			if ($key === 'dob') {
-				if (strpos($value, '/') !== false) {
-					$value = explode("/", $value);
-					$value = $value[2] . '-' . $value[1] . '-' . $value[0];
-				}
-			}
-		});
-
-		$data[$type] = $dataTenant['data'];
-
-		$this->data = $data;
-		$this->save();
-	}
-
-	public function sendNotification()
-	{
+	public function sendNotification() {
 		$adminEmail = $this->data['admin']['email'];
 		$coordinatorEmail = $this->data['coordinator']['email'];
 
 		Mail::to([$adminEmail, $coordinatorEmail])->send(new StateSignupApproved($this));
 	}
 
-	public function sendRejectionNotification()
-	{
+	public function sendRejectionNotification() {
 		$adminEmail = $this->data['admin']['email'];
 		$coordinatorEmail = $this->data['coordinator']['email'];
 		Mail::to([$adminEmail, $coordinatorEmail])->send(new StateSignupRejected($this));
@@ -214,8 +173,7 @@ class StateSignup extends Model
 	 * @param array $data The data received from the form
 	 * @return string The ID of the sign-up request
 	 */
-	public static function createFromForm($data)
-	{
+	public static function createFromForm($data) {
 		$signup = new StateSignup();
 
 		$signup->is_approved = false;
@@ -235,8 +193,7 @@ class StateSignup extends Model
 	 * @param array $data The data received from the form
 	 * @return \Illuminate\Contracts\Validation\Validator
 	 */
-	public static function validate($data)
-	{
+	public static function validate($data) {
 		return validator($data, [
 			'uf' => 'required|string',
 			'admin.dob' => 'required|date',
@@ -261,34 +218,35 @@ class StateSignup extends Model
 	}
 
 
-	/**
-	 * Generates an array to export as XLS
-	 * @return array
-	 */
-	public function toExportArray()
-	{
-		return [
-			'UF' => $this->uf,
-			'Data de adesão' => $this->created_at ? $this->created_at->format('d/m/Y') : null,
-			'Data exclusão' => $this->deleted_at ?? null,
+    /**
+     * Generates an array to export as XLS
+     * @return array
+     */
+    public function toExportArray() {
+        return [
+            'UF' => $this->uf,
+            'Data de adesão' => $this->created_at ? $this->created_at->format('d/m/Y') : null,
+            'Data exclusão' => $this->deleted_at ?? null,
 
-			'Gestor estadual' => $this->data['admin']['name'] ?? null,
+            'Gestor estadual' => $this->data['admin']['name'] ?? null,
 
-			'Gestor estadual - CPF' => $this->data['admin']['cpf'] ?? null,
-			'Gestor estadual - Data de nascimento' => $this->data['admin']['dob'] ?? null,
-			'Gestor estadual - Email' => $this->data['admin']['email'] ?? null,
-			'Gestor estadual - Telefone' => $this->data['admin']['phone'] ?? null,
-			'Gestor estadual - Função' => $this->data['admin']['position'] ?? null,
-			'Gestor estadual - Instituição' => $this->data['admin']['institution'] ?? null,
+            'Gestor estadual - CPF' => $this->data['admin']['cpf'] ?? null,
+            'Gestor estadual - Data de nascimento' => $this->data['admin']['dob'] ?? null,
+            'Gestor estadual - Email' => $this->data['admin']['email'] ?? null,
+            'Gestor estadual - Telefone' => $this->data['admin']['phone'] ?? null,
+            'Gestor estadual - Função' => $this->data['admin']['position'] ?? null,
+            'Gestor estadual - Instituição' => $this->data['admin']['institution'] ?? null,
 
-			'Coordenador estadual' => $this->data['coordinator']['name'] ?? null,
+            'Coordenador estadual' => $this->data['coordinator']['name'] ?? null,
 
-			'Coordenador estadual - CPF' => $this->data['coordinator']['cpf'] ?? null,
-			'Coordenador estadual - Data de nascimento' => $this->data['coordinator']['dob'] ?? null,
-			'Coordenador estadual - Email' => $this->data['coordinator']['email'] ?? null,
-			'Coordenador estadual - Telefone' => $this->data['coordinator']['phone'] ?? null,
-			'Coordenador estadual - Função' => $this->data['coordinator']['position'] ?? null,
-			'Coordenador estadual -Instituição' => $this->data['coordinator']['institution'] ?? null,
-		];
-	}
+            'Coordenador estadual - CPF' => $this->data['coordinator']['cpf'] ?? null,
+            'Coordenador estadual - Data de nascimento' => $this->data['coordinator']['dob'] ?? null,
+            'Coordenador estadual - Email' => $this->data['coordinator']['email'] ?? null,
+            'Coordenador estadual - Telefone' => $this->data['coordinator']['phone'] ?? null,
+            'Coordenador estadual - Função' => $this->data['coordinator']['position'] ?? null,
+            'Coordenador estadual -Instituição' => $this->data['coordinator']['institution'] ?? null,
+    ];
+}
+
+
 }
