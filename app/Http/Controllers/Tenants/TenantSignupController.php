@@ -19,23 +19,20 @@ use Auth;
 use BuscaAtivaEscolar\Attachment;
 use BuscaAtivaEscolar\City;
 use BuscaAtivaEscolar\ElectedMayor;
-use BuscaAtivaEscolar\EmailTypes\ClassFrequencyNotification;
 use BuscaAtivaEscolar\Exceptions\ValidationException;
 use BuscaAtivaEscolar\Http\Controllers\BaseController;
 use BuscaAtivaEscolar\Mail\MayorSignupNotification;
-use BuscaAtivaEscolar\School;
 use BuscaAtivaEscolar\TenantSignup;
 use BuscaAtivaEscolar\Tenant;
 use BuscaAtivaEscolar\User;
 use BuscaAtivaEscolar\Utils;
 use Carbon\Carbon;
-use DB;
-use Event;
-use Excel;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Mail;
 use Maatwebsite\Excel\Excel as ExcelB;
 use BuscaAtivaEscolar\Exports\TenantSignupExport;
+use BuscaAtivaEscolar\LGPD\Interfaces\ILgpd;
+use Illuminate\Http\Request;
 
 class TenantSignupController extends BaseController
 {
@@ -45,9 +42,11 @@ class TenantSignupController extends BaseController
 		'image/png'
 	];
 	private $excel;
-	public function __construct(ExcelB $excel)
+	protected $lgpdService;
+	public function __construct(ExcelB $excel, ILgpd $lgpdService)
 	{
 		$this->excel = $excel;
+		$this->lgpdService = $lgpdService;
 	}
 
 	public function register()
@@ -222,11 +221,23 @@ class TenantSignupController extends BaseController
 		}
 	}
 
-	public function accept(TenantSignup $signup)
+	public function accept(TenantSignup $signup, City $city, Request $request)
 	{
 		try {
+			$cityName = $city->findByID($signup->city_id);
 
 			if (!$signup) return $this->api_failure('invalid_signup_id');
+
+			if ($this->lgpdService->findLgpd($signup->id)) {
+				return response()->json(['status' => 500, 'error' => 'lgpd assigned']);
+			}
+
+			//LGPD
+			$this->lgpdService->saveLgpd([
+				'plataform_id' => $signup->id,
+				'name' => $cityName->name,
+				'ip_addr' => request()->ip()
+			]);
 
 			$signup->accept();
 			return response()->json(['status' => 'ok', 'signup_id' => $signup->id]);
@@ -300,20 +311,24 @@ class TenantSignupController extends BaseController
 			}
 		}
 
-        foreach ($lastCoordinators as $key => $coordinator) {
-            if ( array_key_exists('active', $coordinator) ) {
-                if ( $coordinator['active'] == false ) { unset($lastCoordinators[$key]); }
-            }
-            if ( !array_key_exists('active', $coordinator) ) { unset($lastCoordinators[$key]); }
-        }
+		foreach ($lastCoordinators as $key => $coordinator) {
+			if (array_key_exists('active', $coordinator)) {
+				if ($coordinator['active'] == false) {
+					unset($lastCoordinators[$key]);
+				}
+			}
+			if (!array_key_exists('active', $coordinator)) {
+				unset($lastCoordinators[$key]);
+			}
+		}
 
 		foreach ($lastCoordinators as $coordinator) {
-		    //emails iguais e ultimo coordenador reativado
-			if (  trim(strtolower($politicalAdmin['email'])) === trim(strtolower($coordinator['email'])) ) {
+			//emails iguais e ultimo coordenador reativado
+			if (trim(strtolower($politicalAdmin['email'])) === trim(strtolower($coordinator['email']))) {
 				return $this->api_failure("coordinator_emails_are_the_same");
 			}
 			if ($isNecessaryNewCoordinator) {
-				if ( trim(strtolower($operationalAdmin['email'])) === trim(strtolower($coordinator['email'])) ) {
+				if (trim(strtolower($operationalAdmin['email'])) === trim(strtolower($coordinator['email']))) {
 					return $this->api_failure("coordinator_emails_are_the_same");
 				}
 			}
@@ -326,6 +341,7 @@ class TenantSignupController extends BaseController
 			} else {
 				$tenant = Tenant::recovere($signup, $politicalAdmin, $operationalAdmin, $lastTenant, $lastCoordinators);
 			}
+			$this->lgpdService->updateLgpd(array('plataform_id' => $signup->tenant_id), $signup->id);
 
 			return response()->json(['status' => 'ok', 'tenant_id' => $tenant->id]);
 		} catch (ValidationException $ex) {
@@ -334,8 +350,6 @@ class TenantSignupController extends BaseController
 		} catch (\Exception $ex) {
 			return $this->api_exception($ex);
 		}
-
-
 	}
 
 	public function completeSetup()
