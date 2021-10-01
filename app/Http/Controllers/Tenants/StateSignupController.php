@@ -24,6 +24,8 @@ use BuscaAtivaEscolar\Utils;
 use BuscaAtivaEscolar\Mail\StateManagerNotification;
 use BuscaAtivaEscolar\LGPD\Interfaces\ILgpd;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Carbon;
+use BuscaAtivaEscolar\Mail\StateManagerConfirmation;
 
 class StateSignupController extends BaseController
 {
@@ -227,5 +229,26 @@ class StateSignupController extends BaseController
 			];
 		}
 		return response()->json($result, $result['status']);
+	}
+
+	public function resendMail(StateSignup $signup)
+	{
+		try {
+			if ($signup->is_approved) {
+				$message = new StateManagerConfirmation($signup);
+			} else {
+				$message = new StateManagerNotification($signup);
+			}
+
+			$this->lgpdMailService->saveMail([
+				'plataform_id' => $signup->id,
+				'mail' => $signup->data['admin']['email']
+			]);
+
+			Mail::to($signup->data['admin']['email'])->send($message);
+			return response()->json(['status' => 'ok', 'signup_id' => $signup->id]);
+		} catch (\Exception $ex) {
+			return $this->api_exception($ex);
+		}
 	}
 }
