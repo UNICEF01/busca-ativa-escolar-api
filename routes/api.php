@@ -144,6 +144,7 @@ Route::group(['prefix' => 'v1', 'middleware' => 'api'], function () {
 		Route::post('/signups/state/{signup}/reject', 'Tenants\StateSignupController@reject')->middleware('can:ufs.manage');
 		Route::post('/signups/state/{signup}/update_registration_data', 'Tenants\StateSignupController@updateData')->middleware('can:ufs.manage');
 		Route::post('/signups/state/{signup}/resend_notification', 'Tenants\StateSignupController@resendNotification')->middleware('can:ufs.manage');
+		Route::post('/signups/state/{signup}/resendmail', 'Tenants\StateSignupController@resendMail');
 
 		// Tenants (authenticated)
 		Route::any('/tenants/all', 'Tenants\TenantsController@all')->middleware('can:tenants.view');
