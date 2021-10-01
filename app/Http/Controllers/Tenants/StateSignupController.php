@@ -170,7 +170,7 @@ class StateSignupController extends BaseController
 
 			if (!$signup) return $this->api_failure('invalid_signup_id');
 
-			$signup->updateDate(request('type'), request()->all());
+			$signup->updateData(request('type'), request()->all());
 			return response()->json(['status' => 'ok', 'signup_id' => $signup->id]);
 		} catch (\Exception $ex) {
 			return $this->api_exception($ex);
