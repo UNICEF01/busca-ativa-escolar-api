@@ -22,8 +22,6 @@ use BuscaAtivaEscolar\Traits\Data\Sortable;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Notifications\Messages\MailMessage;
-use Jenssegers\Agent\Agent;
 use Mail;
 
 /**
@@ -129,15 +127,32 @@ class TenantSignup extends Model
 		$this->sendRejectionNotification();
 	}
 
-	public function updateRegistrationEmail($type, $email)
+	public function updateDate($type, $dataTenant)
 	{
 		if (!in_array($type, ['admin', 'mayor'])) {
-			throw new \InvalidArgumentException("Invalid e-mail type: {$type}; valid types are: admin | mayor");
+			throw new \InvalidArgumentException("Invalid data type: {$type}; valid types are: admin | mayor");
 		}
 
-		$email = filter_var($email, FILTER_SANITIZE_EMAIL);
 		$data = $this->data;
-		$data[$type]['email'] = $email;
+		$fieldsSanitezaInteger = ['phone', 'mobile', 'cpf', 'titulo'];
+
+		array_walk($dataTenant['data'], function (&$value, $key) use ($fieldsSanitezaInteger) {
+			if (array_key_exists($key, $fieldsSanitezaInteger)) {
+				$value = filter_var($value, FILTER_SANITIZE_NUMBER_INT);
+			}
+			if ($key === 'email') {
+				$value = filter_var($value, FILTER_SANITIZE_EMAIL);
+			}
+			if ($key === 'dob') {
+				if (strpos($value, '/') !== false) {
+					$value = explode("/", $value);
+					$value = $value[2] . '-' . $value[1] . '-' . $value[0];
+				}
+			}
+		});
+
+		$data[$type] = $dataTenant['data'];
+
 		$this->data = $data;
 		$this->save();
 	}

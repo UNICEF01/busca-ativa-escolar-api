@@ -273,15 +273,15 @@ class TenantSignupController extends BaseController
 		}
 	}
 
-	public function updateRegistrationEmail(TenantSignup $signup)
+	public function updateData(TenantSignup $signup)
 	{
+
 		try {
+			if (!in_array(request('type'), ['admin', 'mayor'])) return $this->api_failure('invalid_data_type');
 
 			if (!$signup) return $this->api_failure('invalid_signup_id');
-			if (!in_array(request('type'), ['admin', 'mayor'])) return $this->api_failure('invalid_email_type');
 
-			$signup->updateRegistrationEmail(request('type'), request('email'));
-
+			$signup->updateDate(request('type'), request()->all());
 			return response()->json(['status' => 'ok', 'signup_id' => $signup->id]);
 		} catch (\Exception $ex) {
 			return $this->api_exception($ex);
@@ -433,5 +433,19 @@ class TenantSignupController extends BaseController
 		$user->save();
 
 		return response()->json(['status' => 'ok', 'updated' => $input['user']]);
+	}
+
+	public function checkAccepted(TenantSignup $signup, Request $request)
+	{
+		$result = ['status' => 200];
+		try {
+			$result['data'] = $this->lgpdService->findLgpd($signup->id);
+		} catch (\Exception $e) {
+			$result = [
+				'status' => 500,
+				'error' => $e->getMessage()
+			];
+		}
+		return response()->json($result, $result['status']);
 	}
 }
