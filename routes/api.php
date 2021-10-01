@@ -137,6 +137,7 @@ Route::group(['prefix' => 'v1', 'middleware' => 'api'], function () {
 		Route::post('/signups/tenants/{signup}/reject', 'Tenants\TenantSignupController@reject')->middleware('can:tenants.manage');
 		Route::post('/signups/tenants/{signup}/update_registration_data', 'Tenants\TenantSignupController@updateData')->middleware('can:tenants.manage');
 		Route::post('/signups/tenants/{signup}/resend_notification', 'Tenants\TenantSignupController@resendNotification');
+		Route::post('/signups/tenants/{signup}/resendmail', 'Tenants\TenantSignupController@resendMail');
 
 		// State Sign-ups
 		Route::any('/signups/state/pending', 'Tenants\StateSignupController@get_pending')->middleware('can:ufs.manage');
@@ -153,6 +154,7 @@ Route::group(['prefix' => 'v1', 'middleware' => 'api'], function () {
 		Route::post('/tenants/{tenant}/cancel', 'Tenants\TenantsController@cancel')->middleware('can:tenants.manage');
 		Route::get('/tenants/recent_activity', 'Tenants\TenantsController@get_recent_activity');
 		Route::get('/tenants/public/uf', 'Tenants\TenantsController@getUfWithTenant');
+
 
 
 		Route::any('/states/all', 'Resources\StatesController@all')->middleware('can:ufs.view');
