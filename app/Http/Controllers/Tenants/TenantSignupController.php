@@ -32,8 +32,9 @@ use Illuminate\Support\Facades\Mail;
 use Maatwebsite\Excel\Excel as ExcelB;
 use BuscaAtivaEscolar\Exports\TenantSignupExport;
 use BuscaAtivaEscolar\LGPD\Interfaces\ILgpd;
-use Illuminate\Http\Request;
+use BuscaAtivaEscolar\LGPD\Interfaces\IMail;
 use BuscaAtivaEscolar\Mail\MayorSignupConfirmation;
+use Illuminate\Http\Request;
 
 class TenantSignupController extends BaseController
 {
@@ -42,12 +43,16 @@ class TenantSignupController extends BaseController
 		'image/jpeg',
 		'image/png'
 	];
+
 	private $excel;
 	protected $lgpdService;
-	public function __construct(ExcelB $excel, ILgpd $lgpdService)
+	protected $lgpdMailService;
+
+	public function __construct(ExcelB $excel, ILgpd $lgpdService, IMail $lgpdMailService)
 	{
 		$this->excel = $excel;
 		$this->lgpdService = $lgpdService;
+		$this->lgpdMailService = $lgpdMailService;
 	}
 
 	public function register()
@@ -82,6 +87,13 @@ class TenantSignupController extends BaseController
 
 			$message = new MayorSignupNotification($signup);
 			Mail::to($data['mayor']['email'])->send($message);
+
+			//LGPD
+			$this->lgpdMailService->saveMail([
+				'plataform_id' => $signup->id,
+				'mail' => $data['mayor']['email']
+			]);
+
 
 			return response()->json(['status' => 'ok', 'signup_id' => $signup->id]);
 		} catch (\Exception $ex) {
@@ -222,7 +234,7 @@ class TenantSignupController extends BaseController
 		}
 	}
 
-	public function accept(TenantSignup $signup, City $city)
+	public function accept(TenantSignup $signup, City $city, Request $request)
 	{
 		try {
 			$cityName = $city->findByID($signup->city_id);
@@ -239,6 +251,11 @@ class TenantSignupController extends BaseController
 				'name' => $cityName->name,
 				'ip_addr' => request()->ip()
 			]);
+
+			$this->lgpdMailService->updateMail(
+				$signup->id,
+				$signup->data['mayor']['email']
+			);
 
 			$signup->accept();
 			return response()->json(['status' => 'ok', 'signup_id' => $signup->id]);
@@ -338,11 +355,13 @@ class TenantSignupController extends BaseController
 		try {
 
 			if ($lastTenant == null) {
+
 				$tenant = Tenant::provision($signup, $politicalAdmin, $operationalAdmin);
+				$this->lgpdService->updateLgpd(array('plataform_id' => $signup->tenant_id), $signup->id);
 			} else {
 				$tenant = Tenant::recovere($signup, $politicalAdmin, $operationalAdmin, $lastTenant, $lastCoordinators);
+				$this->lgpdService->updateLgpd(array('plataform_id' => $signup->tenant_id), $signup->id);
 			}
-			$this->lgpdService->updateLgpd(array('plataform_id' => $signup->tenant_id), $signup->id);
 
 			return response()->json(['status' => 'ok', 'tenant_id' => $tenant->id]);
 		} catch (ValidationException $ex) {
@@ -436,20 +455,6 @@ class TenantSignupController extends BaseController
 		return response()->json(['status' => 'ok', 'updated' => $input['user']]);
 	}
 
-	public function checkAccepted(TenantSignup $signup, Request $request)
-	{
-		$result = ['status' => 200];
-		try {
-			$result['data'] = $this->lgpdService->findLgpd($signup->id);
-		} catch (\Exception $e) {
-			$result = [
-				'status' => 500,
-				'error' => $e->getMessage()
-			];
-		}
-		return response()->json($result, $result['status']);
-	}
-
 	public function resendMail(TenantSignup $signup)
 	{
 		try {
@@ -469,5 +474,19 @@ class TenantSignupController extends BaseController
 		} catch (\Exception $ex) {
 			return $this->api_exception($ex);
 		}
+	}
+
+	public function checkAccepted(TenantSignup $signup, Request $request)
+	{
+		$result = ['status' => 200];
+		try {
+			$result['data'] = $this->lgpdService->findLgpd($signup->id);
+		} catch (\Exception $e) {
+			$result = [
+				'status' => 500,
+				'error' => $e->getMessage()
+			];
+		}
+		return response()->json($result, $result['status']);
 	}
 }

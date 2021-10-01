@@ -18,24 +18,26 @@ namespace BuscaAtivaEscolar\Http\Controllers\Tenants;
 use Auth;
 use BuscaAtivaEscolar\Http\Controllers\BaseController;
 use BuscaAtivaEscolar\IBGE\UF;
+use BuscaAtivaEscolar\Mail\StateManagerNotification;
 use BuscaAtivaEscolar\StateSignup;
 use BuscaAtivaEscolar\User;
 use BuscaAtivaEscolar\Utils;
-use BuscaAtivaEscolar\Mail\StateManagerNotification;
-use BuscaAtivaEscolar\LGPD\Interfaces\ILgpd;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Carbon;
+use Mail;
+use BuscaAtivaEscolar\LGPD\Interfaces\ILgpd;
+use BuscaAtivaEscolar\LGPD\Interfaces\IMail;
 use BuscaAtivaEscolar\Mail\StateManagerConfirmation;
+use Illuminate\Http\Request;
 
 class StateSignupController extends BaseController
 {
 	protected $lgpdService;
-
-	public function __construct(ILgpd $lgpdService)
+	protected $lgpdMailService;
+	public function __construct(ILgpd $lgpdService, IMail $lgpdMailService)
 	{
+		$this->lgpdMailService = $lgpdMailService;
 		$this->lgpdService = $lgpdService;
 	}
-
 	public function register()
 	{
 		$data = request()->all();
@@ -72,10 +74,10 @@ class StateSignupController extends BaseController
 			$message = new StateManagerNotification($signup);
 			Mail::to($data['admin']['email'])->send($message);
 			//LGPD
-			/*$this->lgpdMailService->saveMail([
+			$this->lgpdMailService->saveMail([
 				'plataform_id' => $signup->id,
 				'mail' => $data['admin']['email']
-			]);*/
+			]);
 
 			return response()->json(['status' => 'ok', 'signup_id' => $signup->id]);
 		} catch (\Exception $ex) {
@@ -164,6 +166,21 @@ class StateSignupController extends BaseController
 		}
 	}
 
+	public function updateRegistrationEmail(StateSignup $signup)
+	{
+		try {
+
+			if (!$signup) return $this->api_failure('invalid_signup_id');
+			if (!in_array(request('type'), ['admin', 'coordinator'])) return $this->api_failure('invalid_email_type');
+
+			$signup->updateRegistrationEmail(request('type'), request('email'));
+
+			return response()->json(['status' => 'ok', 'signup_id' => $signup->id]);
+		} catch (\Exception $ex) {
+			return $this->api_exception($ex);
+		}
+	}
+
 	public function updateData(StateSignup $signup)
 	{
 
@@ -172,7 +189,7 @@ class StateSignupController extends BaseController
 
 			if (!$signup) return $this->api_failure('invalid_signup_id');
 
-			$signup->updateData(request('type'), request()->all());
+			$signup->updateDate(request('type'), request()->all());
 			return response()->json(['status' => 'ok', 'signup_id' => $signup->id]);
 		} catch (\Exception $ex) {
 			return $this->api_exception($ex);
@@ -190,7 +207,7 @@ class StateSignupController extends BaseController
 		return $this->api_success(['is_available' => true]);
 	}
 
-	public function accept(StateSignup $signup)
+	public function accept(StateSignup $signup, Request $request)
 	{
 		try {
 
@@ -206,18 +223,19 @@ class StateSignupController extends BaseController
 				'ip_addr' => request()->ip()
 			]);
 
-			/*$this->lgpdMailService->updateMail(
+			$this->lgpdMailService->updateMail(
 				$signup->id,
 				$signup->data['admin']['email']
-			);*/
+			);
 
+			//$signup->accept();
 			return response()->json(['status' => 'ok', 'signup_id' => $signup->id]);
 		} catch (\Exception $ex) {
 			return $this->api_exception($ex);
 		}
 	}
 
-	public function checkAccepted(StateSignup $signup)
+	public function checkAccepted(StateSignup $signup, Request $request)
 	{
 		$result = ['status' => 200];
 		try {
