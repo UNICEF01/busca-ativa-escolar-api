@@ -39,7 +39,7 @@ class LgpdService implements ILgpd
   public function checkAccess(array $attributes): bool
   {
     if ($this->findLgpd($attributes['user'])) {
-      if (array_key_exists('uf', $attributes) && !is_null($attributes['uf'])) {
+      /*if (array_key_exists('uf', $attributes) && !is_null($attributes['uf'])) {
         if ($this->findLgpd($attributes['uf']))
           return true;
         return false;
@@ -48,7 +48,7 @@ class LgpdService implements ILgpd
         if ($this->findLgpd($attributes['tenant_id']))
           return true;
         return false;
-      }
+      }*/
       return true;
     }
 
