@@ -22,9 +22,18 @@ use BuscaAtivaEscolar\User;
 use Illuminate\Http\Request;
 use JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
+use BuscaAtivaEscolar\LGPD\Interfaces\ILgpd;
+
 
 class IdentityController extends BaseController
 {
+
+    protected $lgpdService;
+
+    public function __construct(ILgpd $lgpdService)
+    {
+        $this->lgpdService = $lgpdService;
+    }
 
     public function authenticate(Request $request)
     {
@@ -35,12 +44,19 @@ class IdentityController extends BaseController
 
         $credentials = $request->only('email', 'password');
         $user = User::where('email', $credentials['email'])->first();
-
-        if ($user->email != 'rcorreia@unicef.org') {
-            return response()->json(['error' => 'token_generation_failed', 'reason' => 'manutencao'], 500);
+        $attributes = [
+            'user' => $user->id,
+            'tenant_id' => $user->tenant_id,
+            'uf' => $user->uf
+        ];
+        if ($user->lgpd === 1 && $user->type  !== 'gestor_nacional') {
+            if ($this->lgpdService->checkAccess($attributes) === false)
+                return response()->json(['error' => 'lgpd_validation_fail', 'reason' => 'User/State/Tenant not accepted lgpd'], 500);
         }
 
         try {
+
+
 
             $token = JWTAuth::attempt($credentials);
 
