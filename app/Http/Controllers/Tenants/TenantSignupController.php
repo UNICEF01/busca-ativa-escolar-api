@@ -33,6 +33,7 @@ use Maatwebsite\Excel\Excel as ExcelB;
 use BuscaAtivaEscolar\Exports\TenantSignupExport;
 use BuscaAtivaEscolar\LGPD\Interfaces\ILgpd;
 use Illuminate\Http\Request;
+use BuscaAtivaEscolar\Mail\MayorSignupConfirmation;
 
 class TenantSignupController extends BaseController
 {
@@ -447,5 +448,26 @@ class TenantSignupController extends BaseController
 			];
 		}
 		return response()->json($result, $result['status']);
+	}
+
+	public function resendMail(TenantSignup $signup)
+	{
+		try {
+			if ($signup->is_approved && $signup->is_approved_by_mayor) {
+				$message = new MayorSignupConfirmation($signup);
+			} else {
+				$message = new MayorSignupNotification($signup);
+			}
+			Mail::to($signup->data['mayor']['email'])->send($message);
+
+			$this->lgpdMailService->saveMail([
+				'plataform_id' => $signup->id,
+				'mail' => $signup->data['mayor']['email']
+			]);
+
+			return response()->json(['status' => 'ok', 'signup_id' => $signup->id]);
+		} catch (\Exception $ex) {
+			return $this->api_exception($ex);
+		}
 	}
 }
