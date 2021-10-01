@@ -142,7 +142,7 @@ Route::group(['prefix' => 'v1', 'middleware' => 'api'], function () {
 		Route::any('/signups/state/pending', 'Tenants\StateSignupController@get_pending')->middleware('can:ufs.manage');
 		Route::post('/signups/state/{signup}/approve', 'Tenants\StateSignupController@approve')->middleware('can:ufs.manage');
 		Route::post('/signups/state/{signup}/reject', 'Tenants\StateSignupController@reject')->middleware('can:ufs.manage');
-		Route::post('/signups/state/{signup}/update_registration_email', 'Tenants\StateSignupController@updateRegistrationEmail')->middleware('can:ufs.manage');
+		Route::post('/signups/state/{signup}/update_registration_data', 'Tenants\StateSignupController@updateData')->middleware('can:ufs.manage');
 		Route::post('/signups/state/{signup}/resend_notification', 'Tenants\StateSignupController@resendNotification')->middleware('can:ufs.manage');
 
 		// Tenants (authenticated)
@@ -242,6 +242,7 @@ Route::group(['prefix' => 'v1', 'middleware' => 'api'], function () {
 
 	// State Sign-up
 	Route::get('/signups/state/{signup}/accept', 'Tenants\StateSignupController@accept');
+	Route::get('/signups/state/{signup}/accepted', 'Tenants\StateSignupController@checkAccepted');
 	Route::post('/signups/state/register', 'Tenants\StateSignupController@register');
 	Route::post('/signups/state/check_if_available', 'Tenants\StateSignupController@checkIfAvailable');
 

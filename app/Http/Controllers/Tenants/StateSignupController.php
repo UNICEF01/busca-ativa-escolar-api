@@ -162,15 +162,15 @@ class StateSignupController extends BaseController
 		}
 	}
 
-	public function updateRegistrationEmail(StateSignup $signup)
+	public function updateData(StateSignup $signup)
 	{
+
 		try {
+			if (!in_array(request('type'), ['admin', 'coordinator'])) return $this->api_failure('invalid_data_type');
 
 			if (!$signup) return $this->api_failure('invalid_signup_id');
-			if (!in_array(request('type'), ['admin', 'coordinator'])) return $this->api_failure('invalid_email_type');
 
-			$signup->updateRegistrationEmail(request('type'), request('email'));
-
+			$signup->updateDate(request('type'), request()->all());
 			return response()->json(['status' => 'ok', 'signup_id' => $signup->id]);
 		} catch (\Exception $ex) {
 			return $this->api_exception($ex);
@@ -213,5 +213,19 @@ class StateSignupController extends BaseController
 		} catch (\Exception $ex) {
 			return $this->api_exception($ex);
 		}
+	}
+
+	public function checkAccepted(StateSignup $signup)
+	{
+		$result = ['status' => 200];
+		try {
+			$result['data'] = $this->lgpdService->findLgpd($signup->id);
+		} catch (\Exception $e) {
+			$result = [
+				'status' => 500,
+				'error' => $e->getMessage()
+			];
+		}
+		return response()->json($result, $result['status']);
 	}
 }
