@@ -135,7 +135,7 @@ Route::group(['prefix' => 'v1', 'middleware' => 'api'], function () {
 		Route::post('/signups/tenants/complete_setup', 'Tenants\TenantSignupController@completeSetup')->middleware('can:tenant.complete_setup');
 		Route::post('/signups/tenants/{signup}/approve', 'Tenants\TenantSignupController@approve')->middleware('can:tenants.manage');
 		Route::post('/signups/tenants/{signup}/reject', 'Tenants\TenantSignupController@reject')->middleware('can:tenants.manage');
-		Route::post('/signups/tenants/{signup}/update_registration_email', 'Tenants\TenantSignupController@updateRegistrationEmail')->middleware('can:tenants.manage');
+		Route::post('/signups/tenants/{signup}/update_registration_data', 'Tenants\TenantSignupController@updateData')->middleware('can:tenants.manage');
 		Route::post('/signups/tenants/{signup}/resend_notification', 'Tenants\TenantSignupController@resendNotification');
 
 		// State Sign-ups
@@ -234,6 +234,7 @@ Route::group(['prefix' => 'v1', 'middleware' => 'api'], function () {
 	Route::post('/signups/tenants/{signup}/complete', 'Tenants\TenantSignupController@complete');
 	Route::post('/signups/tenants/uploadfile', 'Tenants\TenantSignupController@uploadfile');
 	Route::get('/signups/tenants/{signup}/accept', 'Tenants\TenantSignupController@accept');
+	Route::get('/signups/tenants/{signup}/accepted', 'Tenants\TenantSignupController@checkAccepted');
 	Route::get('/signups/tenants/mayor/by/cpf/{cpf}', 'Tenants\TenantSignupController@getMayorByCpf');
 	Route::get('/signups/users/via_token/{user}', 'Tenants\TenantSignupController@get_user_via_token');
 	Route::post('/signups/users/{user}/confirm', 'Tenants\TenantSignupController@confirm_user');
