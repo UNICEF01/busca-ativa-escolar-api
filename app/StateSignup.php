@@ -147,15 +147,32 @@ class StateSignup extends Model
 		$this->sendRejectionNotification();
 	}
 
-	public function updateRegistrationEmail($type, $email)
+	public function updateData($type, $dataTenant)
 	{
 		if (!in_array($type, ['admin', 'coordinator'])) {
-			throw new \InvalidArgumentException("Invalid e-mail type: {$type}; valid types are: admin | coordinator");
+			throw new \InvalidArgumentException("Invalid data type: {$type}; valid types are: admin | coordinator");
 		}
 
-		$email = filter_var($email, FILTER_SANITIZE_EMAIL);
 		$data = $this->data;
-		$data[$type]['email'] = $email;
+		$fieldsSanitezaInteger = ['phone', 'mobile', 'cpf', 'titulo'];
+
+		array_walk($dataTenant['data'], function (&$value, $key) use ($fieldsSanitezaInteger) {
+			if (array_key_exists($key, $fieldsSanitezaInteger)) {
+				$value = filter_var($value, FILTER_SANITIZE_NUMBER_INT);
+			}
+			if ($key === 'email') {
+				$value = filter_var($value, FILTER_SANITIZE_EMAIL);
+			}
+			if ($key === 'dob') {
+				if (strpos($value, '/') !== false) {
+					$value = explode("/", $value);
+					$value = $value[2] . '-' . $value[1] . '-' . $value[0];
+				}
+			}
+		});
+
+		$data[$type] = $dataTenant['data'];
+
 		$this->data = $data;
 		$this->save();
 	}
