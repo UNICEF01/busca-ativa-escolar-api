@@ -221,7 +221,7 @@ class TenantSignupController extends BaseController
 		}
 	}
 
-	public function accept(TenantSignup $signup, City $city, Request $request)
+	public function accept(TenantSignup $signup, City $city)
 	{
 		try {
 			$cityName = $city->findByID($signup->city_id);

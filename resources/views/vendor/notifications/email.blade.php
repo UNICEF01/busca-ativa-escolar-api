@@ -63,45 +63,45 @@ $style = [
 <?php $fontFamily = 'font-family: Arial, \'Helvetica Neue\', Helvetica, sans-serif;'; ?>
 
 <body style="{{ $style['body'] }}">
-<table width="100%" cellpadding="0" cellspacing="0">
-	<tr>
-		<td style="{{ $style['email-wrapper'] }}" align="center">
-			<table width="100%" cellpadding="0" cellspacing="0">
-				<!-- Logo -->
-				<tr bgcolor="#ffffff">
-					<td style="text-align: center;">
-						<img src="https://plataforma.buscaativaescolar.org.br/images/logo_bae_signup.png" style="border: 0; display: block; margin: 0 auto;" />
-					</td>
-				</tr>
+	<table width="100%" cellpadding="0" cellspacing="0">
+		<tr>
+			<td style="{{ $style['email-wrapper'] }}" align="center">
+				<table width="100%" cellpadding="0" cellspacing="0">
+					<!-- Logo -->
+					<tr bgcolor="#ffffff">
+						<td style="text-align: center;">
+							<img src="https://plataforma.buscaativaescolar.org.br/images/logo_bae_signup.png" style="border: 0; display: block; margin: 0 auto;" />
+						</td>
+					</tr>
 
-				<!-- Email Body -->
-				<tr>
-					<td style="{{ $style['email-body'] }}" width="100%">
-						<table style="{{ $style['email-body_inner'] }}" align="center" width="570" cellpadding="0" cellspacing="0">
-							<tr>
-								<td style="{{ $fontFamily }} {{ $style['email-body_cell'] }}">
-									<!-- Greeting -->
-									<h1 style="{{ $style['header-1'] }}">
-										@if (! empty($greeting))
+					<!-- Email Body -->
+					<tr>
+						<td style="{{ $style['email-body'] }}" width="100%">
+							<table style="{{ $style['email-body_inner'] }}" align="center" width="570" cellpadding="0" cellspacing="0">
+								<tr>
+									<td style="{{ $fontFamily }} {{ $style['email-body_cell'] }}">
+										<!-- Greeting -->
+										<h1 style="{{ $style['header-1'] }}">
+											@if (! empty($greeting))
 											{{ $greeting }}
-										@else
-											@if ($level == 'error')
-												Oops!
 											@else
-												Olá!
+											@if ($level == 'error')
+											Oops!
+											@else
+											Olá!
 											@endif
-										@endif
-									</h1>
+											@endif
+										</h1>
 
-									<!-- Intro -->
-									@foreach ($introLines as $line)
+										<!-- Intro -->
+										@foreach ($introLines as $line)
 										<p style="{{ $style['paragraph'] }}">
 											{!! \BuscaAtivaEscolar\Utils::renderHighlightableText(e($line)) !!}
 										</p>
-									@endforeach
+										@endforeach
 
-								<!-- Action Button -->
-									@if (isset($actionText))
+										<!-- Action Button -->
+										@if (isset($actionText))
 										<table style="{{ $style['body_action'] }}" align="center" width="100%" cellpadding="0" cellspacing="0">
 											<tr>
 												<td align="center">
@@ -118,31 +118,28 @@ $style = [
 													}
 													?>
 
-													<a href="{{ $actionUrl }}"
-													   style="{{ $fontFamily }} {{ $style['button'] }} {{ $style[$actionColor] }}"
-													   class="button"
-													   target="_blank">
+													<a href="{{ $actionUrl }}" style="{{ $fontFamily }} {{ $style['button'] }} {{ $style[$actionColor] }}" class="button" target="_blank">
 														{{ $actionText }}
 													</a>
 												</td>
 											</tr>
 										</table>
-									@endif
+										@endif
 
-								<!-- Outro -->
-									@foreach ($outroLines as $line)
+										<!-- Outro -->
+										@foreach ($outroLines as $line)
 										<p style="{{ $style['paragraph'] }}">
 											{!! \BuscaAtivaEscolar\Utils::renderHighlightableText(e($line)) !!}
 										</p>
-									@endforeach
+										@endforeach
 
-								<!-- Salutation -->
-									<p style="{{ $style['paragraph'] }}">
-										Atenciosamente,<br>{{ config('app.name') }}
-									</p>
+										<!-- Salutation -->
+										<p style="{{ $style['paragraph'] }}">
+											Atenciosamente,<br>Equipe da Gestão Nacional da Busca Ativa Escolar
+										</p>
 
-									<!-- Sub Copy -->
-									@if (isset($actionText))
+										<!-- Sub Copy -->
+										@if (isset($actionText))
 										<table style="{{ $style['body_sub'] }}">
 											<tr>
 												<td style="{{ $fontFamily }}">
@@ -159,17 +156,18 @@ $style = [
 												</td>
 											</tr>
 										</table>
-									@endif
-								</td>
-							</tr>
-						</table>
-					</td>
-				</tr>
+										@endif
+									</td>
+								</tr>
+							</table>
+						</td>
+					</tr>
 
 
-			</table>
-		</td>
-	</tr>
-</table>
+				</table>
+			</td>
+		</tr>
+	</table>
 </body>
+
 </html>

@@ -176,11 +176,11 @@ Route::group(['prefix' => 'v1', 'middleware' => 'api'], function () {
 		Route::post('/user_preferences', 'Resources\PreferencesController@updateSettings');
 
 		// Reports
-        Route::post('/reports/children/by_tenant', 'Resources\ReportsController@query_children_by_tenant'); //APLICAR MIDLLEWARE NACIONAL!
+		Route::post('/reports/children/by_tenant', 'Resources\ReportsController@query_children_by_tenant'); //APLICAR MIDLLEWARE NACIONAL!
 
 
-        Route::post('/reports/children', 'Resources\ReportsController@query_children')->middleware('can:reports.view');
-        Route::post('/reports/children_tests', 'Resources\ReportsController@query_children_tests')->middleware('can:reports.view');
+		Route::post('/reports/children', 'Resources\ReportsController@query_children')->middleware('can:reports.view');
+		Route::post('/reports/children_tests', 'Resources\ReportsController@query_children_tests')->middleware('can:reports.view');
 
 		Route::post('/reports/tenants', 'Resources\ReportsController@query_tenants')->middleware('can:reports.view');
 		Route::post('/reports/ufs', 'Resources\ReportsController@query_ufs')->middleware('can:reports.view');
@@ -240,6 +240,7 @@ Route::group(['prefix' => 'v1', 'middleware' => 'api'], function () {
 
 
 	// State Sign-up
+	Route::get('/signups/state/{signup}/accept', 'Tenants\StateSignupController@accept');
 	Route::post('/signups/state/register', 'Tenants\StateSignupController@register');
 	Route::post('/signups/state/check_if_available', 'Tenants\StateSignupController@checkIfAvailable');
 
@@ -256,12 +257,11 @@ Route::group(['prefix' => 'v1', 'middleware' => 'api'], function () {
 	Route::get('/lp/report/reach', 'LP\ReportsLandingPageController@reach');
 
 	//Open data to landing page pnad
-    Route::get('/pnad/report', 'LP\ReportsPnadController@pnad_brasil');
-    Route::get('/pnad/report/capital', 'LP\ReportsPnadController@pnad_capital');
+	Route::get('/pnad/report', 'LP\ReportsPnadController@pnad_brasil');
+	Route::get('/pnad/report/capital', 'LP\ReportsPnadController@pnad_capital');
 	Route::get('/pnad/report/reg', 'LP\ReportsPnadController@pnad_regiao');
 	Route::get('/pnad/report/uf', 'LP\ReportsPnadController@pnad_uf');
 
 	//Webhooks Mailgun
 	Route::post('/mailgun/update', 'Mailgun\MailgunController@update');
-
 });
