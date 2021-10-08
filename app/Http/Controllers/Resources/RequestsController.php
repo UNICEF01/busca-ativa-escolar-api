@@ -24,7 +24,7 @@ class RequestsController extends BaseController
         $userType = $user->type;
 
         /* */
-        $user->type = User::TYPE_GESTOR_NACIONAL;
+        //$user->type = User::TYPE_GESTOR_NACIONAL;
 
 
         if ($userType == 'supervisor_institucional') {
@@ -60,11 +60,11 @@ class RequestsController extends BaseController
 
         $rejectReason = request('reject_reason');
 
-        if($request->status == ReopeningRequests::STATUS_CANCELLED){
+        if ($request->status == ReopeningRequests::STATUS_CANCELLED) {
             return response()->json(['status' => 'error', 'result' => 'Solicitação já rejeitada']);
         }
 
-        if($request->status == ReopeningRequests::STATUS_APPROVED){
+        if ($request->status == ReopeningRequests::STATUS_APPROVED) {
             return response()->json(['status' => 'error', 'result' => 'Solicitação já aprovada']);
         }
 
@@ -97,7 +97,7 @@ class RequestsController extends BaseController
 
         if ($request->requester != null) {
 
-            try{
+            try {
 
                 $msg = new ReopenCaseNotification(
                     $request->child->id,
@@ -114,8 +114,7 @@ class RequestsController extends BaseController
                 );
 
                 Mail::to($request->requester->email)->send($msg);
-
-            }catch (\Exception $e){
+            } catch (\Exception $e) {
                 //TODO Erro de envio de email
             }
         }
@@ -124,7 +123,5 @@ class RequestsController extends BaseController
         $user->type = User::TYPE_GESTOR_OPERACIONAL;
 
         return response()->json(['status' => 'success', 'result' => 'Solicitação rejeitada com sucesso']);
-
     }
-
 }
