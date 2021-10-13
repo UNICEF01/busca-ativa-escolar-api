@@ -2,16 +2,22 @@
 
 namespace BuscaAtivaEscolar\Console\Commands;
 
+use BuscaAtivaEscolar\Mail\MayorSignupConfirmation;
 use BuscaAtivaEscolar\Tenant;
+use BuscaAtivaEscolar\TenantSignup;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 
 class SendEmailToTenantsWithTerms extends Command
 {
 
     protected $qtdTenantsQuery1 = 0;
     protected $qtdTenantsQuery2 = 0;
-    protected $qtdTenantsQuery3 = 0;
+    protected $mayorWithoutEmail_Approved = 0;
+    protected $mayorWithoutEmail_NotApproved = 0;
+    protected  $mayorsWithoutEmail_Approved = [];
+    protected  $mayorsWithoutEmail_NotApproved = [];
 
     /**
      * The name and signature of the console command.
@@ -45,24 +51,89 @@ class SendEmailToTenantsWithTerms extends Command
     public function handle()
     {
         //Query 1
-        //Pega todos os tenant_signups não desativados:
-        DB::table('tenant_signups')
-            ->whereNull('deleted_at')
-            ->where('is_approved_by_mayor', '=', 1)
+
+        DB::table('tenants')
             ->orderBy('id')
-            ->chunk(100, function($tenantSignups) {
-                foreach ($tenantSignups as $tenantSignup) {
+            ->whereNull('deleted_at')
+            ->chunk(100, function ($tenants) {
+            foreach ($tenants as $tenant) {
 
-                    //Pega o tenant ativo relacionado ao tenantSignup:
-                    $tenant = Tenant::where('id', '=', $tenantSignup->tenant_id)->get()->first();
+                $tenantSignup = TenantSignup::where([
+                    ['is_approved_by_mayor', '=', 1],
+                    ['tenant_id', '=', $tenant->id]
+                ])->get()->first();
 
-                    if($tenant){ $this->qtdTenantsQuery1++; }
+                if ($tenantSignup) {
+
+                    //existe o email na propiedade mayor?
+                    if(array_key_exists("email",$tenantSignup->data['mayor'])){
+
+                        $this->comment(" ID - TENANT SIGNUP: ".$tenantSignup->id." | EMAIL PREFEITO - TENANT SIGNUP: ".strtolower($tenantSignup->data['mayor']['email']));
+
+                    }else{
+                        array_push($this->mayorsWithoutEmail_Approved, $tenantSignup->id);
+                        $this->mayorWithoutEmail_Approved++;
+                    }
+
+                    $this->qtdTenantsQuery1++;
+                }
+
+            }
+        });
+
+        //Query 2
+
+        DB::table('tenants')
+            ->orderBy('id')
+            ->whereNull('deleted_at')
+            ->chunk(100, function ($tenants) {
+            foreach ($tenants as $tenant) {
+
+                $tenantSignup = TenantSignup::where([
+                    ['is_approved_by_mayor', '=', 0],
+                    ['tenant_id', '=', $tenant->id]
+                ])->get()->first();
+
+                if ($tenantSignup) {
+
+                    //existe o email na propiedade mayor?
+                    if(array_key_exists("email",$tenantSignup->data['mayor'])){
+
+                        $this->comment(" ID - TENANT SIGNUP: ".$tenantSignup->id." | EMAIL PREFEITO - TENANT SIGNUP: ".strtolower($tenantSignup->data['mayor']['email']));
+
+                    }else{
+                        array_push($this->mayorsWithoutEmail_NotApproved, $tenantSignup->id);
+                        $this->mayorWithoutEmail_NotApproved++;
+                    }
+
+                    $this->qtdTenantsQuery2++;
 
                 }
-            });
 
-        $this->comment("Query 1:".$this->qtdTenantsQuery1);
+            }
+        });
+
+        $this->comment(DB::table('tenants')->whereNull('deleted_at')->count());
+        $this->comment($this->qtdTenantsQuery1." tenants signups approved by mayor.");
+        $this->comment($this->qtdTenantsQuery2." tenants signups not approved by mayor.");
+
+        $this->comment("---------------------------------------------------------------");
+
+        $this->comment($this->mayorWithoutEmail_Approved." prefeitos sem email na query 1 - aprovados");
+        $this->comment($this->mayorWithoutEmail_NotApproved." prefeitos sem email na query 2 - não aprovados");
+
+        $this->comment("---------------------------------------------------------------");
+
+        $this->comment("IDs prefeitos sem email query 1:");
+        $this->comment($this->mayorWithoutEmail_Approved);
+
+        $this->comment("IDs prefeitos sem email query 2:");
+        $this->comment($this->mayorWithoutEmail_NotApproved);
+
         $this->qtdTenantsQuery1 = 0;
+        $this->qtdTenantsQuery2 = 0;
+        $this->mayorWithoutEmail_NotApproved = 0;
+        $this->mayorWithoutEmail_Approved = 0;
 
     }
 }
