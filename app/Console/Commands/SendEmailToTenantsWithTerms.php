@@ -125,10 +125,10 @@ class SendEmailToTenantsWithTerms extends Command
         $this->comment("---------------------------------------------------------------");
 
         $this->comment("IDs prefeitos sem email query 1:");
-        $this->comment($this->mayorWithoutEmail_Approved);
+        $this->comment(implode(" | ", $this->mayorWithoutEmail_Approved));
 
         $this->comment("IDs prefeitos sem email query 2:");
-        $this->comment($this->mayorWithoutEmail_NotApproved);
+        $this->comment(implode(" | ", $this->mayorWithoutEmail_NotApproved));
 
         $this->qtdTenantsQuery1 = 0;
         $this->qtdTenantsQuery2 = 0;
