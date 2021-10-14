@@ -29,7 +29,7 @@ class MayorSignupConfirmation extends Mailable
       ->success()
       ->subject("[Busca Ativa Escolar] Adesão municipal - Aviso importante!")
       ->line("Sr(a). Prefeito(a) " . $this->tenant_signup->data["mayor"]["name"])
-      ->line("A Busca Ativa Escolar atualizou sua política de privacidade de acordo com a Lei Geral de Proteção de Dados (LGPD). Por isso, é necessário que o(a) prefeito(a) assine um novo termo de adesão contendo o compromisso de privacidade atualizado segundo a LGPD. O prazo para aceite é de 01 de outubro de 2021 até 30 de outubro de 2021. Depois disso, caso não seja aceito, a plataforma será bloqueada. Não deixe para a última hora!")
+      ->line("A Busca Ativa Escolar atualizou sua política de privacidade de acordo com a Lei Geral de Proteção de Dados (LGPD). Por isso, é necessário que o(a) prefeito(a) assine um novo termo de adesão contendo o compromisso de privacidade atualizado segundo a LGPD. O prazo para aceite é de 01 de outubro de 2021 até 30 de novembro de 2021. Depois disso, caso não seja aceito, a plataforma será bloqueada. Não deixe para a última hora!")
       ->action('Aceitar termo de adesão', $this->getUrlConfirmSignup());
 
     $this->subject("[Busca Ativa Escolar] Adesão municipal - Aviso importante!");
