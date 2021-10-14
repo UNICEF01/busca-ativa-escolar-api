@@ -3,6 +3,7 @@
 namespace BuscaAtivaEscolar\Console\Commands;
 
 use BuscaAtivaEscolar\Mail\MayorSignupConfirmation;
+use BuscaAtivaEscolar\Mail\MayorSignupNotification;
 use BuscaAtivaEscolar\Tenant;
 use BuscaAtivaEscolar\TenantSignup;
 use Illuminate\Console\Command;
@@ -70,6 +71,10 @@ class SendEmailToTenantsWithTerms extends Command
 
                         $this->comment(" ID - TENANT SIGNUP: ".$tenantSignup->id." | EMAIL PREFEITO - TENANT SIGNUP: ".strtolower($tenantSignup->data['mayor']['email']));
 
+                        //Encaminhar email MayorSignupConfirmation aqui. Já tem o $tenantSignup pronto
+                        //$message = new MayorSignupConfirmation($tenantSignup);
+                        //Mail::to($tenantSignup->data['mayor']['email'])->send($message);
+
                     }else{
                         array_push($this->mayorsWithoutEmail_Approved, $tenantSignup->id);
                         $this->mayorWithoutEmail_Approved++;
@@ -101,6 +106,10 @@ class SendEmailToTenantsWithTerms extends Command
 
                         $this->comment(" ID - TENANT SIGNUP: ".$tenantSignup->id." | EMAIL PREFEITO - TENANT SIGNUP: ".strtolower($tenantSignup->data['mayor']['email']));
 
+                        //Encaminhar email MayorSignupNotification aqui. Já tem o $tenantSignup pronto
+                        //$message = new MayorSignupNotification($tenantSignup);
+                        //Mail::to($tenantSignup->data['mayor']['email'])->send($message);
+
                     }else{
                         array_push($this->mayorsWithoutEmail_NotApproved, $tenantSignup->id);
                         $this->mayorWithoutEmail_NotApproved++;
@@ -125,15 +134,17 @@ class SendEmailToTenantsWithTerms extends Command
         $this->comment("---------------------------------------------------------------");
 
         $this->comment("IDs prefeitos sem email query 1:");
-        $this->comment(implode(" | ", $this->mayorWithoutEmail_Approved));
+        $this->comment(implode(" | ", $this->mayorsWithoutEmail_Approved));
 
         $this->comment("IDs prefeitos sem email query 2:");
-        $this->comment(implode(" | ", $this->mayorWithoutEmail_NotApproved));
+        $this->comment(implode(" | ", $this->mayorsWithoutEmail_NotApproved));
 
         $this->qtdTenantsQuery1 = 0;
         $this->qtdTenantsQuery2 = 0;
         $this->mayorWithoutEmail_NotApproved = 0;
         $this->mayorWithoutEmail_Approved = 0;
+        $this->mayorsWithoutEmail_Approved = [];
+        $this->mayorsWithoutEmail_NotApproved = [];
 
     }
 }
