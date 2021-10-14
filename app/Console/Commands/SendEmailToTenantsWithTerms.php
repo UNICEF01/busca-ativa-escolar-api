@@ -2,6 +2,7 @@
 
 namespace BuscaAtivaEscolar\Console\Commands;
 
+use BuscaAtivaEscolar\LGPD\Interfaces\IMail;
 use BuscaAtivaEscolar\Mail\MayorSignupConfirmation;
 use BuscaAtivaEscolar\Mail\MayorSignupNotification;
 use BuscaAtivaEscolar\Tenant;
@@ -9,6 +10,8 @@ use BuscaAtivaEscolar\TenantSignup;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use BuscaAtivaEscolar\LGPD\Services\LgpdMailService;
+use Matrix\Exception;
 
 class SendEmailToTenantsWithTerms extends Command
 {
@@ -17,8 +20,11 @@ class SendEmailToTenantsWithTerms extends Command
     protected $qtdTenantsQuery2 = 0;
     protected $mayorWithoutEmail_Approved = 0;
     protected $mayorWithoutEmail_NotApproved = 0;
-    protected  $mayorsWithoutEmail_Approved = [];
-    protected  $mayorsWithoutEmail_NotApproved = [];
+    protected $mayorsWithoutEmail_Approved = [];
+    protected $mayorsWithoutEmail_NotApproved = [];
+    protected $emailsWithErros = [];
+
+    protected $lgpdMailService;
 
     /**
      * The name and signature of the console command.
@@ -39,8 +45,9 @@ class SendEmailToTenantsWithTerms extends Command
      *
      * @return void
      */
-    public function __construct()
+    public function __construct(IMail $lgpdMailService)
     {
+        $this->lgpdMailService = $lgpdMailService;
         parent::__construct();
     }
 
@@ -57,33 +64,41 @@ class SendEmailToTenantsWithTerms extends Command
             ->orderBy('id')
             ->whereNull('deleted_at')
             ->chunk(100, function ($tenants) {
-            foreach ($tenants as $tenant) {
+                foreach ($tenants as $tenant) {
 
-                $tenantSignup = TenantSignup::where([
-                    ['is_approved_by_mayor', '=', 1],
-                    ['tenant_id', '=', $tenant->id]
-                ])->get()->first();
+                    $tenantSignup = TenantSignup::where([
+                        ['is_approved_by_mayor', '=', 1],
+                        ['tenant_id', '=', $tenant->id]
+                    ])->get()->first();
 
-                if ($tenantSignup) {
+                    if ($tenantSignup) {
 
-                    //existe o email na propiedade mayor?
-                    if(array_key_exists("email",$tenantSignup->data['mayor'])){
+                        //existe o email na propiedade mayor?
+                        if(array_key_exists("email",$tenantSignup->data['mayor'])){
 
-                        $this->comment(" ID - TENANT SIGNUP: ".$tenantSignup->id." | EMAIL PREFEITO - TENANT SIGNUP: ".strtolower($tenantSignup->data['mayor']['email']));
+                            $this->comment(" ID - TENANT SIGNUP: ".$tenantSignup->id." | EMAIL PREFEITO - TENANT SIGNUP: ".strtolower($tenantSignup->data['mayor']['email']));
 
-                        //Encaminhar email MayorSignupConfirmation aqui. Já tem o $tenantSignup pronto
-                        //$message = new MayorSignupConfirmation($tenantSignup);
-                        //Mail::to($tenantSignup->data['mayor']['email'])->send($message);
+                            try {
+                                $message = new MayorSignupConfirmation($tenantSignup);
+                                Mail::to($tenantSignup->data['mayor']['email'])->send($message);
 
-                    }else{
-                        array_push($this->mayorsWithoutEmail_Approved, $tenantSignup->id);
-                        $this->mayorWithoutEmail_Approved++;
+                                $this->lgpdMailService->saveMail([
+                                    'plataform_id' => $tenantSignup->id,
+                                    'mail' => $tenantSignup->data['mayor']['email']
+                                ]);
+                            }catch (\Exception $e){
+                                array_push($this->emailsWithErros, $tenantSignup->data['mayor']['email']);
+                            }
+
+                        }else{
+                            array_push($this->mayorsWithoutEmail_Approved, $tenantSignup->id);
+                            $this->mayorWithoutEmail_Approved++;
+                        }
+
+                        $this->qtdTenantsQuery1++;
                     }
 
-                    $this->qtdTenantsQuery1++;
                 }
-
-            }
         });
 
         //Query 2
@@ -106,9 +121,17 @@ class SendEmailToTenantsWithTerms extends Command
 
                         $this->comment(" ID - TENANT SIGNUP: ".$tenantSignup->id." | EMAIL PREFEITO - TENANT SIGNUP: ".strtolower($tenantSignup->data['mayor']['email']));
 
-                        //Encaminhar email MayorSignupNotification aqui. Já tem o $tenantSignup pronto
-                        //$message = new MayorSignupNotification($tenantSignup);
-                        //Mail::to($tenantSignup->data['mayor']['email'])->send($message);
+                        try {
+                            $message = new MayorSignupNotification($tenantSignup);
+                            Mail::to($tenantSignup->data['mayor']['email'])->send($message);
+
+                            $this->lgpdMailService->saveMail([
+                                'plataform_id' => $tenantSignup->id,
+                                'mail' => $tenantSignup->data['mayor']['email']
+                            ]);
+                        }catch (\Exception $e){
+                            array_push($this->emailsWithErros, $tenantSignup->data['mayor']['email']);
+                        }
 
                     }else{
                         array_push($this->mayorsWithoutEmail_NotApproved, $tenantSignup->id);
@@ -139,12 +162,18 @@ class SendEmailToTenantsWithTerms extends Command
         $this->comment("IDs prefeitos sem email query 2:");
         $this->comment(implode(" | ", $this->mayorsWithoutEmail_NotApproved));
 
+        $this->comment("---------------------------------------------------------------");
+
+        $this->comment("Erros de envio:");
+        $this->comment(implode(" | ", $this->emailsWithErros));
+
         $this->qtdTenantsQuery1 = 0;
         $this->qtdTenantsQuery2 = 0;
         $this->mayorWithoutEmail_NotApproved = 0;
         $this->mayorWithoutEmail_Approved = 0;
         $this->mayorsWithoutEmail_Approved = [];
         $this->mayorsWithoutEmail_NotApproved = [];
+        $this->emailsWithErros = [];
 
     }
 }
