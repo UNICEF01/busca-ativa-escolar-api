@@ -54,7 +54,8 @@ class Kernel extends ConsoleKernel
         Commands\InserirDiaAusenteGraficoRematriculas::class,
         Commands\SendEmailsActualizeFrequency::class,
         Commands\SendEmailToTenantsWithTerms::class,
-        Commands\DBPanelCountry::class
+        Commands\DBPanelCountry::class,
+        Commands\DBMapCountry::class
         //Commands\CancelAllTenantsWithSigupsAndUsers::class, DESATIVADO
     ];
 
