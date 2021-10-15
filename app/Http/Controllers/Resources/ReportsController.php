@@ -48,6 +48,7 @@ use DB;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Excel as ExcelB;
 use BuscaAtivaEscolar\PanelCountry;
+use BuscaAtivaEscolar\PanelState;
 
 class ReportsController extends BaseController
 {
@@ -357,12 +358,8 @@ class ReportsController extends BaseController
             })
             ->keyBy('label')
             ->map(function ($period) use ($numSignups) {
-                //$this->debug_push('period', $period['month'], $numSignups[$period['month']] ?? null);
                 return ['num_tenant_signups' => $numSignups[$period['month']] ?? 0];
             });
-
-        //return $this->debug_output();
-
 
         $labels = ['num_tenant_signups' => 'Qtd. de adesões municipais'];
         $response = [
@@ -516,101 +513,42 @@ class ReportsController extends BaseController
         try {
 
             $stats = Cache::remember('stats_state_' . $uf, config('cache.timeouts.stats_platform'), function () use ($uf, $cityIDs, $tenantIDs) {
+                $data = PanelState::where('name', $uf)->get()->toArray();
+
                 return [
-                    'num_tenants' => Tenant::query()
-                        ->where('uf', $uf)
-                        ->count(),
+                    'num_tenants' => $data[0]['num_tenants'],
 
-                    'num_signups' => TenantSignup::query()
-                        ->whereIn('city_id', $cityIDs)
-                        ->count(),
+                    'num_signups' => $data[0]['num_signups'],
 
-                    'num_pending_setup' => TenantSignup::query()
-                        ->whereIn('city_id', $cityIDs)
-                        ->where('is_approved', 1)
-                        ->where('is_provisioned', 0)
-                        ->count(),
+                    'num_pending_setup' => $data[0]['num_pending_setup'],
 
-                    'num_alerts' => Alerta::query()
-                        ->whereIn('tenant_id', $tenantIDs)
-                        ->notRejected()
-                        ->count(),
+                    'num_alerts' => $data[0]['num_alerts'],
 
-                    'num_cases_in_progress' => ChildCase::query()
-                        ->whereIn('tenant_id', $tenantIDs)
-                        ->where('case_status', ChildCase::STATUS_IN_PROGRESS)
-                        ->count(),
+                    'num_cases_in_progress' => $data[0]['num_cases_in_progress'],
 
-                    'num_children_reinserted' => Child::query()
-                        ->whereIn('tenant_id', $tenantIDs)
-                        ->whereIn('child_status', [Child::STATUS_IN_SCHOOL, Child::STATUS_OBSERVATION])
-                        ->count(),
+                    'num_children_reinserted' => $data[0]['num_children_reinserted'],
 
-                    'num_pending_signups' => TenantSignup::query()
-                        ->whereIn('city_id', $cityIDs)
-                        ->whereNull('judged_by')
-                        ->count(),
+                    'num_pending_signups' => $data[0]['num_pending_signups'],
 
-                    //new options
+                    'num_total_alerts' => $data[0]['num_total_alerts'],
 
-                    'num_total_alerts' => Alerta::query()
-                        ->whereIn('tenant_id', $tenantIDs)
-                        ->count(),
+                    'num_accepted_alerts' => $data[0]['num_accepted_alerts'],
 
-                    'num_accepted_alerts' => Alerta::query()
-                        ->whereIn('tenant_id', $tenantIDs)
-                        ->where('alert_status', '=', Child::ALERT_STATUS_ACCEPTED)
-                        ->count(),
+                    'num_pending_alerts' => $data[0]['num_pending_alerts'],
 
-                    'num_pending_alerts' => Alerta::query()
-                        ->whereIn('tenant_id', $tenantIDs)
-                        ->where('alert_status', '=', Child::ALERT_STATUS_PENDING)
-                        ->count(),
+                    'num_rejected_alerts' => $data[0]['num_rejected_alerts'],
 
-                    'num_rejected_alerts' => Alerta::query()
-                        ->whereIn('tenant_id', $tenantIDs)
-                        ->where('alert_status', '=', Child::ALERT_STATUS_REJECTED)
-                        ->count(),
+                    'num_children_in_school' => $data[0]['num_children_in_school'],
 
-                    'num_children_in_school' => Child::query()
-                        ->whereIn('tenant_id', $tenantIDs)
-                        ->where('child_status', '=', Child::STATUS_IN_SCHOOL)
-                        ->count(),
+                    'num_children_out_of_school' => $data[0]['num_children_out_of_school'],
 
-                    'num_children_out_of_school' => Child::query()
-                        ->whereIn('tenant_id', $tenantIDs)
-                        ->where([
-                            ['child_status', '=', Child::STATUS_OUT_OF_SCHOOL],
-                            ['alert_status', '=', Child::ALERT_STATUS_ACCEPTED]
-                        ])
-                        ->count(),
+                    'num_children_in_observation' => $data[0]['num_children_in_observation'],
 
-                    'num_children_in_observation' => Child::query()
-                        ->whereIn('tenant_id', $tenantIDs)
-                        ->where('child_status', '=', Child::STATUS_OBSERVATION)
-                        ->count(),
+                    'num_children_cancelled' => $data[0]['num_children_cancelled'],
 
-                    'num_children_cancelled' => Child::query()
-                        ->whereIn('tenant_id', $tenantIDs)
-                        ->where([
-                            ['child_status', '=', Child::STATUS_CANCELLED],
-                            ['alert_status', '=', Child::ALERT_STATUS_ACCEPTED]
-                        ])
-                        ->count(),
+                    'num_children_transferred' => $data[0]['num_children_transferred'],
 
-                    'num_children_transferred' => Child::query()
-                        ->whereIn('tenant_id', $tenantIDs)
-                        ->where([
-                            ['child_status', '=', Child::STATUS_TRANSFERRED]
-                        ])
-                        ->count(),
-
-                    'num_children_interrupted' => Child::query()
-                        ->whereIn('tenant_id', $tenantIDs)
-                        ->where([
-                            ['child_status', '=', Child::STATUS_INTERRUPTED],
-                        ])
-                        ->count(),
+                    'num_children_interrupted' => $data[0]['num_children_transferred'],
 
 
                 ];
@@ -848,19 +786,5 @@ class ReportsController extends BaseController
             ->get();
 
         return response()->json(['status' => 'ok', 'data' => $daily_data]);
-
-        /* $daily_data = DB::table("daily_metrics_consolidated")
-            ->select('data_relatorio',
-                DB::raw('SUM(out_of_school) as casos_andamento_fora_da_escola'),
-                DB::raw('SUM(in_observation) as casos_andamentto_dentro_da_escola'),
-                DB::raw('SUM(in_school) as casos_concluidos'),
-                DB::raw('SUM(cancelled) as casos_cancelados'),
-                DB::raw('SUM(interrupted) as casos_interrompidos'),
-                DB::raw('SUM(transferred) as casos_transferidos')
-            )
-            ->groupBy('date')
-            ->get();
-
-        return response()->json(['status' => 'ok', 'data' => $daily_data]); */
     }
 }
