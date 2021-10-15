@@ -55,7 +55,8 @@ class Kernel extends ConsoleKernel
         Commands\SendEmailsActualizeFrequency::class,
         Commands\SendEmailToTenantsWithTerms::class,
         Commands\DBPanelCountry::class,
-        Commands\DBMapCountry::class
+        Commands\DBMapCountry::class,
+        Commands\DBMapState::class
         //Commands\CancelAllTenantsWithSigupsAndUsers::class, DESATIVADO
     ];
 

@@ -21,7 +21,7 @@ class DBMapCountry extends Command
      *
      * @var string
      */
-    protected $description = 'Populate/Update map country table';
+    protected $description = 'Populate map country table';
 
     /**
      * Create a new command instance.
