@@ -53,7 +53,8 @@ class Kernel extends ConsoleKernel
         Commands\PopulateDailyMetricsConsolidated::class,
         Commands\InserirDiaAusenteGraficoRematriculas::class,
         Commands\SendEmailsActualizeFrequency::class,
-        Commands\SendEmailToTenantsWithTerms::class
+        Commands\SendEmailToTenantsWithTerms::class,
+        Commands\DBPanelCountry::class
         //Commands\CancelAllTenantsWithSigupsAndUsers::class, DESATIVADO
     ];
 
@@ -65,7 +66,7 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-    	//$schedule->command('debug:test_scheduling_system')->everyMinute();
+        //$schedule->command('debug:test_scheduling_system')->everyMinute();
         $schedule->command('workflow:check_case_deadlines')->dailyAt('20:00');
         $schedule->command('snapshot:daily_metrics')->dailyAt('21:00');
         $schedule->command('snapshot:daily_metrics_consolidated')->dailyAt('22:00');
