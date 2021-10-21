@@ -292,6 +292,8 @@ class UsersController extends BaseController
                 return $this->api_failure('not_enough_permissions');
             }
 
+            $user->lgpd = 0;
+
             $user->save();
 
             // Refresh user UF (used for filtering) (maybe parent tenant changed?)
