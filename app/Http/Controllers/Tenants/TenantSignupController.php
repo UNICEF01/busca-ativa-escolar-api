@@ -450,6 +450,13 @@ class TenantSignupController extends BaseController
 
 		$user->fill($input['user']);
 
+        //LGPD
+        $this->lgpdService->saveLgpd([
+            'plataform_id' => $user->id,
+            'name' => $user->name,
+            'ip_addr' => request()->ip()
+        ]);
+
 		$user->save();
 
 		return response()->json(['status' => 'ok', 'updated' => $input['user']]);
