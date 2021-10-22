@@ -227,6 +227,15 @@ class TenantSignupController extends BaseController
 
 			if (!$signup) return $this->api_failure('invalid_signup_id');
 
+            $city = City::where('id', '=', $signup->city_id)->get()->first();
+
+            //LGPD
+            $this->lgpdService->saveLgpd([
+                'plataform_id' => $signup->id,
+                'name' => $city->name,
+                'ip_addr' => request()->ip()
+            ]);
+
 			$signup->approve(Auth::user());
 			return response()->json(['status' => 'ok', 'signup_id' => $signup->id]);
 		} catch (\Exception $ex) {
@@ -237,20 +246,12 @@ class TenantSignupController extends BaseController
 	public function accept(TenantSignup $signup, City $city, Request $request)
 	{
 		try {
-			$cityName = $city->findByID($signup->city_id);
 
 			if (!$signup) return $this->api_failure('invalid_signup_id');
 
 			if ($this->lgpdService->findLgpd($signup->id)) {
 				return response()->json(['status' => 500, 'error' => 'lgpd assigned']);
 			}
-
-			//LGPD
-			$this->lgpdService->saveLgpd([
-				'plataform_id' => $signup->id,
-				'name' => $cityName->name,
-				'ip_addr' => request()->ip()
-			]);
 
 			$this->lgpdMailService->updateMail(
 				$signup->id,
