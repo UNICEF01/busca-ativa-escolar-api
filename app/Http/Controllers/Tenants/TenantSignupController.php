@@ -21,6 +21,7 @@ use BuscaAtivaEscolar\City;
 use BuscaAtivaEscolar\ElectedMayor;
 use BuscaAtivaEscolar\Exceptions\ValidationException;
 use BuscaAtivaEscolar\Http\Controllers\BaseController;
+use BuscaAtivaEscolar\Lgpd;
 use BuscaAtivaEscolar\Mail\MayorSignupNotification;
 use BuscaAtivaEscolar\TenantSignup;
 use BuscaAtivaEscolar\Tenant;
@@ -450,8 +451,9 @@ class TenantSignupController extends BaseController
 
 		$user->fill($input['user']);
 
-        //LGPD
-        if($this->lgpdService->findLgpd($user->id)){
+        $firstLgp = Lgpd::where('plataform_id', '=', $user->id,)->get()->first();
+
+        if($firstLgp != null){
             $this->lgpdService->updateLgpd([
                 'plataform_id' => $user->id,
                 'name' => $user->name,
