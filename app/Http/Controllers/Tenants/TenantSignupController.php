@@ -451,11 +451,20 @@ class TenantSignupController extends BaseController
 		$user->fill($input['user']);
 
         //LGPD
-        $this->lgpdService->saveLgpd([
-            'plataform_id' => $user->id,
-            'name' => $user->name,
-            'ip_addr' => request()->ip()
-        ]);
+        if($this->lgpdService->findLgpd($user->id)){
+            $this->lgpdService->updateLgpd([
+                'plataform_id' => $user->id,
+                'name' => $user->name,
+                'ip_addr' => request()->ip()
+            ]);
+        }else{
+            $this->lgpdService->saveLgpd([
+                'plataform_id' => $user->id,
+                'name' => $user->name,
+                'ip_addr' => request()->ip()
+            ]);
+        }
+
 
 		$user->save();
 
