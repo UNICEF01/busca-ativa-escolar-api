@@ -453,21 +453,14 @@ class TenantSignupController extends BaseController
 
         $firstLgp = Lgpd::where('plataform_id', '=', $user->id,)->get()->first();
 
-        if($firstLgp != null){
-            $this->lgpdService->updateLgpd([
-                'plataform_id' => $user->id,
-                'name' => $user->name,
-                'ip_addr' => request()->ip()
-            ], $user->id);
-        }else{
+        if($firstLgp == null){
             $this->lgpdService->saveLgpd([
                 'plataform_id' => $user->id,
                 'name' => $user->name,
                 'ip_addr' => request()->ip()
             ]);
         }
-
-
+        
 		$user->save();
 
 		return response()->json(['status' => 'ok', 'updated' => $input['user']]);
