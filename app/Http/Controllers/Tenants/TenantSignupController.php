@@ -458,7 +458,7 @@ class TenantSignupController extends BaseController
                 'plataform_id' => $user->id,
                 'name' => $user->name,
                 'ip_addr' => request()->ip()
-            ]);
+            ], $user->id);
         }else{
             $this->lgpdService->saveLgpd([
                 'plataform_id' => $user->id,
