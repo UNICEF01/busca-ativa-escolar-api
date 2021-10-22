@@ -357,10 +357,10 @@ class TenantSignupController extends BaseController
 			if ($lastTenant == null) {
 
 				$tenant = Tenant::provision($signup, $politicalAdmin, $operationalAdmin);
-				$this->lgpdService->updateLgpd(array('plataform_id' => $signup->tenant_id), $signup->id);
+				$this->lgpdService->updateLgpd(array('plataform_id' => $signup->id), $signup->id);
 			} else {
 				$tenant = Tenant::recovere($signup, $politicalAdmin, $operationalAdmin, $lastTenant, $lastCoordinators);
-				$this->lgpdService->updateLgpd(array('plataform_id' => $signup->tenant_id), $signup->id);
+				$this->lgpdService->updateLgpd(array('plataform_id' => $signup->id), $signup->id);
 			}
 
 			return response()->json(['status' => 'ok', 'tenant_id' => $tenant->id]);
