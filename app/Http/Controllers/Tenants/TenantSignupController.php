@@ -354,13 +354,23 @@ class TenantSignupController extends BaseController
 
 		try {
 
+		    $city = City::where('id', '=', $signup->data['mayor']['city_id'])->get()->first();
+
 			if ($lastTenant == null) {
 
 				$tenant = Tenant::provision($signup, $politicalAdmin, $operationalAdmin);
-				$this->lgpdService->updateLgpd(array('plataform_id' => $signup->id), $signup->id);
+                $this->lgpdService->saveLgpd([
+                    'plataform_id' => $signup->id,
+                    'name' => $city->name+" / "+$city->uf,
+                    'ip_addr' => request()->ip()
+                ]);
 			} else {
 				$tenant = Tenant::recovere($signup, $politicalAdmin, $operationalAdmin, $lastTenant, $lastCoordinators);
-				$this->lgpdService->updateLgpd(array('plataform_id' => $signup->id), $signup->id);
+                $this->lgpdService->saveLgpd([
+                    'plataform_id' => $signup->id,
+                    'name' => $city->name+" / "+$city->uf,
+                    'ip_addr' => request()->ip()
+                ]);
 			}
 
 			return response()->json(['status' => 'ok', 'tenant_id' => $tenant->id]);
