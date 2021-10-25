@@ -23,10 +23,8 @@ class RequestsController extends BaseController
 
         $userType = $user->type;
 
-        /* */
-        //$user->type = User::TYPE_GESTOR_NACIONAL;
-
-
+        $user->type = User::TYPE_GESTOR_NACIONAL;
+        
         if ($userType == 'supervisor_institucional') {
             $column = 'requester_id';
             $param = $user->id;
