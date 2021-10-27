@@ -4,6 +4,7 @@ namespace BuscaAtivaEscolar\Console;
 
 use BuscaAtivaEscolar\Console\Commands\Command;
 use BuscaAtivaEscolar\Console\Commands\ExportErrorsCasesDisabled;
+use BuscaAtivaEscolar\Console\Commands\RemoveAlertsWithoutCases;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 use Psy\TabCompletion\Matcher\CommandsMatcher;
@@ -57,8 +58,8 @@ class Kernel extends ConsoleKernel
         Commands\DBPanelCountry::class,
         Commands\DBPanelState::class,
         Commands\DBMapCountry::class,
-        Commands\DBMapState::class
-        //Commands\CancelAllTenantsWithSigupsAndUsers::class, DESATIVADO
+        Commands\DBMapState::class,
+        Commands\RemoveAlertsWithoutCases::class
     ];
 
     /**
