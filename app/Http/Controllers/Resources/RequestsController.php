@@ -33,15 +33,10 @@ class RequestsController extends BaseController
             $param = $tenant->id;
         }
 
-
         $requests = ReopeningRequests::query()
             ->with(
                 [
-                    'child' => function ($q) {
-                        $q->with(
-                            ['alert']
-                        );
-                    },
+                    'child',
                     'requester',
                     'recipient'
                 ]
