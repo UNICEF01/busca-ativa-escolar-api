@@ -340,6 +340,8 @@ class Tenant extends Model  {
 			throw new ValidationException('invalid_operational_admin_data', $validator);
 		}
 
+        $politicalAdmin->lgpd = 0;
+        $operationalAdmin->lgpd = 0;
 
 		$politicalAdmin->save();
 		$operationalAdmin->save();
@@ -421,6 +423,8 @@ class Tenant extends Model  {
             throw new ValidationException('invalid_political_admin_data', $validator);
         }
 
+        $politicalAdmin->lgpd = 0;
+
         //cria a estrutura do novo coordenador se existir
         if(sizeof($operationalAdminData) > 0){
 
@@ -441,6 +445,8 @@ class Tenant extends Model  {
 
             $politicalAdmin->save();
             Mail::to($politicalAdmin->email)->send(new UserCredentialsForNewTenant($signup, $tenant, $politicalAdmin, $politicalAdminData['password']));
+
+            $operationalAdmin->lgpd = 0;
 
             $operationalAdmin->save();
             Mail::to($operationalAdmin->email)->send(new UserRegisterNotification($operationalAdmin, UserRegisterNotification::TYPE_REGISTER_INITIAL));

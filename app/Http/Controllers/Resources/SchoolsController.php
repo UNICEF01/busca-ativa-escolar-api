@@ -72,19 +72,19 @@ class SchoolsController extends BaseController
 
     public function openSearch(Search $search)
     {
-        $parameters = request()->only(['id', 'uf', 'ibge_city_id', 'name']);
+        $parameters = request()->only(['id', 'uf', 'city_ibge_id', 'name']);
         $parameters['uf'] = strtolower(Str::ascii($parameters['uf']));
         $parameters['name'] = Str::ascii($parameters['name']);
 
         $query = ElasticSearchQuery::withParameters($parameters)
-            ->searchTextInColumns('name', ['name', 'id', 'ibge_city_id'])
-            ->filterByTerm('ibge_city_id', false)
+            ->searchTextInColumns('name', ['name', 'id', 'city_ibge_id'])
+            ->filterByTerm('city_ibge_id', false, 'must')
             ->filterByTerm('uf', false)
             ->getQuery();
 
         $results = $search->search(new School(), $query, 12);
 
-        $values =$this->includeResults($results);
+        $values =$this->includeResultsForPesquisaWash($results);
 
         return response()->json($values, 200);
     }
@@ -353,6 +353,25 @@ class SchoolsController extends BaseController
             $objet->name = $value['_source']['name'];
             $objet->ibge_id = $value['_source']['city_ibge_id'];
             $objet->city_name = $value['_source']['city_name'];
+            array_push($arrayValues, $objet);
+        }
+        return $arrayValues;
+    }
+
+    private function includeResultsForPesquisaWash($result) {
+        if(!isset($result['hits'])) return null;
+        if(!isset($result['hits']['hits'])) return null;
+        $values = $result['hits']['hits'];
+
+        $arrayValues = [];
+
+        foreach ($values as $value) {
+            $objet = new \stdClass();
+            $objet->id = $value['_id'];
+            $objet->name = $value['_source']['name'];
+            $objet->ibge_id = $value['_source']['city_ibge_id'];
+            $objet->city_name = $value['_source']['city_name'];
+            $objet->id_name = $value['_id']." - ".$value['_source']['name'];
             array_push($arrayValues, $objet);
         }
         return $arrayValues;

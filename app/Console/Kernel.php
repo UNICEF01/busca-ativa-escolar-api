@@ -4,6 +4,7 @@ namespace BuscaAtivaEscolar\Console;
 
 use BuscaAtivaEscolar\Console\Commands\Command;
 use BuscaAtivaEscolar\Console\Commands\ExportErrorsCasesDisabled;
+use BuscaAtivaEscolar\Console\Commands\RemoveAlertsWithoutCases;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 use Psy\TabCompletion\Matcher\CommandsMatcher;
@@ -53,7 +54,12 @@ class Kernel extends ConsoleKernel
         Commands\PopulateDailyMetricsConsolidated::class,
         Commands\InserirDiaAusenteGraficoRematriculas::class,
         Commands\SendEmailsActualizeFrequency::class,
-        Commands\CancelAllTenantsWithSigupsAndUsers::class,
+        Commands\SendEmailToTenantsWithTerms::class,
+        Commands\DBPanelCountry::class,
+        Commands\DBPanelState::class,
+        Commands\DBMapCountry::class,
+        Commands\DBMapState::class,
+        Commands\ForceImportEducacensoFile::class
     ];
 
     /**
@@ -64,7 +70,7 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-    	//$schedule->command('debug:test_scheduling_system')->everyMinute();
+        //$schedule->command('debug:test_scheduling_system')->everyMinute();
         $schedule->command('workflow:check_case_deadlines')->dailyAt('20:00');
         $schedule->command('snapshot:daily_metrics')->dailyAt('21:00');
         $schedule->command('snapshot:daily_metrics_consolidated')->dailyAt('22:00');

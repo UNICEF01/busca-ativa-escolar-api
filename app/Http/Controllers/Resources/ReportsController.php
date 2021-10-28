@@ -20,6 +20,7 @@ use BuscaAtivaEscolar\CaseSteps\Alerta;
 use BuscaAtivaEscolar\Child;
 use BuscaAtivaEscolar\ChildCase;
 use BuscaAtivaEscolar\City;
+use BuscaAtivaEscolar\DailyTests;
 use BuscaAtivaEscolar\Data\AgeRange;
 use BuscaAtivaEscolar\Data\AlertCause;
 use BuscaAtivaEscolar\Data\CaseCause;
@@ -46,6 +47,8 @@ use Carbon\Carbon;
 use DB;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Excel as ExcelB;
+use BuscaAtivaEscolar\PanelCountry;
+use BuscaAtivaEscolar\PanelState;
 
 class ReportsController extends BaseController
 {
@@ -155,17 +158,12 @@ class ReportsController extends BaseController
 
 
         try {
-            //print_r($reports->linear($index, $type, $params['dimension'], $query, $ageRanges, $nullAges));
             $response = ($params['view'] == 'time_series') ?
-                $reports->timeline($index, $type, $params['dimension'], $query, $ageRanges, $nullAges) :
+                $reports->timeline($index, $type, $params['dimension'], $query) :
                 $reports->linear($index, $type, $params['dimension'], $query, $ageRanges, $nullAges);
 
             $ids = $this->extractDimensionIDs($response['report'], $params['view']);
             $labels = $this->fetchDimensionLabels($params['dimension'], $ids);
-            if (in_array('NÃO INFORMADA', $ids) == 1) {
-                $value = array_search('NÃO INFORMADA', $ids);
-                $labels['NÃO INFORMADA'] = $ids[$value];
-            }
         } catch (\Exception $ex) {
             return $this->api_exception($ex);
         }
@@ -360,12 +358,8 @@ class ReportsController extends BaseController
             })
             ->keyBy('label')
             ->map(function ($period) use ($numSignups) {
-                //$this->debug_push('period', $period['month'], $numSignups[$period['month']] ?? null);
                 return ['num_tenant_signups' => $numSignups[$period['month']] ?? 0];
             });
-
-        //return $this->debug_output();
-
 
         $labels = ['num_tenant_signups' => 'Qtd. de adesões municipais'];
         $response = [
@@ -448,83 +442,50 @@ class ReportsController extends BaseController
     public function country_stats()
     {
 
+
         try {
 
             $stats = Cache::remember('stats_country', config('cache.timeouts.stats_platform'), function () {
-
+                $data = PanelCountry::where('num_tenants', '>', 0)->first()->toArray();
                 return [
 
                     //Inicio do ciclo 2
 
-                    'num_tenants' => Tenant::query()
-                        ->count(),
+                    'num_tenants' => $data['num_tenants'],
 
-                    'num_ufs' => StateSignup::query()->count(),
+                    'num_ufs' => $data['num_ufs'],
 
-                    'num_signups' => TenantSignup::query()
-                        ->count(),
+                    'num_signups' => $data['num_signups'],
 
-                    'num_pending_setup' => TenantSignup::query()
-                        ->where('is_approved', '=', 1)
-                        ->where('is_provisioned', '=', 0)
-                        ->count(),
+                    'num_pending_setup' => $data['num_pending_setup'],
 
-                    'num_alerts' => Alerta::query()
-                        ->accepted()
-                        ->count(),
+                    'num_alerts' => $data['num_alerts'],
 
-                    'num_pending_alerts' => Child::whereHas('alert', function ($query) {
-                        $query->where('alert_status', '=', 'pending');
-                    })->pending()->count(),
+                    'num_pending_alerts' => $data['num_pending_alerts'],
 
-                    'num_rejected_alerts' => Child::whereHas('alert', function ($query) {
-                        $query->where('alert_status', '=', 'rejected');
-                    })->rejected()->count(),
+                    'num_rejected_alerts' => $data['num_rejected_alerts'],
 
-                    'num_total_alerts' => ChildCase::query()
-                        ->count(),
+                    'num_total_alerts' => $data['num_total_alerts'],
 
-                    'num_cases_in_progress' => Child::with(['currentCase'])
-                        ->hasCaseInProgress()
-                        ->count(),
+                    'num_cases_in_progress' => $data['num_cases_in_progress'],
 
-                    'num_children_reinserted' => Child::query()
-                        ->whereIn('child_status', [Child::STATUS_IN_SCHOOL, Child::STATUS_OBSERVATION])
-                        ->count(),
+                    'num_children_reinserted' => $data['num_children_reinserted'],
 
-                    'num_pending_signups' => TenantSignup::query()
-                        ->whereNull('judged_by')
-                        ->count(),
+                    'num_pending_signups' => $data['num_pending_signups'],
 
-                    'num_pending_state_signups' => StateSignup::query()
-                        ->whereNull('judged_by')
-                        ->count(),
+                    'num_pending_state_signups' => $data['num_pending_state_signups'],
 
-                    'num_children_in_school' => Child::query()
-                        ->where('child_status', '=', Child::STATUS_IN_SCHOOL)
-                        ->count(),
+                    'num_children_in_school' => $data['num_children_in_school'],
 
-                    'num_children_in_observation' => Child::query()
-                        ->where('child_status', '=', Child::STATUS_OBSERVATION)
-                        ->count(),
+                    'num_children_in_observation' => $data['num_children_in_observation'],
 
-                    'num_children_out_of_school' => Child::query()
-                        ->where('child_status', '=', Child::STATUS_OUT_OF_SCHOOL)
-                        ->where('alert_status', '=', Child::ALERT_STATUS_ACCEPTED)
-                        ->count(),
+                    'num_children_out_of_school' => $data['num_children_out_of_school'],
 
-                    'num_children_cancelled' => Child::query()
-                        ->where('child_status', '=', Child::STATUS_CANCELLED)
-                        ->where('alert_status', '=', Child::ALERT_STATUS_ACCEPTED)
-                        ->count(),
+                    'num_children_cancelled' => $data['num_children_cancelled'],
 
-                    'num_children_transferred' => Child::query()
-                        ->where('child_status', '=', Child::STATUS_TRANSFERRED)
-                        ->count(),
+                    'num_children_transferred' => $data['num_children_transferred'],
 
-                    'num_children_interrupted' => Child::query()
-                        ->where('child_status', '=', Child::STATUS_INTERRUPTED)
-                        ->count(),
+                    'num_children_interrupted' => $data['num_children_interrupted'],
 
                     // final do ciclo 2
 
@@ -552,101 +513,42 @@ class ReportsController extends BaseController
         try {
 
             $stats = Cache::remember('stats_state_' . $uf, config('cache.timeouts.stats_platform'), function () use ($uf, $cityIDs, $tenantIDs) {
+                $data = PanelState::where('name', $uf)->get()->toArray();
+
                 return [
-                    'num_tenants' => Tenant::query()
-                        ->where('uf', $uf)
-                        ->count(),
+                    'num_tenants' => $data[0]['num_tenants'],
 
-                    'num_signups' => TenantSignup::query()
-                        ->whereIn('city_id', $cityIDs)
-                        ->count(),
+                    'num_signups' => $data[0]['num_signups'],
 
-                    'num_pending_setup' => TenantSignup::query()
-                        ->whereIn('city_id', $cityIDs)
-                        ->where('is_approved', 1)
-                        ->where('is_provisioned', 0)
-                        ->count(),
+                    'num_pending_setup' => $data[0]['num_pending_setup'],
 
-                    'num_alerts' => Alerta::query()
-                        ->whereIn('tenant_id', $tenantIDs)
-                        ->notRejected()
-                        ->count(),
+                    'num_alerts' => $data[0]['num_alerts'],
 
-                    'num_cases_in_progress' => ChildCase::query()
-                        ->whereIn('tenant_id', $tenantIDs)
-                        ->where('case_status', ChildCase::STATUS_IN_PROGRESS)
-                        ->count(),
+                    'num_cases_in_progress' => $data[0]['num_cases_in_progress'],
 
-                    'num_children_reinserted' => Child::query()
-                        ->whereIn('tenant_id', $tenantIDs)
-                        ->whereIn('child_status', [Child::STATUS_IN_SCHOOL, Child::STATUS_OBSERVATION])
-                        ->count(),
+                    'num_children_reinserted' => $data[0]['num_children_reinserted'],
 
-                    'num_pending_signups' => TenantSignup::query()
-                        ->whereIn('city_id', $cityIDs)
-                        ->whereNull('judged_by')
-                        ->count(),
+                    'num_pending_signups' => $data[0]['num_pending_signups'],
 
-                    //new options
+                    'num_total_alerts' => $data[0]['num_total_alerts'],
 
-                    'num_total_alerts' => Alerta::query()
-                        ->whereIn('tenant_id', $tenantIDs)
-                        ->count(),
+                    'num_accepted_alerts' => $data[0]['num_accepted_alerts'],
 
-                    'num_accepted_alerts' => Alerta::query()
-                        ->whereIn('tenant_id', $tenantIDs)
-                        ->where('alert_status', '=', Child::ALERT_STATUS_ACCEPTED)
-                        ->count(),
+                    'num_pending_alerts' => $data[0]['num_pending_alerts'],
 
-                    'num_pending_alerts' => Alerta::query()
-                        ->whereIn('tenant_id', $tenantIDs)
-                        ->where('alert_status', '=', Child::ALERT_STATUS_PENDING)
-                        ->count(),
+                    'num_rejected_alerts' => $data[0]['num_rejected_alerts'],
 
-                    'num_rejected_alerts' => Alerta::query()
-                        ->whereIn('tenant_id', $tenantIDs)
-                        ->where('alert_status', '=', Child::ALERT_STATUS_REJECTED)
-                        ->count(),
+                    'num_children_in_school' => $data[0]['num_children_in_school'],
 
-                    'num_children_in_school' => Child::query()
-                        ->whereIn('tenant_id', $tenantIDs)
-                        ->where('child_status', '=', Child::STATUS_IN_SCHOOL)
-                        ->count(),
+                    'num_children_out_of_school' => $data[0]['num_children_out_of_school'],
 
-                    'num_children_out_of_school' => Child::query()
-                        ->whereIn('tenant_id', $tenantIDs)
-                        ->where([
-                            ['child_status', '=', Child::STATUS_OUT_OF_SCHOOL],
-                            ['alert_status', '=', Child::ALERT_STATUS_ACCEPTED]
-                        ])
-                        ->count(),
+                    'num_children_in_observation' => $data[0]['num_children_in_observation'],
 
-                    'num_children_in_observation' => Child::query()
-                        ->whereIn('tenant_id', $tenantIDs)
-                        ->where('child_status', '=', Child::STATUS_OBSERVATION)
-                        ->count(),
+                    'num_children_cancelled' => $data[0]['num_children_cancelled'],
 
-                    'num_children_cancelled' => Child::query()
-                        ->whereIn('tenant_id', $tenantIDs)
-                        ->where([
-                            ['child_status', '=', Child::STATUS_CANCELLED],
-                            ['alert_status', '=', Child::ALERT_STATUS_ACCEPTED]
-                        ])
-                        ->count(),
+                    'num_children_transferred' => $data[0]['num_children_transferred'],
 
-                    'num_children_transferred' => Child::query()
-                        ->whereIn('tenant_id', $tenantIDs)
-                        ->where([
-                            ['child_status', '=', Child::STATUS_TRANSFERRED]
-                        ])
-                        ->count(),
-
-                    'num_children_interrupted' => Child::query()
-                        ->whereIn('tenant_id', $tenantIDs)
-                        ->where([
-                            ['child_status', '=', Child::STATUS_INTERRUPTED],
-                        ])
-                        ->count(),
+                    'num_children_interrupted' => $data[0]['num_children_transferred'],
 
 
                 ];
@@ -706,7 +608,7 @@ class ReportsController extends BaseController
             case 'city_id':
                 return $hasIDs ? City::whereIn('id', $ids)->get()->pluck('name', 'id') : []; // TODO: create full_name field that contains UF
             case 'school_last_id':
-                return $hasIDs ? School::whereIn('id', $ids)->get()->pluck('name', 'id') : trans('reports_terms.school_last_id');
+                return $hasIDs ? School::whereIn('id', $ids)->get()->pluck('name', 'id') : [];
             case 'race':
                 return trans('reports_terms.races');
             case 'guardian_schooling':
@@ -779,24 +681,22 @@ class ReportsController extends BaseController
 
         Tenant::withTrashed()->chunk(100, function ($tenants) use ($year, $filtersChild, $filtersAlert, $entity, $reports, $params) {
 
-            foreach ($tenants as $tenant) {;
+            foreach ($tenants as $tenant) {
 
-                //months
-                for ($month = 1; $month <= 12; $month++) {
+                $begin = new \DateTime(strval($year) . "-01-01");
+                $end   = new \DateTime(strval($year + 1) . "-01-01");
 
-                    $lastDayOfMonth = date("Y-m-t", strtotime(strval($year) . '-' . strval($month) . '-01'));
-                    $lastDayOfMonthptBr = date("t/m/Y", strtotime(strval($year) . '-' . strval($month) . '-01'));
+                for ($i = $begin; $i <= $end; $i->modify('+1 day')) {
 
-                    //                    $lastDayOfMonth = "2021-05-18";
-                    //                    $lastDayOfMonthptBr = "18/05/2021";
+                    $dayOfMonth = $i->format("Y-m-d");
+                    $dayOfMonthptBr = $i->format("d/m/Y");
+                    $dayOfMonthCarbon = Carbon::createFromFormat('Y-m-d H:i:s', $dayOfMonth . " 23:59:59");
 
-                    $lastDayOfMonthCarbon = Carbon::createFromFormat('Y-m-d H:i:s', $lastDayOfMonth . " 23:59:59");
-
-                    if ($lastDayOfMonthCarbon->greaterThan($tenant->created_at)) {
+                    if ($dayOfMonthCarbon->greaterThan($tenant->created_at)) {
 
                         $filtersChild['date'] = [
-                            'from' => $lastDayOfMonth,
-                            'to' => $lastDayOfMonth
+                            'from' => $dayOfMonth,
+                            'to' => $dayOfMonth
                         ];
 
                         $filtersAlert['date'] = $filtersChild['date'];
@@ -828,7 +728,7 @@ class ReportsController extends BaseController
                         $values = [];
                         foreach ($labelsAlertStatus as $key => $label) {
                             if (sizeof($responseAlert["report"]) > 0) {
-                                $values[$key] = array_key_exists($key, $responseAlert["report"][$lastDayOfMonth]) ? $responseAlert["report"][$lastDayOfMonth][$key] : 0;
+                                $values[$key] = array_key_exists($key, $responseAlert["report"][$dayOfMonth]) ? $responseAlert["report"][$dayOfMonth][$key] : 0;
                             } else {
                                 $values[$key] = 0;
                             }
@@ -836,14 +736,14 @@ class ReportsController extends BaseController
 
                         foreach ($labelsChildStatus as $key => $label) {
                             if (sizeof($responseChild["report"]) > 0) {
-                                $values[$key] = array_key_exists($key, $responseChild["report"][$lastDayOfMonth]) ? $responseChild["report"][$lastDayOfMonth][$key] : 0;
+                                $values[$key] = array_key_exists($key, $responseChild["report"][$dayOfMonth]) ? $responseChild["report"][$dayOfMonth][$key] : 0;
                             } else {
                                 $values[$key] = 0;
                             }
                         }
 
                         $fp = fopen('/home/forge/reports_children_daily_by_year/' . strval($year) . '.csv', 'a');
-                        fwrite($fp, "\n\"" . $tenant->created_at->format('d/m/Y') . "\",\"" . $lastDayOfMonthptBr . "\",\"" . $tenant->uf . "\",\"" . str_replace($tenant->uf . " / ", "", $tenant->name) . "\"," . implode(",", $values));
+                        fwrite($fp, "\n\"" . $tenant->created_at->format('d/m/Y') . "\",\"" . $dayOfMonth . "\",\"" . $tenant->uf . "\",\"" . str_replace($tenant->uf . " / ", "", $tenant->name) . "\"," . implode(",", $values));
                         fclose($fp);
                     }
                 }
@@ -867,5 +767,24 @@ class ReportsController extends BaseController
             ->filterByTerms('place_kind', false)
             ->filterByRange('date', false)
             ->filterByTerm('tenant_id', false, 'must');
+    }
+
+    public function query_children_tests()
+    {
+
+        $daily_data = DB::table("daily_metrics_consolidated")
+            ->select(
+                'date',
+                DB::raw('SUM(out_of_school) as casos_andamento_fora_da_escola'),
+                DB::raw('SUM(in_observation) as casos_andamentto_dentro_da_escola'),
+                DB::raw('SUM(in_school) as casos_concluidos'),
+                DB::raw('SUM(cancelled) as casos_cancelados'),
+                DB::raw('SUM(interrupted) as casos_interrompidos'),
+                DB::raw('SUM(transferred) as casos_transferidos')
+            )
+            ->groupBy('date')
+            ->get();
+
+        return response()->json(['status' => 'ok', 'data' => $daily_data]);
     }
 }

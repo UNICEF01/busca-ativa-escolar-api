@@ -135,15 +135,17 @@ Route::group(['prefix' => 'v1', 'middleware' => 'api'], function () {
 		Route::post('/signups/tenants/complete_setup', 'Tenants\TenantSignupController@completeSetup')->middleware('can:tenant.complete_setup');
 		Route::post('/signups/tenants/{signup}/approve', 'Tenants\TenantSignupController@approve')->middleware('can:tenants.manage');
 		Route::post('/signups/tenants/{signup}/reject', 'Tenants\TenantSignupController@reject')->middleware('can:tenants.manage');
-		Route::post('/signups/tenants/{signup}/update_registration_email', 'Tenants\TenantSignupController@updateRegistrationEmail')->middleware('can:tenants.manage');
+		Route::post('/signups/tenants/{signup}/update_registration_data', 'Tenants\TenantSignupController@updateData')->middleware('can:tenants.manage');
 		Route::post('/signups/tenants/{signup}/resend_notification', 'Tenants\TenantSignupController@resendNotification');
+		Route::post('/signups/tenants/{signup}/resendmail', 'Tenants\TenantSignupController@resendMail');
 
 		// State Sign-ups
 		Route::any('/signups/state/pending', 'Tenants\StateSignupController@get_pending')->middleware('can:ufs.manage');
 		Route::post('/signups/state/{signup}/approve', 'Tenants\StateSignupController@approve')->middleware('can:ufs.manage');
 		Route::post('/signups/state/{signup}/reject', 'Tenants\StateSignupController@reject')->middleware('can:ufs.manage');
-		Route::post('/signups/state/{signup}/update_registration_email', 'Tenants\StateSignupController@updateRegistrationEmail')->middleware('can:ufs.manage');
+		Route::post('/signups/state/{signup}/update_registration_data', 'Tenants\StateSignupController@updateData')->middleware('can:ufs.manage');
 		Route::post('/signups/state/{signup}/resend_notification', 'Tenants\StateSignupController@resendNotification')->middleware('can:ufs.manage');
+		Route::post('/signups/state/{signup}/resendmail', 'Tenants\StateSignupController@resendMail');
 
 		// Tenants (authenticated)
 		Route::any('/tenants/all', 'Tenants\TenantsController@all')->middleware('can:tenants.view');
@@ -152,6 +154,7 @@ Route::group(['prefix' => 'v1', 'middleware' => 'api'], function () {
 		Route::post('/tenants/{tenant}/cancel', 'Tenants\TenantsController@cancel')->middleware('can:tenants.manage');
 		Route::get('/tenants/recent_activity', 'Tenants\TenantsController@get_recent_activity');
 		Route::get('/tenants/public/uf', 'Tenants\TenantsController@getUfWithTenant');
+
 
 
 		Route::any('/states/all', 'Resources\StatesController@all')->middleware('can:ufs.view');
@@ -176,10 +179,12 @@ Route::group(['prefix' => 'v1', 'middleware' => 'api'], function () {
 		Route::post('/user_preferences', 'Resources\PreferencesController@updateSettings');
 
 		// Reports
-        Route::post('/reports/children/by_tenant', 'Resources\ReportsController@query_children_by_tenant'); //APLICAR MIDLLEWARE NACIONAL!
+		Route::post('/reports/children/by_tenant', 'Resources\ReportsController@query_children_by_tenant'); //APLICAR MIDLLEWARE NACIONAL!
 
 
-        Route::post('/reports/children', 'Resources\ReportsController@query_children')->middleware('can:reports.view');
+		Route::post('/reports/children', 'Resources\ReportsController@query_children')->middleware('can:reports.view');
+		Route::post('/reports/children_tests', 'Resources\ReportsController@query_children_tests')->middleware('can:reports.view');
+
 		Route::post('/reports/tenants', 'Resources\ReportsController@query_tenants')->middleware('can:reports.view');
 		Route::post('/reports/ufs', 'Resources\ReportsController@query_ufs')->middleware('can:reports.view');
 		Route::post('/reports/signups', 'Resources\ReportsController@query_signups')->middleware('can:reports.view');
@@ -232,12 +237,15 @@ Route::group(['prefix' => 'v1', 'middleware' => 'api'], function () {
 	Route::post('/signups/tenants/{signup}/complete', 'Tenants\TenantSignupController@complete');
 	Route::post('/signups/tenants/uploadfile', 'Tenants\TenantSignupController@uploadfile');
 	Route::get('/signups/tenants/{signup}/accept', 'Tenants\TenantSignupController@accept');
+	Route::get('/signups/tenants/{signup}/accepted', 'Tenants\TenantSignupController@checkAccepted');
 	Route::get('/signups/tenants/mayor/by/cpf/{cpf}', 'Tenants\TenantSignupController@getMayorByCpf');
 	Route::get('/signups/users/via_token/{user}', 'Tenants\TenantSignupController@get_user_via_token');
 	Route::post('/signups/users/{user}/confirm', 'Tenants\TenantSignupController@confirm_user');
 
 
 	// State Sign-up
+	Route::get('/signups/state/{signup}/accept', 'Tenants\StateSignupController@accept');
+	Route::get('/signups/state/{signup}/accepted', 'Tenants\StateSignupController@checkAccepted');
 	Route::post('/signups/state/register', 'Tenants\StateSignupController@register');
 	Route::post('/signups/state/check_if_available', 'Tenants\StateSignupController@checkIfAvailable');
 
@@ -254,12 +262,11 @@ Route::group(['prefix' => 'v1', 'middleware' => 'api'], function () {
 	Route::get('/lp/report/reach', 'LP\ReportsLandingPageController@reach');
 
 	//Open data to landing page pnad
-    Route::get('/pnad/report', 'LP\ReportsPnadController@pnad_brasil');
-    Route::get('/pnad/report/capital', 'LP\ReportsPnadController@pnad_capital');
+	Route::get('/pnad/report', 'LP\ReportsPnadController@pnad_brasil');
+	Route::get('/pnad/report/capital', 'LP\ReportsPnadController@pnad_capital');
 	Route::get('/pnad/report/reg', 'LP\ReportsPnadController@pnad_regiao');
 	Route::get('/pnad/report/uf', 'LP\ReportsPnadController@pnad_uf');
 
 	//Webhooks Mailgun
 	Route::post('/mailgun/update', 'Mailgun\MailgunController@update');
-
 });
