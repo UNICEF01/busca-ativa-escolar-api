@@ -120,9 +120,13 @@ class ProcessReportSeloJob implements ShouldQueue
 
                         'Último acesso' => $tenant->last_active_at->format('d/m/Y'),
 
-                        'Não Localizados (2017, INEP/MEC)' => '',
+                        '(Re)matrículas realizadas até 31/10/2021 (data de corte)' => $city->goal->accumulated_ciclo1,
 
-                        'Meta (20%)' => $city->goal->goal,
+                        'Meta' => $city->goal->goal,
+
+                        'Meta de (Re)matrículas acumuladas para a primeira medição (31/03/2023) do Selo edição 21/24' => $city->goal->accumulated_ciclo1+$city->goal->goal,
+
+                        'Total de novas (Re)matrículas realizadas até o momento, válidas para o cumprimento das metas do Selo edição 21/24' => ($obs1 + $obs2 + $obs3 + $obs4 + $concluidos)-($city->goal->accumulated_ciclo1),
 
                         'Aprovados' =>
                         DB::table('children')
@@ -216,7 +220,7 @@ class ProcessReportSeloJob implements ShouldQueue
                         'Concluídos' => $concluidos,
 
                         'CeA na Escola' => $obs1 + $obs2 + $obs3 + $obs4 + $concluidos,
-                        '% Atingimento da Meta' => (($obs1 + $obs2 + $obs3 + $obs4 + $concluidos) * 100) / $city->goal->goal,
+                        '% Atingimento da Meta' => $city->goal->goal > 0 ? ((($obs1 + $obs2 + $obs3 + $obs4 + $concluidos)-($city->goal->accumulated_ciclo1)) * 100) / $city->goal->goal : 0,
 
                         'ID-CIDADE' => $city->id
                     ]
@@ -229,19 +233,19 @@ class ProcessReportSeloJob implements ShouldQueue
                         'Código IBGE 7 Dígitos' => $city->ibge_city_id,
                         'UF' => $city->uf,
                         'Município' => $city->name,
-
                         'Status na plataforma' => $status,
                         'Último acesso' => '',
-
-                        'Não Localizados (2017, INEP/MEC)' => '',
-                        'Meta (20%)' => $city->goal->goal,
+                        '(Re)matrículas realizadas até 31/10/2021 (data de corte)' => '',
+                        'Meta' => '',
+                        'Meta de (Re)matrículas acumuladas para a primeira medição (31/03/2023) do Selo edição 21/24' => '',
+                        'Total de novas (Re)matrículas realizadas até o momento, válidas para o cumprimento das metas do Selo edição 21/24' => '',
                         'Aprovados' => '',
                         'Rejeitados' => '',
                         'Pendentes' => '',
                         'Pesquisa' => '',
                         'Análise' => '',
                         'Gestão' => '',
-                        '(Re)Matrícula' => '',
+                        '(Re)Matrícula - Geral' => '',
                         'OBS 1' => '',
                         'OBS 2' => '',
                         'OBS 3' => '',
