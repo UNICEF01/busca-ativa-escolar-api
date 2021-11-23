@@ -77,6 +77,10 @@ return [
         "rejected" => 'Improcendente',
     ],
 
+    'school_last_id' =>[
+        'null' => 'Não informada'
+    ],
+
     'deadline_status' => [
         'normal' => 'OK',
         'late' => 'Em atraso',
