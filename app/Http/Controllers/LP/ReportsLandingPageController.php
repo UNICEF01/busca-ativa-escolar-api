@@ -9,13 +9,9 @@
 
 namespace BuscaAtivaEscolar\Http\Controllers\LP;
 
-use BuscaAtivaEscolar\Child;
-use BuscaAtivaEscolar\ChildCase;
 use BuscaAtivaEscolar\City;
-use BuscaAtivaEscolar\Data\AlertCause;
 use BuscaAtivaEscolar\Http\Controllers\BaseController;
 use BuscaAtivaEscolar\Data\CaseCause;
-use BuscaAtivaEscolar\StateSignup;
 use BuscaAtivaEscolar\Tenant;
 use BuscaAtivaEscolar\TenantSignup;
 use Carbon\Carbon;
@@ -23,548 +19,86 @@ use Cache;
 
 class ReportsLandingPageController extends BaseController
 {
-    public function report_country()
+
+    public function report()
     {
-
-        try {
-
-            $stats = Cache::remember('report_country', 86400, function () {
-
-                $causes = [];
-                foreach (CaseCause::getAll() as $case) {
-
-                    //alerta pemanece com status de aceito se caso for cancelado!
-                    $qtd =
-                        \DB::table('children')
-                        ->join('case_steps_pesquisa', 'children.id', '=', 'case_steps_pesquisa.child_id')
-                        ->where(
-                            [
-                                ['case_steps_pesquisa.case_cause_ids', 'like', "%{$case->id}%"],
-                                ['children.alert_status', 'accepted'],
-                                ['children.child_status', '<>', 'cancelled']
-                            ]
-                        )
-                        ->count();
-
-                    if ($qtd > 0) {
-                        array_push($causes, ['id' => $case->id, 'cause' => $case->label, 'qtd' => $qtd]);
-                    }
-                }
-                $expDate = Carbon::now()->subDays(30);
-                $active = Tenant::query()->whereDate('last_active_at', '>', $expDate)->count();
-                $inactive = Tenant::query()->whereDate('last_active_at', '<=', $expDate)->count();
-                return [
-                    'tenants' => [
-                        'num_tenants' => Tenant::query()
-                            ->count(),
-                        'active' => $active,
-                        'inactive' => $inactive,
-                        'num_pending_setup' => TenantSignup::query()
-                            ->where('is_approved', '=', 1)
-                            ->where('is_provisioned', '=', 0)
-                            ->count(),
-                    ],
-                    'alerts' => [
-
-                        '_approved' =>
-
-                        \DB::table('case_steps_alerta')
-                            ->join('children', 'children.id', '=', 'case_steps_alerta.child_id')
-                            ->where(
-                                [
-                                    ['case_steps_alerta.alert_status', 'accepted'],
-                                    ['children.alert_status', 'accepted'],
-                                ]
-                            )
-                            ->count(),
-
-                        '_pending' => Child::whereHas('alert', function ($query) {
-                            $query->where('alert_status', '=', 'pending');
-                        })->pending()->count(),
-
-                        '_rejected' =>
-
-                        \DB::table('case_steps_alerta')
-                            ->join('children', 'children.id', '=', 'case_steps_alerta.child_id')
-                            ->where(
-                                [
-                                    ['children.alert_status', 'rejected']
-                                ]
-                            )
-                            ->count(),
-                    ],
-                    'cases' => [
-
-                        '_enrollment' =>
-
-                        \DB::table('children')
-                            ->join('case_steps_alerta', 'children.id', '=', 'case_steps_alerta.child_id')
-                            ->where(
-                                [
-                                    ['children.child_status', 'in_observation']
-                                ]
-                            )
-                            ->orWhere(
-                                [
-                                    ['children.child_status', 'in_school']
-                                ]
-                            )
-                            ->count(),
-
-                        '_in_school' =>
-
-                        \DB::table('children')
-                            ->join('case_steps_alerta', 'children.id', '=', 'case_steps_alerta.child_id')
-                            ->where(
-                                [
-                                    ['case_steps_alerta.alert_status', 'accepted'],
-                                    ['children.child_status', 'in_school'],
-                                    ['children.alert_status', 'accepted']
-                                ]
-                            )->count(),
-                        '_transferred' =>
-
-                        \DB::table('children')
-                            ->join('case_steps_alerta', 'children.id', '=', 'case_steps_alerta.child_id')
-                            ->where(
-                                [
-                                    ['case_steps_alerta.alert_status', 'accepted'],
-                                    ['children.child_status', 'transferred'],
-                                    ['children.alert_status', 'accepted']
-                                ]
-                            )->count(),
-                        '_in_observation' =>
-
-                        \DB::table('children')
-                            ->join('case_steps_alerta', 'children.id', '=', 'case_steps_alerta.child_id')
-                            ->where(
-                                [
-                                    ['case_steps_alerta.alert_status', 'accepted'],
-                                    ['children.child_status', 'in_observation'],
-                                    ['children.alert_status', 'accepted']
-                                ]
-                            )->count(),
-                        '_out_of_school' =>
-
-                        \DB::table('children')
-                            ->join('case_steps_alerta', 'children.id', '=', 'case_steps_alerta.child_id')
-                            ->where(
-                                [
-                                    ['children.child_status', 'out_of_school'],
-                                    ['children.alert_status', 'accepted']
-                                ]
-                            )->count(),
-                        '_cancelled' =>
-
-                        \DB::table('children')
-                            ->join('case_steps_alerta', 'children.id', '=', 'case_steps_alerta.child_id')
-                            ->where(
-                                [
-                                    ['case_steps_alerta.alert_status', 'accepted'],
-                                    ['children.child_status', 'cancelled'],
-                                    ['children.alert_status', 'accepted']
-                                ]
-                            )->count(),
-                        '_interrupted' =>
-
-                        \DB::table('children')
-                            ->join('case_steps_alerta', 'children.id', '=', 'case_steps_alerta.child_id')
-                            ->where(
-                                [
-                                    ['case_steps_alerta.alert_status', 'accepted'],
-                                    ['children.child_status', 'interrupted'],
-                                    ['children.alert_status', 'accepted']
-                                ]
-                            )->count(),
-                    ],
-                    'causes_cases' => $causes
-                ];
-            });
-
-            return response()->json(['status' => 'ok', '_data' => $stats]);
-        } catch (\Exception $ex) {
-            return $this->api_exception($ex);
-        }
-    }
-
-    public function report_reg()
-    {
-
-        $reg = request('reg');
-        $states = [
-            "N" => ["AM", "RR", "AP", "PA", "TO", "RO", "AC"],
-            "NE" => ["MA", "PI", "CE", "RN", "PE", "PB", "SE", "AL", "BA"],
-            "CO" => ["MT", "MS", "GO", "DF"],
-            "SE" => ["SP", "RJ", "ES", "MG"],
-            "S" => ["RS", "SC", "PR"]
+        $resqueted = [
+            'country' => request(''),
+            'reg' => request('reg'),
+            'state' => request('uf')
         ];
-
         try {
-            $stats = Cache::remember('report_reg_' . $reg, 86400, function () use ($reg, $states) {
-                $causes = [];
-
-                foreach (CaseCause::getAll() as $case) {
-
-                    //alerta pemanece com status de aceito se caso for cancelado!
-                    $qtd =
-                        \DB::table('children')
-                        ->join('case_steps_pesquisa', 'children.id', '=', 'case_steps_pesquisa.child_id')
-                        ->where(
-                            [
-                                ['case_steps_pesquisa.case_cause_ids', 'like', "%{$case->id}%"],
-                                ['children.alert_status', 'accepted'],
-                                ['children.child_status', '<>', 'cancelled']
-                            ]
-                        )->whereIn('case_steps_pesquisa.place_uf', $states[$reg])
-                        ->count();
-
-                    if ($qtd > 0) {
-                        array_push($causes, ['id' => $case->id, 'cause' => $case->label, 'qtd' => $qtd]);
-                    }
-                }
-                print_r($reg);
-                print_r($states);
-
-                $expDate = Carbon::now()->subDays(30);
-                $active = Tenant::query()->whereDate('last_active_at', '>', $expDate)->whereIn('tenants.uf', $states[$reg])->count();
-                $inactive = Tenant::query()->whereDate('last_active_at', '<=', $expDate)->whereIn('tenants.uf', $states[$reg])->count();
-                return [
+            $typeOfCache = 'country';
+            foreach ($resqueted as $key => $value) {
+                if (!empty($value)) $typeOfCache = $key;
+            }
+            $keyOfCache = "report_" . ($typeOfCache === 'country' ? $typeOfCache : $typeOfCache . '_' . $resqueted[$typeOfCache]);
+            $i = $typeOfCache === 'country' ? 21 : 18;
+            $stat = Cache::get($keyOfCache);
+            $stat = explode(" ", $stat);
+            $causes = [];
+            foreach (CaseCause::getAll() as $case) {
+                //alerta pemanece com status de aceito se caso for cancelado!
+                array_push($causes, ['id' => $case->id, 'cause' => $case->label, 'qtd' => $stat[$i++]]);
+            }
+            if ($typeOfCache === 'country') {
+                $stats =  [
+                    'ufs' => [
+                        "num_ufs" => intval($stat[0]),
+                    ],
                     'tenants' => [
-                        'num_tenants' => Tenant::query()->whereIn('tenants.uf', $states[$reg])
-                            ->count(),
-                        'active' => $active,
-                        'inactive' => $inactive,
-                        'num_pending_setup' => TenantSignup::query()
-                            ->join('tenants', 'tenants.id', '=', 'tenant_signups.tenant_id')
-                            ->whereIn('tenants.uf', $states[$reg])
-                            ->where('is_approved', '=', 1)
-                            ->where('is_provisioned', '=', 0)
-                            ->count(),
+                        "num_tenants" => intval($stat[2]),
+                        "active" => intval($stat[3]),
+                        "inactive" => intval($stat[4]),
+                        "num_signups" => intval($stat[5]),
+                        "num_pending_setup" => intval($stat[6]),
                     ],
                     'alerts' => [
 
-                        '_approved' =>
-
-                        \DB::table('case_steps_alerta')
-                            ->join('children', 'children.id', '=', 'case_steps_alerta.child_id')
-                            ->where(
-                                [
-                                    ['case_steps_alerta.alert_status', 'accepted'],
-                                    ['children.alert_status', 'accepted'],
-                                    //['children.child_status', '<>', 'cancelled']
-                                ]
-                            )->whereIn('case_steps_alerta.place_uf', $states[$reg])
-                            ->count(),
-
-                        '_pending' =>
-
-                        \DB::table('case_steps_alerta')
-                            ->join('children', 'children.id', '=', 'case_steps_alerta.child_id')
-                            ->where(
-                                [
-                                    ['case_steps_alerta.alert_status', 'pending'],
-                                    //['children.child_status', '<>', 'cancelled']
-                                ]
-                            )->whereIn('case_steps_alerta.place_uf', $states[$reg])
-                            ->count(),
-
-                        '_rejected' =>
-
-                        \DB::table('case_steps_alerta')
-                            ->join('children', 'children.id', '=', 'case_steps_alerta.child_id')
-                            ->where(
-                                [
-                                    ['children.alert_status', 'rejected']
-                                ]
-                            )->whereIn('case_steps_alerta.place_uf', $states[$reg])
-                            ->count(),
+                        "_approved" => intval($stat[9]),
+                        "_pending" => intval($stat[10]),
+                        "_rejected" => intval($stat[11]),
                     ],
-
                     'cases' => [
-
-                        '_enrollment' =>
-
-                        \DB::table('children')
-                            ->join('case_steps_alerta', 'children.id', '=', 'case_steps_alerta.child_id')
-                            ->where(
-                                [
-                                    ['children.child_status', 'in_observation']
-                                ]
-                            )->whereIn('case_steps_alerta.place_uf', $states[$reg])
-                            ->orWhere(
-                                [
-                                    ['children.child_status', 'in_school']
-                                ]
-                            )->whereIn('case_steps_alerta.place_uf', $states[$reg])
-                            ->count(),
-
-                        '_in_school' =>
-
-                        \DB::table('children')
-                            ->join('case_steps_alerta', 'children.id', '=', 'case_steps_alerta.child_id')
-                            ->where(
-                                [
-                                    ['case_steps_alerta.alert_status', 'accepted'],
-                                    ['children.child_status', 'in_school'],
-                                    ['children.alert_status', 'accepted']
-                                ]
-                            )->whereIn('case_steps_alerta.place_uf', $states[$reg])->count(),
-                        '_transferred' =>
-
-                        \DB::table('children')
-                            ->join('case_steps_alerta', 'children.id', '=', 'case_steps_alerta.child_id')
-                            ->where(
-                                [
-                                    ['case_steps_alerta.alert_status', 'accepted'],
-                                    ['children.child_status', 'transferred'],
-                                    ['children.alert_status', 'accepted']
-                                ]
-                            )->whereIn('case_steps_alerta.place_uf', $states[$reg])->count(),
-                        '_in_observation' =>
-
-                        \DB::table('children')
-                            ->join('case_steps_alerta', 'children.id', '=', 'case_steps_alerta.child_id')
-                            ->where(
-                                [
-                                    ['case_steps_alerta.alert_status', 'accepted'],
-                                    ['children.child_status', 'in_observation'],
-                                    ['children.alert_status', 'accepted']
-                                ]
-                            )->whereIn('case_steps_alerta.place_uf', $states[$reg])->count(),
-                        '_out_of_school' =>
-
-                        \DB::table('children')
-                            ->join('case_steps_alerta', 'children.id', '=', 'case_steps_alerta.child_id')
-                            ->where(
-                                [
-                                    //['case_steps_alerta.alert_status', 'accepted'],
-                                    ['children.child_status', 'out_of_school'],
-                                    ['children.alert_status', 'accepted']
-                                ]
-                            )->whereIn('case_steps_alerta.place_uf', $states[$reg])->count(),
-                        '_cancelled' =>
-
-                        \DB::table('children')
-                            ->join('case_steps_alerta', 'children.id', '=', 'case_steps_alerta.child_id')
-                            ->where(
-                                [
-                                    ['case_steps_alerta.alert_status', 'accepted'],
-                                    ['children.child_status', 'cancelled'],
-                                    ['children.alert_status', 'accepted']
-                                ]
-                            )->whereIn('case_steps_alerta.place_uf', $states[$reg])->count(),
-                        '_interrupted' =>
-
-                        \DB::table('children')
-                            ->join('case_steps_alerta', 'children.id', '=', 'case_steps_alerta.child_id')
-                            ->where(
-                                [
-                                    ['case_steps_alerta.alert_status', 'accepted'],
-                                    ['children.child_status', 'interrupted'],
-                                    ['children.alert_status', 'accepted']
-                                ]
-                            )->whereIn('case_steps_alerta.place_uf', $states[$reg])->count(),
+                        '_enrollment' => intval($stat[14]),
+                        '_in_school' => intval($stat[15]),
+                        '_transferred' => intval($stat[19]),
+                        '_in_observation' => intval($stat[16]),
+                        '_out_of_school' => intval($stat[17]),
+                        '_cancelled' => intval($stat[18]),
+                        '_interrupted' => intval($stat[20]),
                     ],
-
                     'causes_cases' => $causes
-
                 ];
-            });
-            return response()->json(['status' => 'ok', '_data' => $stats]);
-        } catch (\Exception $ex) {
-            return $this->api_exception($ex);
-        }
-    }
-
-    public function report_uf()
-    {
-
-        $uf = request('uf');
-
-        try {
-            $stats = Cache::remember('report_uf_' . $uf, 86400, function () use ($uf) {
-                $causes = [];
-
-                foreach (CaseCause::getAll() as $case) {
-
-                    //alerta pemanece com status de aceito se caso for cancelado!
-                    $qtd =
-                        \DB::table('children')
-                        ->join('case_steps_pesquisa', 'children.id', '=', 'case_steps_pesquisa.child_id')
-                        ->where(
-                            [
-                                ['case_steps_pesquisa.place_uf', $uf],
-                                ['case_steps_pesquisa.case_cause_ids', 'like', "%{$case->id}%"],
-                                ['children.alert_status', 'accepted'],
-                                ['children.child_status', '<>', 'cancelled']
-                            ]
-                        )
-                        ->count();
-
-                    if ($qtd > 0) {
-                        array_push($causes, ['id' => $case->id, 'cause' => $case->label, 'qtd' => $qtd]);
-                    }
-                }
-                $stateSignup = StateSignup::query()->where('is_approved', 1)
-                    ->where('uf', $uf)->first() ? "yes" : "no";
-
-                $expDate = Carbon::now()->subDays(30);
-                $active = Tenant::query()->whereDate('last_active_at', '>', $expDate)->where('tenants.uf', $uf)->count();
-                $inactive = Tenant::query()->whereDate('last_active_at', '<=', $expDate)->where('tenants.uf', $uf)->count();
-                return [
+            } else {
+                $stats =  [
                     'tenants' => [
-                        'is_approved' => $stateSignup,
-                        'num_tenants' => Tenant::query()->where('tenants.uf', $uf)
-                            ->count(),
-                        'active' => $active,
-                        'inactive' => $inactive,
-                        'num_pending_setup' => TenantSignup::query()
-                            ->join('tenants', 'tenants.id', '=', 'tenant_signups.tenant_id')
-                            ->where('tenants.uf', $uf)
-                            ->where('is_approved', '=', 1)
-                            ->where('is_provisioned', '=', 0)
-                            ->count(),
+                        'is_approved' => intval($stat[0]),
+                        'num_tenants' => intval($stat[1]),
+                        'active' => intval($stat[5]),
+                        'inactive' => intval($stat[6]),
+                        'num_pending_setup' => intval($stat[4]),
                     ],
                     'alerts' => [
 
-                        '_approved' =>
+                        '_approved' => intval($stat[8]),
 
-                        \DB::table('case_steps_alerta')
-                            ->join('children', 'children.id', '=', 'case_steps_alerta.child_id')
-                            ->where(
-                                [
-                                    ['case_steps_alerta.place_uf', $uf],
-                                    ['case_steps_alerta.alert_status', 'accepted'],
-                                    ['children.alert_status', 'accepted'],
-                                    ['children.child_status', '<>', 'cancelled']
-                                ]
-                            )
-                            ->count(),
+                        '_pending' => intval($stat[9]),
 
-                        '_pending' =>
-
-                        \DB::table('case_steps_alerta')
-                            ->join('children', 'children.id', '=', 'case_steps_alerta.child_id')
-                            ->where(
-                                [
-                                    ['case_steps_alerta.place_uf', $uf],
-                                    ['case_steps_alerta.alert_status', 'pending'],
-                                    ['children.child_status', '<>', 'cancelled']
-                                ]
-                            )
-                            ->count(),
-
-                        '_rejected' =>
-
-                        \DB::table('case_steps_alerta')
-                            ->join('children', 'children.id', '=', 'case_steps_alerta.child_id')
-                            ->where(
-                                [
-                                    ['case_steps_alerta.place_uf', $uf],
-                                    ['children.alert_status', 'rejected']
-                                ]
-                            )
-                            ->count(),
+                        '_rejected' => intval($stat[10]),
                     ],
-
                     'cases' => [
-
-                        '_enrollment' =>
-
-                        \DB::table('children')
-                            ->join('case_steps_alerta', 'children.id', '=', 'case_steps_alerta.child_id')
-                            ->where(
-                                [
-                                    ['case_steps_alerta.place_uf', $uf],
-                                    ['children.child_status', 'in_observation']
-                                ]
-                            )
-                            ->orWhere(
-                                [
-                                    ['case_steps_alerta.place_uf', $uf],
-                                    ['children.child_status', 'in_school']
-                                ]
-                            )
-                            ->count(),
-
-                        '_in_school' =>
-
-                        \DB::table('children')
-                            ->join('case_steps_alerta', 'children.id', '=', 'case_steps_alerta.child_id')
-                            ->where(
-                                [
-                                    ['case_steps_alerta.place_uf', $uf],
-                                    ['case_steps_alerta.alert_status', 'accepted'],
-                                    ['children.child_status', 'in_school'],
-                                    ['children.alert_status', 'accepted']
-                                ]
-                            )->count(),
-                        '_transferred' =>
-
-                        \DB::table('children')
-                            ->join('case_steps_alerta', 'children.id', '=', 'case_steps_alerta.child_id')
-                            ->where(
-                                [
-                                    ['case_steps_alerta.place_uf', $uf],
-                                    ['case_steps_alerta.alert_status', 'accepted'],
-                                    ['children.child_status', 'transferred'],
-                                    ['children.alert_status', 'accepted']
-                                ]
-                            )->count(),
-                        '_in_observation' =>
-
-                        \DB::table('children')
-                            ->join('case_steps_alerta', 'children.id', '=', 'case_steps_alerta.child_id')
-                            ->where(
-                                [
-                                    ['case_steps_alerta.place_uf', $uf],
-                                    ['case_steps_alerta.alert_status', 'accepted'],
-                                    ['children.child_status', 'in_observation'],
-                                    ['children.alert_status', 'accepted']
-                                ]
-                            )->count(),
-                        '_out_of_school' =>
-
-                        \DB::table('children')
-                            ->join('case_steps_alerta', 'children.id', '=', 'case_steps_alerta.child_id')
-                            ->where(
-                                [
-                                    ['case_steps_alerta.place_uf', $uf],
-                                    //['case_steps_alerta.alert_status', 'accepted'],
-                                    ['children.child_status', 'out_of_school'],
-                                    ['children.alert_status', 'accepted']
-                                ]
-                            )->count(),
-                        '_cancelled' =>
-
-                        \DB::table('children')
-                            ->join('case_steps_alerta', 'children.id', '=', 'case_steps_alerta.child_id')
-                            ->where(
-                                [
-                                    ['case_steps_alerta.place_uf', $uf],
-                                    ['case_steps_alerta.alert_status', 'accepted'],
-                                    ['children.child_status', 'cancelled'],
-                                    ['children.alert_status', 'accepted']
-                                ]
-                            )->count(),
-                        '_interrupted' =>
-
-                        \DB::table('children')
-                            ->join('case_steps_alerta', 'children.id', '=', 'case_steps_alerta.child_id')
-                            ->where(
-                                [
-                                    ['case_steps_alerta.place_uf', $uf],
-                                    ['case_steps_alerta.alert_status', 'accepted'],
-                                    ['children.child_status', 'interrupted'],
-                                    ['children.alert_status', 'accepted']
-                                ]
-                            )->count(),
+                        '_enrollment' => intval($stat[11]),
+                        '_in_school' => intval($stat[12]),
+                        '_transferred' => intval($stat[13]),
+                        '_in_observation' => intval($stat[14]),
+                        '_out_of_school' => intval($stat[15]),
+                        '_cancelled' => intval($stat[16]),
+                        '_interrupted' => intval($stat[17]),
                     ],
-
                     'causes_cases' => $causes
-
                 ];
-            });
+            }
             return response()->json(['status' => 'ok', '_data' => $stats]);
         } catch (\Exception $ex) {
             return $this->api_exception($ex);
@@ -825,21 +359,6 @@ class ReportsLandingPageController extends BaseController
             $data = [
                 'cities_in_tenants' => $cities,
             ];
-
-            return response()->json(['status' => 'ok', '_data' => $data]);
-        } catch (\Exception $ex) {
-            return $this->api_exception($ex);
-        }
-    }
-
-    public function reach()
-    {
-        try {
-            $data = new \stdClass();
-
-            $data->municipios = TenantSignup::query()->count();
-
-            $data->estados = StateSignup::query()->count();
 
             return response()->json(['status' => 'ok', '_data' => $data]);
         } catch (\Exception $ex) {
