@@ -18,6 +18,17 @@ class ReportsPnadController extends BaseController
         foreach ($resqueted as $key => $value) {
             if (!empty($value)) $typeOfCache = $key;
         }
+        $capitais = [
+            2800308, 1501402, 3106200, 1400100, 5300108,
+            5002704, 5103403, 4106902, 4205407, 2304400,
+            5208707, 2507507, 1600303, 2704302, 1302603,
+            2408102, 1721000, 4314902, 1100205, 2611606,
+            1200401, 3304557, 2927408, 2111300, 3550308,
+            2211001, 3205309
+        ];
+        if (in_array($resqueted[$typeOfCache], $capitais) == false) {
+            return response()->json(['status' => 'ok', '_data' => null]);
+        }
         $keyOfCache = "pnad_" . ($typeOfCache === 'country' ? $typeOfCache : $typeOfCache . '_' . $resqueted[$typeOfCache]);
         try {
 
