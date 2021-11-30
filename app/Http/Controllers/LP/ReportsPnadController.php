@@ -26,7 +26,7 @@ class ReportsPnadController extends BaseController
             1200401, 3304557, 2927408, 2111300, 3550308,
             2211001, 3205309
         ];
-        if (in_array($resqueted[$typeOfCache], $capitais) == false) {
+        if ($typeOfCache === 'capital' && in_array($resqueted[$typeOfCache], $capitais) == false) {
             return response()->json(['status' => 'ok', '_data' => null]);
         }
         $keyOfCache = "pnad_" . ($typeOfCache === 'country' ? $typeOfCache : $typeOfCache . '_' . $resqueted[$typeOfCache]);
