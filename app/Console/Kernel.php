@@ -60,7 +60,7 @@ class Kernel extends ConsoleKernel
         Commands\DBMapCountry::class,
         Commands\DBMapState::class,
         Commands\ForceImportEducacensoFile::class,
-        Commands\SendEmailLgpd::class
+        Commands\SendMailLgpd::class
     ];
 
     /**
