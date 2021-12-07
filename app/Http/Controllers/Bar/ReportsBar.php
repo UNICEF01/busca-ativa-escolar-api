@@ -599,11 +599,12 @@ class ReportsBar extends BaseController
         } else {
             $stats = \Cache::get('map_country');
             $stats = explode("-", $stats);
+            $size = count($stats) - 1;
             $data = [];
             $all_values = [];
             $i = 0;
             foreach ($stats as $stat) {
-                if ($i < 26) {
+                if ($i < $size) {
                     array_push($all_values, explode(" ", $stat)[1]);
                     $name = explode(" ", $stat)[0];
                     $data[$i++] = [
