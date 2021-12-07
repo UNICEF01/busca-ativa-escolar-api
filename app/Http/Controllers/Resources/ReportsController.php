@@ -442,55 +442,34 @@ class ReportsController extends BaseController
     public function country_stats()
     {
 
+	try {
 
-        try {
+            $stat = Cache::get('report_country');
+            $stat = explode(" ", $stat);
+            $stats =  [
+                "num_ufs" => intval($stat[0]),
+                "num_pending_state_signups" => intval($stat[1]),
+                "num_tenants" => intval($stat[2]),
+                "active" => intval($stat[3]),
+                "inactive" => intval($stat[4]),
+                "num_signups" => intval($stat[5]),
+                "num_pending_setup" => intval($stat[6]),
+                "num_pending_signups" => intval($stat[7]),
+                "num_alerts" => intval($stat[9]),
+                "num_pending_alerts" => intval($stat[10]),
+                "num_rejected_alerts" => intval($stat[11]),
+                "num_total_alerts" => intval($stat[9]) + intval($stat[10]) + intval($stat[11]),
+                "num_cases_in_progress" => intval($stat[13]),
+                "num_children_reinserted" => intval($stat[14]),
+                "num_children_in_school" => intval($stat[15]),
+                "num_children_in_observation" => intval($stat[16]),
+                "num_children_out_of_school" => intval($stat[17]),
+                "num_children_cancelled" => intval($stat[18]),
+                "num_children_transferred" => intval($stat[19]),
+                "num_children_interrupted" => intval($stat[20]),
 
-            $stats = Cache::remember('stats_country', config('cache.timeouts.stats_platform'), function () {
-                $data = PanelCountry::where('num_tenants', '>', 0)->first()->toArray();
-                return [
 
-                    //Inicio do ciclo 2
-
-                    'num_tenants' => $data['num_tenants'],
-
-                    'num_ufs' => $data['num_ufs'],
-
-                    'num_signups' => $data['num_signups'],
-
-                    'num_pending_setup' => $data['num_pending_setup'],
-
-                    'num_alerts' => $data['num_alerts'],
-
-                    'num_pending_alerts' => $data['num_pending_alerts'],
-
-                    'num_rejected_alerts' => $data['num_rejected_alerts'],
-
-                    'num_total_alerts' => $data['num_total_alerts'],
-
-                    'num_cases_in_progress' => $data['num_cases_in_progress'],
-
-                    'num_children_reinserted' => $data['num_children_reinserted'],
-
-                    'num_pending_signups' => $data['num_pending_signups'],
-
-                    'num_pending_state_signups' => $data['num_pending_state_signups'],
-
-                    'num_children_in_school' => $data['num_children_in_school'],
-
-                    'num_children_in_observation' => $data['num_children_in_observation'],
-
-                    'num_children_out_of_school' => $data['num_children_out_of_school'],
-
-                    'num_children_cancelled' => $data['num_children_cancelled'],
-
-                    'num_children_transferred' => $data['num_children_transferred'],
-
-                    'num_children_interrupted' => $data['num_children_interrupted'],
-
-                    // final do ciclo 2
-
-                ];
-            });
+            ];
 
             return response()->json(['status' => 'ok', 'stats' => $stats]);
         } catch (\Exception $ex) {
@@ -507,52 +486,31 @@ class ReportsController extends BaseController
             return $this->api_failure('invalid_uf');
         }
 
-        $tenantIDs = Tenant::getIDsWithinUF($uf);
-        $cityIDs = City::getIDsWithinUF($uf);
-
         try {
-
-            $stats = Cache::remember('stats_state_' . $uf, config('cache.timeouts.stats_platform'), function () use ($uf, $cityIDs, $tenantIDs) {
-                $data = PanelState::where('name', $uf)->get()->toArray();
-
-                return [
-                    'num_tenants' => $data[0]['num_tenants'],
-
-                    'num_signups' => $data[0]['num_signups'],
-
-                    'num_pending_setup' => $data[0]['num_pending_setup'],
-
-                    'num_alerts' => $data[0]['num_alerts'],
-
-                    'num_cases_in_progress' => $data[0]['num_cases_in_progress'],
-
-                    'num_children_reinserted' => $data[0]['num_children_reinserted'],
-
-                    'num_pending_signups' => $data[0]['num_pending_signups'],
-
-                    'num_total_alerts' => $data[0]['num_total_alerts'],
-
-                    'num_accepted_alerts' => $data[0]['num_accepted_alerts'],
-
-                    'num_pending_alerts' => $data[0]['num_pending_alerts'],
-
-                    'num_rejected_alerts' => $data[0]['num_rejected_alerts'],
-
-                    'num_children_in_school' => $data[0]['num_children_in_school'],
-
-                    'num_children_out_of_school' => $data[0]['num_children_out_of_school'],
-
-                    'num_children_in_observation' => $data[0]['num_children_in_observation'],
-
-                    'num_children_cancelled' => $data[0]['num_children_cancelled'],
-
-                    'num_children_transferred' => $data[0]['num_children_transferred'],
-
-                    'num_children_interrupted' => $data[0]['num_children_transferred'],
-
-
-                ];
-            });
+            $key = "report_state_" . $uf;
+            $stat = Cache::get($key);
+            $stat = explode(" ", $stat);
+            $tenantIDs = Tenant::getIDsWithinUF($uf);
+            $cityIDs = City::getIDsWithinUF($uf);
+            $stats =  [
+                'num_tenants' => intval($stat[1]),
+                'num_signups' => intval($stat[2]),
+                'num_pending_setup' => intval($stat[3]),
+                'num_alerts' => intval($stat[8]),
+                'num_cases_in_progress' => intval($stat[7]),
+                'num_children_reinserted' => intval($stat[11]),
+                'num_pending_signups' => intval($stat[4]),
+                'num_total_alerts' => intval($stat[8]) + intval($stat[9]) + intval($stat[10]),
+                'num_accepted_alerts' =>  intval($stat[8]),
+                'num_pending_alerts' =>  intval($stat[9]),
+                'num_rejected_alerts' =>  intval($stat[10]),
+                'num_children_in_school' => intval($stat[12]),
+                'num_children_out_of_school' => intval($stat[15]),
+                'num_children_in_observation' => intval($stat[14]),
+                'num_children_cancelled' => intval($stat[16]),
+                'num_children_transferred' => intval($stat[13]),
+                'num_children_interrupted' => intval($stat[17]),
+            ];
 
             return response()->json(['status' => 'ok', 'stats' => $stats, 'uf' => $uf, 'tenant_ids' => $tenantIDs, 'city_ids' => $cityIDs]);
         } catch (\Exception $ex) {

@@ -549,26 +549,83 @@ class ReportsBar extends BaseController
     public function getDataMapFusionChart(Request $request)
     {
 
-        $uf = request('uf');
+           $uf = request('uf');
+
+        $states = [
+            'AC' => ['001', 'Acre'],
+            'AL' => ['002', 'Alagoas'],
+            'AP' => ['003', 'Amapa'],
+            'AM' => ['004', 'Amazonas'],
+            'BA' => ['005', 'Bahia'],
+            'CE' => ['006', 'Ceara'],
+            'DF' => ['007', 'Distrito Federal'],
+            'ES' => ['008', 'Espirito Santo'],
+            'GO' => ['009', 'Goias'],
+            'MA' => ['010', 'Maranhao'],
+            'MT' => ['011', 'Mato Grosso'],
+            'MS' => ['012', 'Mato Grosso do Sul'],
+            'MG' => ['013', 'Minas Gerais'],
+            'PA' => ['014', 'Para'],
+            'PB' => ['015', 'Paraiba'],
+            'PR' => ['016', 'Parana'],
+            'PE' => ['017', 'Pernambuco'],
+            'PI' => ['018', 'Piaui'],
+            'RJ' => ['019', 'Rio de Janeiro'],
+            'RN' => ['020', 'Rio Grande do Norte'],
+            'RS' => ['021', 'Rio Grande do Sul'],
+            'RO' => ['022', 'Rondonia'],
+            'RR' => ['023', 'Roraima'],
+            'SC' => ['024', 'Santa Catarina'],
+            'SP' => ['025', 'Sao Paulo'],
+            'SE' => ['026', 'Sergipe'],
+            'TO' => ['027', 'Tocantins']
+        ];
 
         if ($uf != null and $uf != "null") {
-            $data = MapState::select('idMap as id', 'value', 'name_city', 'showLabel')->where('uf', $uf)->get()->toArray();
+            $stats = \Cache::get('map_state_' . $uf);
+            $stats = explode("-", $stats);
+            $size = count($stats) - 1;
+            $data = [];
             $all_values = [];
-            foreach ($data as $d) {
-                array_push($all_values, $d["value"]);
+            $i = 0;
+            foreach ($stats as $stat) {
+                if ($i < $size) {
+                    array_push($all_values, explode(" ", $stat)[1]);
+                    $name = explode(" ", $stat)[2];
+                    $data[$i++] = [
+                        "id" => explode(" ", $stat)[0],
+                        "value" => explode(" ", $stat)[1],
+                        "name_city" => utf8_encode(explode(" ", $stat)[2]),
+                        "showLabel" => 0,
+                    ];
+                }
             }
         } else {
-            $data = MapCountry::all(['place_uf', 'value', 'idMap as id', 'displayValue', 'showLabel', 'simple_name'])->toArray();
+            $stats = \Cache::get('map_country');
+            $stats = explode("-", $stats);
+            $data = [];
             $all_values = [];
-            foreach ($data as $d) {
-                array_push($all_values, $d["value"]);
+            $i = 0;
+            foreach ($stats as $stat) {
+                if ($i < 26) {
+                    array_push($all_values, explode(" ", $stat)[1]);
+                    $name = explode(" ", $stat)[0];
+                    $data[$i++] = [
+                        "place_uf" => $name,
+                        "value" => explode(" ", $stat)[1],
+                        "id" => $states[$name][0],
+                        "displayValue" => $name,
+                        "showLabel" => 1,
+                        "simple_name" => strtolower($name)
+                    ];
+                }
             }
         }
 
         $final_data = [
             'colors' => [
                 [
-                    "maxvalue" => count($all_values) > 0 ? max($all_values) : 0,
+                    "maxvalue" => explode(" ", $stats[0])[1] > 0 ? explode(" ", $stats[0])[1] : 0,
                     "code" => "#e44a00"
                 ],
                 [
