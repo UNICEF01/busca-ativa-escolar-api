@@ -549,7 +549,7 @@ class ReportsBar extends BaseController
     public function getDataMapFusionChart(Request $request)
     {
 
-           $uf = request('uf');
+        $uf = request('uf');
 
         $states = [
             'AC' => ['001', 'Acre'],
@@ -605,9 +605,10 @@ class ReportsBar extends BaseController
             $stats = explode("-", $stats);
             $data = [];
             $all_values = [];
+            $size = count($stats) - 1;
             $i = 0;
             foreach ($stats as $stat) {
-                if ($i < 26) {
+                if ($i < $size) {
                     array_push($all_values, explode(" ", $stat)[1]);
                     $name = explode(" ", $stat)[0];
                     $data[$i++] = [
