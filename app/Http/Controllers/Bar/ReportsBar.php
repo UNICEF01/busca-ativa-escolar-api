@@ -8,11 +8,9 @@ use BuscaAtivaEscolar\City;
 use BuscaAtivaEscolar\Goal;
 use BuscaAtivaEscolar\Http\Controllers\BaseController;
 use BuscaAtivaEscolar\CaseSteps\Rematricula;
-use BuscaAtivaEscolar\MapCountry;
 use BuscaAtivaEscolar\Tenant;
 use DB;
 use Illuminate\Http\Request;
-use BuscaAtivaEscolar\MapState;
 
 class ReportsBar extends BaseController
 {
@@ -262,8 +260,6 @@ class ReportsBar extends BaseController
                 'goal_box' => [
 
                     'goal' => $this->currentUser()->tenant->city->goal ? $this->currentUser()->tenant->city->goal->goal : null,
-                    'goal_ciclo1' => $this->currentUser()->tenant->city->goal ? $this->currentUser()->tenant->city->goal->goal_ciclo1 : null,
-                    'accumulated_ciclo1' => $this->currentUser()->tenant->city->goal ? $this->currentUser()->tenant->city->goal->accumulated_ciclo1 : null,
 
                     'reinsertions_classes' =>
                     Rematricula::whereHas('cases', function ($query) {
@@ -436,7 +432,7 @@ class ReportsBar extends BaseController
         //meta --------------------------------------------------------
 
         if (Auth::user()->isRestrictedToTenant()) {
-            $goal_final = Auth::user()->tenant->city->goal ? $this->currentUser()->tenant->city->goal->accumulated_ciclo1 + $this->currentUser()->tenant->city->goal->goal : 0;
+            $goal_final = Auth::user()->tenant->city->goal ? $this->currentUser()->tenant->city->goal->goal : 0;
         }
 
         if (Auth::user()->isRestrictedToUF()) {
@@ -546,7 +542,7 @@ class ReportsBar extends BaseController
         return response()->json($data);
     }
 
-    public function getDataMapFusionChart(Request $request)
+    public function getDataMapFusionChart()
     {
 
         $uf = request('uf');
@@ -605,10 +601,9 @@ class ReportsBar extends BaseController
             $stats = explode("-", $stats);
             $data = [];
             $all_values = [];
-            $size = count($stats) - 1;
             $i = 0;
             foreach ($stats as $stat) {
-                if ($i < $size) {
+                if ($i < 26) {
                     array_push($all_values, explode(" ", $stat)[1]);
                     $name = explode(" ", $stat)[0];
                     $data[$i++] = [

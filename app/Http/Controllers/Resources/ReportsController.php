@@ -16,20 +16,10 @@ namespace BuscaAtivaEscolar\Http\Controllers\Resources;
 
 
 use Auth;
-use BuscaAtivaEscolar\CaseSteps\Alerta;
 use BuscaAtivaEscolar\Child;
-use BuscaAtivaEscolar\ChildCase;
 use BuscaAtivaEscolar\City;
-use BuscaAtivaEscolar\DailyTests;
 use BuscaAtivaEscolar\Data\AgeRange;
 use BuscaAtivaEscolar\Data\AlertCause;
-use BuscaAtivaEscolar\Data\CaseCause;
-use BuscaAtivaEscolar\Data\IncomeRange;
-use BuscaAtivaEscolar\Data\Race;
-use BuscaAtivaEscolar\Data\SchoolingLevel;
-use BuscaAtivaEscolar\Data\WorkActivity;
-use BuscaAtivaEscolar\HistoricalTenant;
-use BuscaAtivaEscolar\HistoricalTenantSignup;
 use BuscaAtivaEscolar\Http\Controllers\BaseController;
 use BuscaAtivaEscolar\Exports\RepostsExport;
 use BuscaAtivaEscolar\IBGE\Region;
@@ -38,8 +28,6 @@ use BuscaAtivaEscolar\Jobs\ProcessReportSeloJob;
 use BuscaAtivaEscolar\Reports\Reports;
 use BuscaAtivaEscolar\School;
 use BuscaAtivaEscolar\Search\ElasticSearchQuery;
-use BuscaAtivaEscolar\StateSignup;
-use BuscaAtivaEscolar\TenantSignup;
 use BuscaAtivaEscolar\Tenant;
 use BuscaAtivaEscolar\User;
 use Cache;
@@ -47,8 +35,6 @@ use Carbon\Carbon;
 use DB;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Excel as ExcelB;
-use BuscaAtivaEscolar\PanelCountry;
-use BuscaAtivaEscolar\PanelState;
 
 class ReportsController extends BaseController
 {
@@ -442,7 +428,7 @@ class ReportsController extends BaseController
     public function country_stats()
     {
 
-	try {
+        try {
 
             $stat = Cache::get('report_country');
             $stat = explode(" ", $stat);
@@ -517,6 +503,7 @@ class ReportsController extends BaseController
             return $this->api_exception($ex);
         }
     }
+
 
     protected function extractDimensionIDs($report, $view)
     {

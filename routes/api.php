@@ -254,18 +254,13 @@ Route::group(['prefix' => 'v1', 'middleware' => 'api'], function () {
 	Route::get('/integration/forms/{form}', 'Integration\FormBuilderController@render_form');
 
 	//Open data to landing page
-	Route::get('/lp/report', 'LP\ReportsLandingPageController@report_country');
-	Route::get('/lp/report/reg', 'LP\ReportsLandingPageController@report_reg');
-	Route::get('/lp/report/uf', 'LP\ReportsLandingPageController@report_uf');
+	Route::get('/lp/report', 'LP\ReportsLandingPageController@report');
 	Route::get('/lp/report/city', 'LP\ReportsLandingPageController@report_city');
 	Route::get('/lp/report/list/cities', 'LP\ReportsLandingPageController@list_cities');
 	Route::get('/lp/report/reach', 'LP\ReportsLandingPageController@reach');
 
 	//Open data to landing page pnad
-	Route::get('/pnad/report', 'LP\ReportsPnadController@pnad_brasil');
-	Route::get('/pnad/report/capital', 'LP\ReportsPnadController@pnad_capital');
-	Route::get('/pnad/report/reg', 'LP\ReportsPnadController@pnad_regiao');
-	Route::get('/pnad/report/uf', 'LP\ReportsPnadController@pnad_uf');
+	Route::get('/pnad/report', 'LP\ReportsPnadController@pnad');
 
 	//Webhooks Mailgun
 	Route::post('/mailgun/update', 'Mailgun\MailgunController@update');
