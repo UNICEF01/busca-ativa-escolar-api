@@ -55,10 +55,6 @@ class Kernel extends ConsoleKernel
         Commands\InserirDiaAusenteGraficoRematriculas::class,
         Commands\SendEmailsActualizeFrequency::class,
         Commands\SendEmailToTenantsWithTerms::class,
-        Commands\DBPanelCountry::class,
-        Commands\DBPanelState::class,
-        Commands\DBMapCountry::class,
-        Commands\DBMapState::class,
         Commands\ForceImportEducacensoFile::class,
         Commands\SendEmailLgpd::class
     ];
