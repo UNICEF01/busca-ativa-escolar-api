@@ -40,7 +40,17 @@ class SendEmailLgpd extends Command
     public function handle()
     {
         $message = new Lgpd();
-        $emails = ['contato@buscaativaescolar.org.br', 'dmagalhaes@unicef.org', 'rcorreia@unicef.org', 'mansouza@unicef.org'];
+        $emails = [
+            'contato@buscaativaescolar.org.br', 
+            'dmagalhaes@unicef.org', 
+            'rcorreia@unicef.org', 
+            'mansouza@unicef.org', 
+            'vbezerra@unicef.org', 
+            'maraujo@unicef.org', 
+            'ndasilva@unicef.org', 
+            'adamas@unicef.org', 
+            'marangel@unicef.org',
+            'jcaligiorne@unicef.org'];
         Mail::to($emails)->send($message);
     }
 }
