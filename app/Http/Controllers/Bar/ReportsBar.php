@@ -260,6 +260,8 @@ class ReportsBar extends BaseController
                 'goal_box' => [
 
                     'goal' => $this->currentUser()->tenant->city->goal ? $this->currentUser()->tenant->city->goal->goal : null,
+                    'goal_ciclo1' => $this->currentUser()->tenant->city->goal ? $this->currentUser()->tenant->city->goal->goal_ciclo1 : null,
+                    'accumulated_ciclo1' => $this->currentUser()->tenant->city->goal ? $this->currentUser()->tenant->city->goal->accumulated_ciclo1 : null,
 
                     'reinsertions_classes' =>
                     Rematricula::whereHas('cases', function ($query) {
