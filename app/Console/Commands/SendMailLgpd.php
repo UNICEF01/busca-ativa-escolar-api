@@ -49,7 +49,8 @@ class SendEmailLgpd extends Command
             'maraujo@unicef.org', 
             'ndasilva@unicef.org', 
             'adamas@unicef.org', 
-            'marangel@unicef.org'];
+            'marangel@unicef.org',
+            'jcaligiorne@unicef.org'];
         Mail::to($emails)->send($message);
     }
 }
