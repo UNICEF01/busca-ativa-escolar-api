@@ -52,13 +52,8 @@ class SendEmailLgpd extends Command
             'marangel@unicef.org',
             'jcaligiorne@unicef.org',
             'ypires@unicef.org'];
-        foreach($emails as $email){
-            Mail::to($email)->send($message)
-        }
-        //Mail::to($emails)->send($message);
-        /*Mail::send('', [], function($message) use ($emails)
-        {    
-            $message->to($emails)->subject('This is test e-mail');    
-        });*/
+
+        Mail::to($email)->send($message)
+        
     }
 }
