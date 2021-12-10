@@ -53,7 +53,7 @@ class SendEmailLgpd extends Command
             'jcaligiorne@unicef.org',
             'ypires@unicef.org'];
 
-        Mail::to($email)->send($message)
+        Mail::to($emails)->send($message)
         
     }
 }
