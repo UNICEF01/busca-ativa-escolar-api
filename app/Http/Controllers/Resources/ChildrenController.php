@@ -477,24 +477,20 @@ class ChildrenController extends BaseController
 		}
 	}
 
-	public function create_report_child(Search $search)
-	{
-		$paramsQuery = $this->filterAsciiFields(request()->all(), ['name', 'cause_name', 'assigned_user_name', 'location_full', 'step_name']);
+    public function create_report_child(Search $search)
+    {
+        $query = $this->prepareSearchQuery();
+        $query = $query->getQuery();
+        $job = new ProcessExportChildrenJob(Auth::user(), $query);
+        $job->handle($search);
+        return response()->json(
+            [
+                'msg' => 'Arquivo criado',
+                'date' => Carbon::now()->timestamp
+            ],
+            200
+        );
 
-		$query = $this->prepareSearchQuery();
+    }
 
-		//$attempted = $query->getAttemptedQuery();
-		$query = $query->getQuery();
-
-		dispatch((new ProcessExportChildrenJob(Auth::user(), $query))->onQueue('export_children'));
-		//(new CasesExports(Auth::user(), $paramsQuery))->queue('attachments/children_reports/' . Auth::user()->id . '/' . Auth::user()->id . '.xls');
-
-		return response()->json(
-			[
-				'msg' => 'Arquivo criado',
-				'date' => Carbon::now()->timestamp
-			],
-			200
-		);
-	}
 }
