@@ -20,9 +20,9 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class PasswordReset extends Notification implements ShouldQueue {
+class PasswordReset extends Notification {
 
-	use Queueable;
+	//use Queueable;
 
 	public function via($notifiable) {
 		return ['mail'];
