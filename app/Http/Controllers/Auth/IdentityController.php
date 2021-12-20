@@ -44,8 +44,6 @@ class IdentityController extends BaseController
 
         $credentials = $request->only('email', 'password');
         
-        if ($this->lgpdService->checkAccess($credentials['email']) === false)
-            return response()->json(['error' => 'lgpd_validation_fail', 'reason' => 'User/State/Tenant not accepted lgpd'], 500);
         
 
         try {
@@ -55,6 +53,10 @@ class IdentityController extends BaseController
             $token = JWTAuth::attempt($credentials);
 
             if (!$token) return response()->json(['error' => 'invalid_credentials'], 401);
+
+            if ($this->lgpdService->checkAccess($credentials['email']) === false)
+                return response()->json(['error' => 'lgpd_validation_fail', 'reason' => 'User/State/Tenant not accepted lgpd'], 401);
+        
 
             $user = fractal()
                 ->item(Auth::user())
