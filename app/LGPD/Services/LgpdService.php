@@ -46,13 +46,9 @@ class LgpdService implements ILgpd
         }
         else{
           $tenantData = Tenant::where('id', $user->tenant_id)->first();
-          $signupTenantData = DB::table("tenant_signups ts")
-          ->select("id")
-          ->whereNull("deleted_at")
-          ->where(DB::raw("(tenant_id = (select id from tenants t where id = $tenantData) or 
-                            city_id = (select city_id  from tenants t  where id = $tenantData)) "))
-          ->get();
-          return $this->findLgpd($user->id) && $this->findLgpd($signupTenantData) ? true : false;
+          $signupTenantData = TenantSignup::where('tenant_id', $tenantData->id)
+                                          ->orWhere('city_id', $tenantData->city_id)->first();
+          return $this->findLgpd($user->id) && $this->findLgpd($signupTenantData->id) ? true : false;
         }
       }
     }
