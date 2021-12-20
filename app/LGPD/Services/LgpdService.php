@@ -34,8 +34,9 @@ class LgpdService implements ILgpd
   public function checkAccess(string $mail): bool
   {
     $user = User::where('email', $mail)->first();
-    if($user && $user->lgpd === 1 && $user->type  !== 'gestor_nacional'){
+    if($user && $user->lgpd === 1){
       if ($this->findLgpd($user->id)) return true;
+      return false;
     }
     return false;
   }
