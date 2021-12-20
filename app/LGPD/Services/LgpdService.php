@@ -4,6 +4,7 @@ namespace BuscaAtivaEscolar\LGPD\Services;
 
 use BuscaAtivaEscolar\LGPD\Interfaces\ILgpd;
 use BuscaAtivaEscolar\LGPD\Repository\LgpdRepository;
+use BuscaAtivaEscolar\User;
 
 class LgpdService implements ILgpd
 {
