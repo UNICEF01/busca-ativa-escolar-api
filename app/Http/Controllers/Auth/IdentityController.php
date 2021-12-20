@@ -43,16 +43,10 @@ class IdentityController extends BaseController
         }
 
         $credentials = $request->only('email', 'password');
-        $user = User::where('email', $credentials['email'])->first();
-        $attributes = [
-            'user' => $user->id,
-            'tenant_id' => $user->tenant_id,
-            'uf' => $user->uf
-        ];
-        if ($user->lgpd === 1 && $user->type  !== 'gestor_nacional') {
-            if ($this->lgpdService->checkAccess($attributes) === false)
-                return response()->json(['error' => 'lgpd_validation_fail', 'reason' => 'User/State/Tenant not accepted lgpd'], 500);
-        }
+        
+        if ($this->lgpdService->checkAccess($credentials['email']) === false)
+            return response()->json(['error' => 'lgpd_validation_fail', 'reason' => 'User/State/Tenant not accepted lgpd'], 500);
+        
 
         try {
 

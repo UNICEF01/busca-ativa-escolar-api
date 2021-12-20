@@ -30,28 +30,12 @@ class LgpdService implements ILgpd
     return $this->lgpdRepository->update($attributes, $id);
   }
 
-  public function deleteLgpd(string $id): bool
+  public function checkAccess(string $mail): bool
   {
-    //TODO
-    return 1;
-  }
-
-  public function checkAccess(array $attributes): bool
-  {
-    if ($this->findLgpd($attributes['user'])) {
-      /*if (array_key_exists('uf', $attributes) && !is_null($attributes['uf'])) {
-        if ($this->findLgpd($attributes['uf']))
-          return true;
-        return false;
-      }
-      if (array_key_exists('tenant_id', $attributes) && !is_null($attributes['tenant_id'])) {
-        if ($this->findLgpd($attributes['tenant_id']))
-          return true;
-        return false;
-      }*/
-      return true;
+    $user = User::where('email', $mail)->first();
+    if($user && $user->lgpd === 1 && $user->type  !== 'gestor_nacional'){
+      if ($this->findLgpd($user->id)) return true;
     }
-
     return false;
   }
 }

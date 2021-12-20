@@ -30,34 +30,14 @@ class LgpdRepository extends BaseRepository
   public function find(string $id): ?Model
   {
     $ufs = [
-      'RO',
-      'AC',
-      'AM',
-      'RR',
-      'PA',
-      'AP',
-      'TO',
-      'MA',
-      'PI',
-      'CE',
-      'RN',
-      'PB',
-      'PE',
-      'AL',
-      'SE',
-      'BA',
-      'MG',
-      'ES',
-      'RJ',
-      'SP',
-      'PR',
-      'SC',
-      'RS',
-      'MS',
-      'MT',
-      'GO',
-      'DF'
+      'RO','AC','AM','RR','PA',
+      'AP','TO','MA','PI','CE',
+      'RN','PB','PE','AL','SE',
+      'BA','MG','ES','RJ','SP',
+      'PR','SC','RS','MS','MT',
+      'GO','DF'
     ];
+    
     if (in_array($id, $ufs)) {
       return $this->model->where('name', $id)->first();
     }
