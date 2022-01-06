@@ -1,448 +1,449 @@
 {
-	"properties": {
-		"assigned_user_id": {
-			"type": "string",
-			"index": "not_analyzed"
-		},
-		"assigned_user_name": {
-			"analyzer": "folding",
-			"type": "string"
-		},
-		"step_name": {
-			"analyzer": "folding",
-			"type": "string"
-		},
-		"step_slug": {
-			"type": "string",
-			"index": "not_analyzed"
-		},
-		"cause_name": {
-			"analyzer": "folding",
-			"type": "string"
-		},
-		"work_activity": {
-			"type": "string"
-		},
-		"alert_status": {
-			"type": "string",
-			"index": "not_analyzed"
-		},
-		"alert_submitter_id": {
-			"type": "string",
-			"index": "not_analyzed"
-		},
-		"alert_submitter_name": {
-			"analyzer": "folding",
-			"type": "string"
-		},
-		"deadline_status": {
-			"type": "string",
-			"index": "not_analyzed"
-		},
-		"school_contact_name": {
-			"analyzer": "folding",
-			"type": "string"
-		},
-		"place_is_quilombola": {
-			"type": "string"
-		},
-		"school_cep": {
-			"type": "string"
-		},
-		"parents_who_is_guardian": {
-			"type": "string"
-		},
-		"reinsertion_grade": {
-			"type": "string"
-		},
-		"school_name": {
-			"analyzer": "folding",
-			"type": "string"
-		},
-		"school_last_status": {
-			"type": "string"
-		},
-		"school_last_id": {
-			"type": "string",
-			"index": "not_analyzed"
-		},
-		"handicapped_at_sus": {
-			"type": "boolean"
-		},
-		"place_neighborhood": {
-			"analyzer": "folding",
-			"type": "string"
-		},
-		"reinsertion_date": {
-			"format": "dateOptionalTime",
-			"type": "date"
-		},
-		"guardian_dob": {
-			"format": "dateOptionalTime",
-			"type": "date"
-		},
-		"father_name": {
-			"store": true,
-			"analyzer": "folding",
-			"type": "string"
-		},
-		"race": {
-			"store": true,
-			"type": "string"
-		},
-		"is_working": {
-			"type": "boolean"
-		},
-		"city_name": {
-			"store": true,
-			"type": "string"
-		},
-		"school_id": {
-			"type": "string",
-			"index": "not_analyzed"
-		},
-		"school_city_id": {
-			"type": "string",
-			"index": "not_analyzed"
-		},
-		"current_step_id": {
-			"type": "string",
-			"index": "not_analyzed"
-		},
-		"school_last_age": {
-			"type": "integer"
-		},
-		"age": {
-			"type": "integer"
-		},
-		"gender": {
-			"store": true,
-			"type": "string"
-		},
-		"cpf": {
-			"type": "string",
-			"index": "not_analyzed"
-		},
-		"parents_income": {
-			"type": "string"
-		},
-		"is_child_still_in_school": {
-			"type": "boolean"
-		},
-		"parents_has_mother": {
-			"type": "boolean"
-		},
-		"place_cep": {
-			"type": "string",
-			"index": "not_analyzed"
-		},
-		"school_address": {
-			"analyzer": "folding",
-			"type": "string"
-		},
-		"guardian_race": {
-			"type": "string"
-		},
-		"current_step_type": {
-			"type": "string",
-			"index": "not_analyzed"
-		},
-		"guardian_name": {
-			"analyzer": "folding",
-			"type": "string"
-		},
-		"place_kind": {
-			"type": "string"
-		},
-		"work_activity_other": {
-			"analyzer": "folding",
-			"type": "string"
-		},
-		"work_is_paid": {
-			"type": "boolean"
-		},
-		"updated_at": {
-			"store": true,
-			"format": "YYYY-MM-dd HH:mm:ss",
-			"type": "date"
-		},
-		"risk_level": {
-			"store": true,
-			"type": "string"
-		},
-		"alert_cause_id": {
-			"type": "string",
-			"index": "not_analyzed"
-		},
-		"parents_has_father": {
-			"type": "boolean"
-		},
-		"school_city": {
-			"analyzer": "folding",
-			"type": "string"
-		},
-		"guardian_job": {
-			"type": "string"
-		},
-		"parents_has_brother": {
-			"type": "boolean"
-		},
-		"place_address": {
-			"analyzer": "folding",
-			"type": "string"
-		},
-		"tenant_id": {
-			"store": true,
-			"type": "string",
-			"index": "not_analyzed"
-		},
-		"rg": {
-			"type": "string",
-			"index": "not_analyzed"
-		},
-		"school_last_name": {
-			"analyzer": "folding",
-			"type": "string"
-		},
-		"current_case_id": {
-			"store": true,
-			"type": "string",
-			"index": "not_analyzed"
-		},
-		"observations": {
-			"analyzer": "folding",
-			"type": "string"
-		},
-		"city_id": {
-			"store": true,
-			"type": "string",
-			"index": "not_analyzed"
-		},
-		"id": {
-			"store": true,
-			"type": "string",
-			"index": "not_analyzed"
-		},
-		"has_been_in_school": {
-			"type": "boolean"
-		},
-		"report_index": {
-			"type": "long"
-		},
-		"actions_description": {
-			"type": "string"
-		},
-		"name": {
-			"store": true,
-			"analyzer": "folding",
-			"type": "string"
-		},
-		"school_last_year": {
-			"type": "integer"
-		},
-		"created_at": {
-			"store": true,
-			"format": "YYYY-MM-dd HH:mm:ss",
-			"type": "date"
-		},
-		"place_reference": {
-			"analyzer": "folding",
-			"type": "string"
-		},
-		"school_neighborhood": {
-			"analyzer": "folding",
-			"type": "string"
-		},
-		"place_uf": {
-			"type": "string"
-		},
-		"school_uf": {
-			"analyzer": "folding",
-			"type": "string"
-		},
-		"place_city": {
-			"type": "string"
-		},
-		"place_city_id": {
-			"type": "string",
-			"index": "not_analyzed"
-		},
-		"place_city_name": {
-			"type": "string"
-		},
-		"uf": {
-			"store": true,
-			"type": "string"
-		},
-		"assigned_uf": {
-			"store": true,
-			"type": "string"
-		},
-		"case_cause_ids": {
-			"type": "string"
-		},
-		"deleted_at": {
-			"store": true,
-			"format": "YYYY-MM-dd HH:mm:ss",
-			"type": "date"
-		},
-		"country_region": {
-			"store": true,
-			"type": "string"
-		},
-		"case_status": {
-			"store": true,
-			"type": "string",
-			"index": "not_analyzed"
-		},
-		"current_case": {
-			"properties": {
-				"case_cause_ids": {
-					"store": true,
-					"type": "string",
-					"index": "not_analyzed"
-				},
-				"assigned_user_id": {
-					"store": true,
-					"type": "string",
-					"index": "not_analyzed"
-				},
-				"current_step_type": {
-					"store": true,
-					"type": "string"
-				},
-				"id": {
-					"type": "string",
-					"index": "not_analyzed"
-				},
-				"created_by_user_id": {
-					"store": true,
-					"type": "string",
-					"index": "not_analyzed"
-				},
-				"current_step_id": {
-					"store": true,
-					"type": "string",
-					"index": "not_analyzed"
-				},
-				"updated_at": {
-					"store": true,
-					"format": "YYYY-MM-dd HH:mm:ss",
-					"type": "date"
-				},
-				"risk_level": {
-					"store": true,
-					"type": "string"
-				},
-				"linked_steps": {
-					"properties": {
-						"id": {
-							"type": "string",
-							"index": "not_analyzed"
-						},
-						"index": {
-							"type": "long",
-							"index": "not_analyzed"
-						},
-						"next": {
-							"properties": {
-								"index": {
-									"type": "long",
-									"index": "not_analyzed"
-								},
-								"type": {
-									"type": "string",
-									"index": "not_analyzed"
-								}
-							}
-						},
-						"type": {
-							"type": "string",
-							"index": "not_analyzed"
-						}
-					}
-				},
-				"alert_cause_id": {
-					"store": true,
-					"type": "string"
-				},
-				"name": {
-					"store": true,
-					"analyzer": "folding",
-					"type": "string"
-				},
-				"child_id": {
-					"type": "string",
-					"index": "not_analyzed"
-				},
-				"created_at": {
-					"store": true,
-					"format": "YYYY-MM-dd HH:mm:ss",
-					"type": "date"
-				},
-				"case_status": {
-					"store": true,
-					"type": "string"
-				},
-				"is_current": {
-					"type": "boolean"
-				},
-				"enrolled_at": {
-					"store": true,
-					"format": "dateOptionalTime",
-					"type": "date"
-				},
-				"assigned_group_id": {
-					"store": true,
-					"type": "string",
-					"index": "not_analyzed"
-				},
-				"cancel_reason": {
-					"store": true,
-					"type": "string"
-				}
-			}
-		},
-		"work_weekly_hours": {
-			"type": "integer"
-		},
-		"school_last_grade": {
-			"type": "string"
-		},
-		"evasion_reason": {
-			"analyzer": "folding",
-			"type": "string"
-		},
-		"handicapped_reason_not_enrolled": {
-			"type": "string"
-		},
-		"nis": {
-			"type": "string",
-			"index": "not_analyzed"
-		},
-		"dob": {
-			"store": true,
-			"format": "dateOptionalTime",
-			"type": "date"
-		},
-		"mother_name": {
-			"store": true,
-			"analyzer": "folding",
-			"type": "string"
-		},
-		"guardian_schooling": {
-			"type": "string"
-		},
-		"child_status": {
-			"store": true,
-			"type": "string"
-		},
-		"school_last_address": {
-			"analyzer": "folding",
-			"type": "string"
-		},
-		"reason_not_enrolled": {
-			"type": "string"
-		}
-	}
+        "properties": {
+                "assigned_user_id": {
+                        "type": "keyword"
+                },
+                "assigned_user_name": {
+                        "type": "text",
+                        "fielddata": true
+                },
+                "step_name": {
+                        "type": "text",
+                        "fielddata": true
+                },
+                "step_slug": {
+                        "type": "keyword"
+                },
+                "cause_name": {
+                        "type": "text",
+                        "fielddata": true
+                },
+                "work_activity": {
+                        "type": "text",
+                        "fielddata": true
+                },
+                "alert_status": {
+                        "type": "keyword"
+                },
+                "alert_submitter_id": {
+                        "type": "keyword"
+                },
+                "alert_submitter_name": {
+                        "type": "text",
+                        "fielddata": true
+                },
+                "deadline_status": {
+                        "type": "keyword"
+                },
+                "school_contact_name": {
+                        "type": "text",
+                        "fielddata": true
+                },
+                "place_is_quilombola": {
+                        "type": "text",
+                        "fielddata": true
+                },
+                "school_cep": {
+                        "type": "text",
+                        "fielddata": true
+                },
+                "parents_who_is_guardian": {
+                        "type": "text",
+                        "fielddata": true
+                },
+                "reinsertion_grade": {
+                        "type": "text",
+                        "fielddata": true
+                },
+                "school_name": {
+                        "type": "text",
+                        "fielddata": true
+                },
+                "school_last_status": {
+                        "type": "text",
+                        "fielddata": true
+                },
+                "school_last_id": {
+                        "type": "keyword"
+                },
+                "handicapped_at_sus": {
+                        "type": "integer"
+                },
+                "place_neighborhood": {
+                        "type": "text",
+                        "fielddata": true
+                },
+                "reinsertion_date": {
+                        "format": "dateOptionalTime",
+                        "type": "date"
+                },
+                "guardian_dob": {
+                        "format": "dateOptionalTime",
+                        "type": "date"
+                },
+                "father_name": {
+                        "store": true,
+                        "type": "text",
+                        "fielddata": true
+                },
+                "race": {
+                        "store": true,
+                        "type": "text",
+                        "fielddata": true
+                },
+                "is_working": {
+                        "type": "integer"
+                },
+                "city_name": {
+                        "store": true,
+                        "type": "text",
+                        "fielddata": true
+                },
+                "school_id": {
+                        "type": "keyword"
+                },
+                "school_city_id": {
+                        "type": "keyword"
+                },
+                "current_step_id": {
+                        "type": "keyword"
+                },
+                "school_last_age": {
+                        "type": "integer"
+                },
+                "age": {
+                        "type": "integer"
+                },
+                "gender": {
+                        "store": true,
+                        "type": "text",
+                        "fielddata": true
+                },
+                "cpf": {
+                        "type": "keyword"
+                },
+                "parents_income": {
+                        "type": "text",
+                        "fielddata": true
+                },
+                "is_child_still_in_school": {
+                        "type": "integer"
+                },
+                "parents_has_mother": {
+                        "type": "integer"
+                },
+                "place_cep": {
+                        "type": "keyword"
+                },
+                "school_address": {
+                        "type": "text",
+                        "fielddata": true
+                },
+                "guardian_race": {
+                        "type": "text",
+                        "fielddata": true
+                },
+                "current_step_type": {
+                        "type": "keyword"
+                },
+                "guardian_name": {
+                        "type": "text",
+                        "fielddata": true
+                },
+                "place_kind": {
+                        "type": "text",
+                        "fielddata": true
+                },
+                "work_activity_other": {
+                        "type": "text",
+                        "fielddata": true
+                },
+                "work_is_paid": {
+                        "type": "integer"
+                },
+                "updated_at": {
+                        "store": true,
+                        "format": "YYYY-MM-dd HH:mm:ss",
+                        "type": "date"
+                },
+                "risk_level": {
+                        "store": true,
+                        "type": "text",
+                        "fielddata": true
+                },
+                "alert_cause_id": {
+                        "type": "keyword"
+                },
+                "parents_has_father": {
+                        "type": "integer"
+                },
+                "school_city": {
+                        "type": "text",
+                        "fielddata": true
+                },
+                "guardian_job": {
+                        "type": "text",
+                        "fielddata": true
+                },
+                "parents_has_brother": {
+                        "type": "integer"
+                },
+                "place_address": {
+                        "type": "text",
+                        "fielddata": true
+                },
+                "tenant_id": {
+                        "store": true,
+                        "type": "keyword"
+                },
+                "rg": {
+                        "type": "keyword"
+                },
+                "school_last_name": {
+                        "type": "text",
+                        "fielddata": true
+                },
+                "current_case_id": {
+                        "store": true,
+                        "type": "keyword"
+                },
+                "observations": {
+                        "type": "text",
+                        "fielddata": true
+                },
+                "city_id": {
+                        "store": true,
+                        "type": "keyword"
+                },
+                "id": {
+                        "store": true,
+                        "type": "keyword"
+                },
+                "has_been_in_school": {
+                        "type": "integer"
+                },
+                "report_index": {
+                        "type": "long"
+                },
+                "actions_description": {
+                        "type": "text",
+                        "fielddata": true
+                },
+                "name": {
+                        "store": true,
+                        "type": "text",
+                        "fielddata": true
+                },
+                "school_last_year": {
+                        "type": "integer"
+                },
+                "created_at": {
+                        "store": true,
+                        "format": "YYYY-MM-dd HH:mm:ss",
+                        "type": "date"
+                },
+                "place_reference": {
+                        "type": "text",
+                        "fielddata": true
+                },
+                "school_neighborhood": {
+                        "type": "text",
+                        "fielddata": true
+                },
+                "place_uf": {
+                        "type": "text",
+                        "fielddata": true
+                },
+                "school_uf": {
+                        "type": "text",
+                        "fielddata": true
+                },
+                "place_city": {
+                        "type": "text",
+                        "fielddata": true
+                },
+                "place_city_id": {
+                        "type": "keyword"
+                },
+                "place_city_name": {
+                        "type": "text",
+                        "fielddata": true
+                },
+                "uf": {
+                        "store": true,
+                        "type": "text",
+                        "fielddata": true
+                },
+                "assigned_uf": {
+                        "store": true,
+                        "type": "text",
+                        "fielddata": true
+                },
+                "case_cause_ids": {
+                        "type": "text",
+                        "fielddata": true
+                },
+                "deleted_at": {
+                        "store": true,
+                        "format": "YYYY-MM-dd HH:mm:ss",
+                        "type": "date"
+                },
+                "country_region": {
+                        "store": true,
+                        "type": "text",
+                        "fielddata": true
+                },
+                "case_status": {
+                        "store": true,
+                        "type": "keyword"
+                },
+                "current_case": {
+                        "properties": {
+                                "case_cause_ids": {
+                                        "store": true,
+                                        "type": "keyword"
+                                },
+                                "assigned_user_id": {
+                                        "store": true,
+                                        "type": "keyword"
+                                },
+                                "current_step_type": {
+                                        "store": true,
+                                        "type": "text",
+                                        "fielddata": true
+                                },
+                                "id": {
+                                        "type": "keyword"
+                                },
+                                "created_by_user_id": {
+                                        "store": true,
+                                        "type": "keyword"
+                                },
+                                "current_step_id": {
+                                        "store": true,
+                                        "type": "keyword"
+                                },
+                                "updated_at": {
+                                        "store": true,
+                                        "format": "YYYY-MM-dd HH:mm:ss",
+                                        "type": "date"
+                                },
+                                "risk_level": {
+                                        "store": true,
+                                        "type": "text",
+                                        "fielddata": true
+                                },
+                                "linked_steps": {
+                                        "properties": {
+                                                "id": {
+                                                        "type": "keyword"
+                                                },
+                                                "index": {
+                                                        "type": "long",
+                                                        "index": "false"
+                                                },
+                                                "next": {
+                                                        "properties": {
+                                                                "index": {
+                                                                        "type": "long",
+                                                                        "index": "false"
+                                                                },
+                                                                "type": {
+                                                                        "type": "keyword"
+                                                                }
+                                                        }
+                                                },
+                                                "type": {
+                                                        "type": "keyword"
+                                                }
+                                        }
+                                },
+                                "alert_cause_id": {
+                                        "store": true,
+                                        "type": "text",
+                                        "fielddata": true
+                                },
+                                "name": {
+                                        "store": true,
+                                        "type": "text",
+                                        "fielddata": true
+                                },
+                                "child_id": {
+                                        "type": "keyword"
+                                },
+                                "created_at": {
+                                        "store": true,
+                                        "format": "YYYY-MM-dd HH:mm:ss",
+                                        "type": "date"
+                                },
+                                "case_status": {
+                                        "store": true,
+                                        "type": "text",
+                                        "fielddata": true
+                                },
+                                "is_current": {
+                                        "type": "integer"
+                                },
+                                "enrolled_at": {
+                                        "store": true,
+                                        "format": "dateOptionalTime",
+                                        "type": "date"
+                                },
+                                "assigned_group_id": {
+                                        "store": true,
+                                        "type": "keyword"
+                                },
+                                "cancel_reason": {
+                                        "store": true,
+                                        "type": "text",
+                                        "fielddata": true
+                                }
+                        }
+                },
+                "work_weekly_hours": {
+                        "type": "integer"
+                },
+                "school_last_grade": {
+                        "type": "text",
+                        "fielddata": true
+                },
+                "evasion_reason": {
+                        "type": "text",
+                        "fielddata": true
+                },
+                "handicapped_reason_not_enrolled": {
+                        "type": "text",
+                        "fielddata": true
+                },
+                "nis": {
+                        "type": "keyword"
+                },
+                "dob": {
+                        "store": true,
+                        "format": "dateOptionalTime",
+                        "type": "date"
+                },
+                "mother_name": {
+                        "store": true,
+                        "type": "text",
+                        "fielddata": true
+                },
+                "guardian_schooling": {
+                        "type": "text",
+                        "fielddata": true
+                },
+                "child_status": {
+                        "store": true,
+                        "type": "text",
+                        "fielddata": true
+                },
+                "school_last_address": {
+                        "type": "text",
+                        "fielddata": true
+                },
+                "reason_not_enrolled": {
+                        "type": "text",
+                        "fielddata": true
+                }
+        }
 }
