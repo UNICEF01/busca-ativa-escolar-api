@@ -1,61 +1,65 @@
-{
-	"analysis": {
-		"filter": {
-			"autocomplete_filter": {
-				"type":     "edge_ngram",
-				"min_gram": 3,
-				"max_gram": 20
-			}
-		},
-		"analyzer": {
-			"autocomplete": {
-				"type":      "custom",
-				"tokenizer": "standard",
-				"char_filter": ["strip_symbols"],
-				"filter": ["lowercase", "autocomplete_filter"]
-			},
-			"folding": {
-				"tokenizer": "standard",
-				"char_filter": ["strip_symbols"],
-				"filter":  [ "autocomplete_filter", "lowercase", "asciifolding" ]
-			}
-		},
-		"char_filter": {
-			"strip_symbols": {
-				"type": "mapping",
-				"mappings": [
-					") => ",
-					"( => ",
-					". => ",
-					", => ",
-					": => ",
-					"; => ",
-					"' => ",
-					"\" => ",
-					"[ => ",
-					"] => ",
-					"| => ",
-					"@ => ",
-					"! => ",
-					"$ => ",
-					"% => ",
-					"^ => ",
-					"& => ",
-					"* => ",
-					"- => ",
-					"+ => ",
-					"{ => ",
-					"} => ",
-					"/ => ",
-					"> => ",
-					"< => ",
-					"= => ",
-					"~ => ",
-					"` => ",
-					"_ => ",
-					"# => "
-				]
-			}
-		}
-	}
-}
+{"settings": {
+    "index": {
+      "number_of_shards": 5,
+      "number_of_replicas": 0
+    },
+        "analysis": {
+                "filter": {
+                        "autocomplete_filter": {
+                                "type":     "edge_ngram",
+                                "min_gram": 3,
+                                "max_gram": 20
+                        }
+                },
+                "analyzer": {
+                        "autocomplete": {
+                                "type":      "custom",
+                                "tokenizer": "standard",
+                                "char_filter": ["strip_symbols"],
+                                "filter": ["lowercase", "autocomplete_filter"]
+                        },
+                        "folding": {
+                                "tokenizer": "standard",
+                                "char_filter": ["strip_symbols"],
+                                "filter":  [ "autocomplete_filter", "lowercase", "asciifolding" ]
+                        }
+                },
+                "char_filter": {
+                        "strip_symbols": {
+                                "type": "mapping",
+                                "mappings": [
+                                        ") => ",
+                                        "( => ",
+                                        ". => ",
+                                        ", => ",
+                                        ": => ",
+                                        "; => ",
+                                        "' => ",
+                                        "\" => ",
+                                        "[ => ",
+                                        "] => ",
+                                        "| => ",
+                                        "@ => ",
+                                        "! => ",
+                                        "$ => ",
+                                        "% => ",
+                                        "^ => ",
+                                        "& => ",
+                                        "* => ",
+                                        "- => ",
+                                        "+ => ",
+                                        "{ => ",
+                                        "} => ",
+                                        "/ => ",
+                                        "> => ",
+                                        "< => ",
+                                        "= => ",
+                                        "~ => ",
+                                        "` => ",
+                                        "_ => ",
+                                        "# => "
+                                ]
+                        }
+                }
+        }
+}}
