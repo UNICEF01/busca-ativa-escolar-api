@@ -56,7 +56,7 @@ class SendEmailsActualizeFrequency extends Command
                 $dayOfMidleOfMonth = intval(date("t")/2); //number
 
                 //DIARIA SE PERIODICIDADE DIARIA E DIA DA SEMANA ATE SEXTA_FEIRA
-                if( $school->periodicidade === School::PERIODICIDADE_DIARIA AND ($today_week > 0 AND $today_week <= 5) ) {
+                if( $school->periodicidade === School::PERIODICIDADE_DIARIA AND ($today_week > 0 AND $today_week <= 6) ) {
                     $this->createFrequenciesBySchool($school);
                     try {
                         $message = new ClassFrequencyNotification($school, School::PERIODICIDADE_DIARIA);
