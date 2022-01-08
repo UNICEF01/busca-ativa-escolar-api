@@ -56,7 +56,7 @@ class SendEmailsActualizeFrequency extends Command
                 $dayOfMidleOfMonth = intval(date("t")/2); //number
 
                 //DIARIA SE PERIODICIDADE DIARIA E DIA DA SEMANA ATE SEXTA_FEIRA
-                if( $school->periodicidade === School::PERIODICIDADE_DIARIA AND ($today_week > 0 AND $today_week <= 6) ) {
+                if( $school->periodicidade === School::PERIODICIDADE_DIARIA AND ($today_week > 0 AND $today_week <= 5) ) {
                     $this->createFrequenciesBySchool($school);
                     try {
                         $message = new ClassFrequencyNotification($school, School::PERIODICIDADE_DIARIA);
@@ -123,7 +123,7 @@ class SendEmailsActualizeFrequency extends Command
             if( $school->periodicidade === School::PERIODICIDADE_DIARIA){
 
                 //SE DE TERÇA A SEXTA-FEIRA
-                if( $today_week > 1 AND $today_week <= 6){
+                if( $today_week > 1 AND $today_week <= 5s){
                     $savedFrequency = Frequency::where([
                         ['created_at', '>=', Carbon::yesterday()],
                         ['classes_id', '=', $classe->id]
