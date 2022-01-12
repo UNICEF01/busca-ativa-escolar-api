@@ -13,7 +13,7 @@ class AddFieldIsStateTenants extends Migration
      */
     public function up()
     {
-        Schema::table('tenats', function($table) {
+        Schema::table('tenants', function($table) {
             $table->boolean('is_state')->index()->default(false)->comment = 'flag para ver se é uma cidade-estado';
         });
     }
@@ -25,7 +25,7 @@ class AddFieldIsStateTenants extends Migration
      */
     public function down()
     {
-        Schema::table('tenats', function($table) {
+        Schema::table('tenants', function($table) {
             $table->dropColumn('is_state');
         });
     }
