@@ -123,7 +123,7 @@ class SendEmailsActualizeFrequency extends Command
             if( $school->periodicidade === School::PERIODICIDADE_DIARIA){
 
                 //SE DE TERÇA A SEXTA-FEIRA
-                if( $today_week > 1 AND $today_week <= 5s){
+                if( $today_week > 1 AND $today_week <= 5){
                     $savedFrequency = Frequency::where([
                         ['created_at', '>=', Carbon::yesterday()],
                         ['classes_id', '=', $classe->id]
