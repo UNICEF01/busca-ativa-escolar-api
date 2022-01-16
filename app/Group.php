@@ -47,7 +47,7 @@ class Group extends Model {
 	protected $table = "groups";
 	protected $fillable = [
 		'tenant_id',
-
+        'parent_id',
 		'name',
 		'is_primary',
 	];
@@ -65,6 +65,22 @@ class Group extends Model {
 	public function tenant() {
 		return $this->hasOne('BuscaAtivaEscolar\Tenant', 'id', 'tenant_id');
 	}
+
+    /**
+     * The group parent this group belongs to.
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function parent() {
+        return $this->hasOne('BuscaAtivaEscolar\Group', 'id', 'parent_id');
+    }
+
+    /**
+     * The the groups users belonging in this user group.
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function children() {
+        return $this->hasMany('BuscaAtivaEscolar\Group', 'parent_id', 'id');
+    }
 
 	/**
 	 * The users belonging in this user group.

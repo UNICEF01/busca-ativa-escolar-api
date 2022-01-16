@@ -37,10 +37,11 @@ class ChildActivityNotificationGenerator
 
     protected function resolveGroupUsers(Child $child)
     {
+        /*
         $groupIDs = Group::getGroupIDsByAlertCause($child->tenant, $child->currentCase->alert_cause_id);
-//		if(sizeof($groupIDs) <= 0) return null; is_array($usersInGroup) && sizeof($usersInGroup) <= 0
         if (is_array($groupIDs) && (sizeof($groupIDs) <= 0)) return null;
         return User::findByGroupIDs($groupIDs);
+        */
     }
 
     public function onAlertSpawned(AlertSpawned $event)
@@ -70,19 +71,7 @@ class ChildActivityNotificationGenerator
 
     public function onStepStarted(CaseStepStarted $event)
     {
-        $usersInGroup = $this->resolveGroupUsers($event->step->child);
-        if (is_array($usersInGroup) && (sizeof($usersInGroup) > 0)) {
-//		if(sizeof($usersInGroup) > 0) {
-            Notification::send($usersInGroup, new ChildUpdated($event->step->child, 'assigned_to_group'));
-        }
 
-        if (!$event->step->assignedUser) return;
-
-        if(!empty($usersInGroup)) {
-            if ((is_array($usersInGroup) && sizeof($usersInGroup) <= 0) || !$usersInGroup->search($event->step->assignedUser)) {
-                Notification::send($event->step->assignedUser, new ChildUpdated($event->step->child, 'assigned_to_me'));
-            }
-        }
     }
 
     public function onStepCompleted(CaseStepCompleted $event)

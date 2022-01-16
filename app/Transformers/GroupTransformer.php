@@ -29,11 +29,10 @@ class GroupTransformer extends TransformerAbstract {
 			'id' => $group->id,
 			'name' => $group->name,
 			'is_primary' => $group->is_primary,
-
 			'tenant_id' => $group->tenant_id,
-
 			'created_at' => $group->created_at ? $group->created_at->toIso8601String() : null,
 			'updated_at' => $group->updated_at ? $group->updated_at->toIso8601String() : null,
+            'children' => $group->children
 		];
 	}
 

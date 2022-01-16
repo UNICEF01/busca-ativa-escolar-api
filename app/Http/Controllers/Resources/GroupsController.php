@@ -39,6 +39,17 @@ class GroupsController extends BaseController {
 
 	}
 
+    public function returnsGroupedGroups() {
+        $query = $this->currentUser()->isRestrictedToUF()
+            ? Group::withoutGlobalScope()->where('uf', $this->currentUser()->uf)
+            : Group::query();
+        $groups = $query->orderBy('created_at', 'ASC')
+            ->with('children.children.children.children.children')
+            ->whereDoesntHave('parent')
+            ->get();
+        return response()->json(['data' => $groups]);
+    }
+
 	public function findByTenant(){
 
         $tenant_id = request('tenant_id');
