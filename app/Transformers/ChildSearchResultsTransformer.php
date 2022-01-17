@@ -42,7 +42,12 @@ class ChildSearchResultsTransformer extends TransformerAbstract {
 
 			'mother_name' => $document['_source']['mother_name'] ?? null,
 			'father_name' => $document['_source']['father_name'] ?? null,
+			
+			'place_city_name' => $document['_source']['place_city_name'] ?? null,
+			'place_uf' => $document['_source']['place_uf'] ?? null,	
 
+
+			
 			'risk_level' => $document['_source']['risk_level'] ?? null,
 			'gender' => $document['_source']['gender'] ?? null,
 			'age' => $document['_source']['age'] ?? null,
