@@ -43,8 +43,9 @@ class GroupsController extends BaseController {
         $query = $this->currentUser()->isRestrictedToUF()
             ? Group::withoutGlobalScope()->where('uf', $this->currentUser()->uf)
             : Group::query();
-        $groups = $query->orderBy('created_at', 'ASC')
-            ->with('children.children.children.children.children')
+        $groups = $query
+            ->orderBy('created_at', 'ASC')
+            ->with('children.children.children')
             ->whereDoesntHave('parent')
             ->get();
         return response()->json(['data' => $groups]);
@@ -137,5 +138,10 @@ class GroupsController extends BaseController {
 
 		return response()->json(['status' => 'ok', 'users_moved_to' => $targetGroup]);
 	}
+
+    public function getGroup($id) {
+        $group = Group::query()->where('id', '=', $id)->with('children.children')->get()->first();
+        return response()->json(['status' => 'ok', 'group' => $group]);
+    }
 
 }
