@@ -28,7 +28,10 @@ class GroupsController extends BaseController {
             ? Group::withoutGlobalScope()->where('uf', $this->currentUser()->uf)
             : Group::query();
 
-		$groups = $query->orderBy('created_at', 'ASC')->get();
+		$groups = $query->with('children.children')
+            ->with('children.children.children')
+            ->whereDoesntHave('parent')
+            ->orderBy('created_at', 'ASC')->get();
 
 		return fractal()
 			->collection($groups)
