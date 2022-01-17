@@ -159,6 +159,7 @@ class ChildrenController extends BaseController
 
 		$results = $search->search(new Child(), $query, 2000);
 
+//return ($results);
 		return fractal()
 			->item($results)
 			->transformWith(new SearchResultsTransformer(new ChildSearchResultsTransformer(), $query, $attempted))
@@ -176,6 +177,7 @@ class ChildrenController extends BaseController
 		$query = $query->getQuery();
 
 		$results = $search->search(new Child(), $query, 2000);
+
 
 		$data = fractal()
 			->item($results)
