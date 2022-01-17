@@ -113,7 +113,7 @@ class User extends Authenticatable implements JWTSubject
 
 	const TYPE_VISITANTE = "perfil_visitante";              // apenas para filtro dos perfis abaixo
 	const TYPE_VISITANTE_NACIONAL = "visitante_nacional";   // apenas para filtro dos perfis abaixo
-	const TYPE_VISITANTE_ESTADUAL = "visitante_estadual";   // apenas para filtro dos perfis abaixo
+	const TYPE_VISITANTE_ESTADUAL = "visitante";   // apenas para filtro dos perfis abaixo
 
 	const TYPE_VISITANTE_NACIONAL_UM = "visitante_nacional_1";
 	const TYPE_VISITANTE_NACIONAL_DOIS = "visitante_nacional_2";
