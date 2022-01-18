@@ -147,7 +147,7 @@ class StateSignup extends Model
 		$this->sendRejectionNotification();
 	}
 
-	public function updateData($type, $dataTenant)
+	public function updateDate($type, $dataTenant)
 	{
 		if (!in_array($type, ['admin', 'coordinator'])) {
 			throw new \InvalidArgumentException("Invalid data type: {$type}; valid types are: admin | coordinator");
