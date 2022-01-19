@@ -93,12 +93,12 @@ class ChildrenController extends BaseController
 			->filterByTerm('tenant_id', false)
 			->filterByTerm('uf', false)
 			->filterByTerm('assigned_uf', false)
-			//->filterByTerm('place_city_name', false)
+			->filterByTerm('place_city_name', false)
 
 			->addTextFields(['name', 'cause_name', 'step_name', 'assigned_user_name'], 'match')
 			->searchTextInColumns(
 				'location_full',
-				['place_address^3', 'place_cep^2', 'place_city^2', 'place_uf', 'place_neighborhood', 'place_reference']
+				['place_address^3', 'place_cep^2', 'place_city^2', 'place_uf', 'place_neighborhood', 'place_reference','place_city_name']
 			)
 			
 			->filterByTerms('alert_status', false)
