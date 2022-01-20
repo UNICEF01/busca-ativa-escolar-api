@@ -54,9 +54,9 @@ class IdentityController extends BaseController
 
             if (!$token) return response()->json(['error' => 'invalid_credentials'], 401);
 
-            if ($this->lgpdService->checkAccess($credentials['email']) === false)
+            /*if ($this->lgpdService->checkAccess($credentials['email']) === false)
                 return response()->json(['error' => 'lgpd_validation_fail', 'reason' => 'User/State/Tenant not accepted lgpd'], 401);
-        
+            */
 
             $user = fractal()
                 ->item(Auth::user())
