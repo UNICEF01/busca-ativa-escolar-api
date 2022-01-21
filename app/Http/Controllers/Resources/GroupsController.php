@@ -164,7 +164,7 @@ class GroupsController extends BaseController {
 	}
 
 	public function update(Group $group) {
-		$group->fill(request()->only(['name']));
+		$group->fill(request()->only(['name','parent_id']));
 		$group->save();
 
 		return response()->json(['status' => 'ok', 'group' => $group]);
