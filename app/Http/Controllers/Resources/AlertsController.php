@@ -84,9 +84,17 @@ class AlertsController extends BaseController {
         if(!empty(request()->get('city_name')) || property_exists($stdRequest, 'city_name') ){
             $query->whereHas('alert', function ($sq) use ($stdRequest) {
                 if(!empty(request()->get('city_name'))) { $sq->where('place_city_name', 'like', '%' . request('city_name') . '%'); }
-                if( property_exists($stdRequest, 'city_name') ) { $sq->orderBy('place_city_name', $stdRequest->neighborhood); }
+                if( property_exists($stdRequest, 'city_name') ) { $sq->orderBy('place_city_name', $stdRequest->city_name); }
             });
         }
+
+        if(!empty(request()->get('alert_cause_id'))  && request()->get('alert_cause_id') !== ""|| property_exists($stdRequest, 'alert_cause_id') ){
+            $query->whereHas('alert', function ($sq) use ($stdRequest) {
+                if(!empty(request()->get('alert_cause_id'))) { $sq->where('alert_cause_id', 'like', '%' . request('alert_cause_id') . '%'); }
+                if( property_exists($stdRequest, 'alert_cause_id') ) { $sq->orderBy('alert_cause_id', $stdRequest->alert_cause_id); }
+            });
+        }
+        
 
         $max = request('max', 128);
         if($max > 128) $max = 128;
