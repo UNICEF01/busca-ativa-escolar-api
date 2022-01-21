@@ -58,7 +58,8 @@ class CaseTransformer extends TransformerAbstract {
 			'created_at' => $case->created_at ? $case->created_at->toIso8601String() : null,
 			'updated_at' => $case->updated_at ? $case->updated_at->toIso8601String() : null,
 			'enrolled_at' => $case->enrolled_at,
-            'tenant_id' => $case->tenant ? $case->tenant->id : null
+            'tenant_id' => $case->tenant ? $case->tenant->id : null,
+            'group' => $case->group ? $case->group : null
 		];
 	}
 

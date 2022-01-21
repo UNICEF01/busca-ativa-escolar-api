@@ -20,7 +20,6 @@ use BuscaAtivaEscolar\Events\ChildCaseCancelled;
 use BuscaAtivaEscolar\Events\ChildCaseClosed;
 use BuscaAtivaEscolar\Events\ChildCaseCompleted;
 use BuscaAtivaEscolar\Events\ChildCaseInterrupted;
-use BuscaAtivaEscolar\Http\Controllers\Resources\AlertsController;
 use BuscaAtivaEscolar\Mail\ReopenCaseNotification;
 use BuscaAtivaEscolar\Traits\Data\IndexedByUUID;
 use BuscaAtivaEscolar\Traits\Data\TenantScopedModel;
@@ -142,6 +141,8 @@ class ChildCase extends Model
         'current_step_type',
 
         'linked_steps',
+
+        'group_id',
     ];
 
     protected $casts = [
@@ -894,6 +895,15 @@ class ChildCase extends Model
         );
 
         return $toArray;
+    }
+
+    /**
+     * The group this case belongs to.
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function group()
+    {
+        return $this->hasOne('BuscaAtivaEscolar\Group', 'id', 'group_id');
     }
 
 }
