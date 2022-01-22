@@ -903,7 +903,7 @@ class ChildCase extends Model
      */
     public function group()
     {
-        return $this->hasOne('BuscaAtivaEscolar\Group', 'id', 'group_id');
+        return $this->hasOne('BuscaAtivaEscolar\Group', 'id', 'group_id')->withTrashed();
     }
 
 }
