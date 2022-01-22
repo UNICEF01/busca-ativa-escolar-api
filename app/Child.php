@@ -582,6 +582,7 @@ class Child extends Model implements Searchable, CanBeAggregated, CollectsDailyM
         }
 
         if ($this->currentCase) {
+
             $data['case_status'] = $this->currentCase->case_status;
             $data['cancel_reason'] = $this->currentCase->cancel_reason;
 
@@ -592,6 +593,9 @@ class Child extends Model implements Searchable, CanBeAggregated, CollectsDailyM
             } else if ($this->currentCase->alert_cause_id) {
                 $data['cause_name'] = AlertCause::getByID(intval($this->currentCase->alert_cause_id))->label ?? '';
             }
+
+            $data['group_id'] = $this->currentCase->group ? $this->currentCase->group->id : null;
+            $data['group_name'] = $this->currentCase->group ? $this->currentCase->group->name : null;
 
         }
 
