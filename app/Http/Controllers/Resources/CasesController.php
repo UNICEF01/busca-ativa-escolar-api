@@ -116,4 +116,11 @@ class CasesController extends BaseController  {
 
     }
 
+    public function update(ChildCase $case) {
+        $case->fill(request()->only(['group_id']));
+        $case->child->save(); //reindex elastic
+        $case->save();
+        return response()->json(['status' => 'ok', 'case' => $case]);
+    }
+
 }
