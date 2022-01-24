@@ -54,6 +54,10 @@ class AlertsController extends BaseController {
             if(property_exists($stdRequest, 'name')){ $query->orderBy('name', $stdRequest->name); }
             if(property_exists($stdRequest, 'risk_level')){ $query->orderBy('risk_level', $stdRequest->risk_level); }
             if(property_exists($stdRequest, 'created_at')){ $query->orderBy('created_at', $stdRequest->created_at); }
+            if( property_exists($stdRequest, 'agent') ) { $sq->orderBy('name', $stdRequest->agent); }
+            if( property_exists($stdRequest, 'neighborhood') ) { $sq->orderBy('place_neighborhood', $stdRequest->neighborhood); }
+            if( property_exists($stdRequest, 'city_name') ) { $sq->orderBy('place_city_name', $stdRequest->city_name); }
+            if( property_exists($stdRequest, 'alert_cause_id') ) { $sq->orderBy('alert_cause_id', $stdRequest->alert_cause_id); }
         }
 
         if(Auth::user()->type === User::TYPE_SUPERVISOR_INSTITUCIONAL) {
@@ -90,7 +94,7 @@ class AlertsController extends BaseController {
 
         if(!empty(request()->get('alert_cause_id'))  && request()->get('alert_cause_id') !== ""|| property_exists($stdRequest, 'alert_cause_id') ){
             $query->whereHas('alert', function ($sq) use ($stdRequest) {
-                if(!empty(request()->get('alert_cause_id'))) { $sq->where('alert_cause_id', 'like', '%' . request('alert_cause_id') . '%'); }
+                if(!empty(request()->get('alert_cause_id'))) { $sq->where('alert_cause_id', request('alert_cause_id')); }
                 if( property_exists($stdRequest, 'alert_cause_id') ) { $sq->orderBy('alert_cause_id', $stdRequest->alert_cause_id); }
             });
         }
