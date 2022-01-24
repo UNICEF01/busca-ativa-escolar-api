@@ -32,7 +32,8 @@ class ChildSearchResultsTransformer extends TransformerAbstract {
 				]
 			];
 		}
-
+		$child = Child::where('id',  $document['_id'])->first();
+		$currentCase = $child->currentCase;
 		return [
 			'status' => 'ok',
 			'id' => $document['_id'],
@@ -85,7 +86,7 @@ class ChildSearchResultsTransformer extends TransformerAbstract {
             'place_address' => $document['_source']['place_address'] ?? null,
             'place_neighborhood' => $document['_source']['place_neighborhood'] ?? null,
             'place_cep' => $document['_source']['place_cep'] ?? null,
-			'goup_name' =>  $document['_source']['group_name'] ?? null,
+			'group_name' =>  $currentCase->group ? $currentCase->group->toArray()['name'] :  null,
             'dob' => $document['_source']['dob'] ?? null,
 		];
 	}
