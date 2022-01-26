@@ -85,6 +85,7 @@ class ChildSearchResultsTransformer extends TransformerAbstract {
             'place_neighborhood' => $document['_source']['place_neighborhood'] ?? null,
             'place_cep' => $document['_source']['place_cep'] ?? null,
 			'group_name' =>  $document['_source']['group_name'] ?? null,
+			'group_id' =>  $document['_source']['group_id'] ?? null,
             'dob' => $document['_source']['dob'] ?? null,
 		];
 	}
