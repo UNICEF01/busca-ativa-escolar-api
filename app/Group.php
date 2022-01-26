@@ -90,7 +90,15 @@ class Group extends Model {
 		return $this->hasMany('BuscaAtivaEscolar\User', 'group_id', 'id');
 	}
 
-	// -----------------------------------------------------------------------------------------------------------------
+    /**
+     * The cases belonging in this group.
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function cases() {
+        return $this->hasMany('BuscaAtivaEscolar\ChildCase', 'group_id', 'id');
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
 
 	/**
 	 * Updates the group settings object

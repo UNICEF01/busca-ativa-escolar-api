@@ -57,7 +57,7 @@ Route::group(['prefix' => 'v1', 'middleware' => 'api'], function () {
 			Route::post('/cases/{case}/transfer', 'Resources\CasesController@transfer')->middleware('can:cases.transfer');
 			Route::post('/cases/{case}/request-reopen', 'Resources\CasesController@requestReopen')->middleware('can:cases.request-reopen');
 			Route::post('/cases/{case}/request-transfer', 'Resources\CasesController@requestTransfer')->middleware('can:cases.request-transfer');
-			Route::resource('/cases', 'Resources\CasesController');
+            Route::resource('/cases', 'Resources\CasesController');
 		});
 
 		// Requests
@@ -82,6 +82,7 @@ Route::group(['prefix' => 'v1', 'middleware' => 'api'], function () {
 		});
 
 		// User Groups
+        Route::get('/groups/{id}', 'Resources\GroupsController@getGroup');
 		Route::get('/groups', 'Resources\GroupsController@index');
         Route::get('/grouped_groups', 'Resources\GroupsController@returnsGroupedGroups');
 		Route::post('/groups/tenant', 'Resources\GroupsController@findByTenant');
@@ -91,6 +92,7 @@ Route::group(['prefix' => 'v1', 'middleware' => 'api'], function () {
 		Route::put('/groups/{group}/settings', 'Resources\GroupsController@update_settings')->middleware('can:groups.manage');
 		Route::put('/groups/{group}', 'Resources\GroupsController@update')->middleware('can:groups.manage');
 		Route::delete('/groups/{group}', 'Resources\GroupsController@destroy')->middleware('can:groups.manage');
+        Route::put('/groups/{group}/replace_delete', 'Resources\GroupsController@replaceAndDelete')->middleware('can:groups.manage');
 
 		// Tenant Settings
 		Route::get('/settingstenantcase/tenant/{id}', 'Resources\SettingsController@get_tenant_settings_of_case');
