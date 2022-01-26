@@ -166,7 +166,6 @@ class GroupsController extends BaseController {
 	public function update(Group $group) {
 		$group->fill(request()->only(['name','parent_id']));
 		$group->save();
-
 		return response()->json(['status' => 'ok', 'group' => $group]);
 	}
 
@@ -181,6 +180,21 @@ class GroupsController extends BaseController {
 
 		return response()->json(['status' => 'ok', 'users_moved_to' => $targetGroup]);
 	}
+
+    public function replaceAndDelete(Group $group){
+        //$group -> to remove
+        $groupToReceive = Group::where('id', '=', request()['replace'])->get()->first();
+        $group->users()->update(['group_id' => $groupToReceive->id]);
+        $group->cases()->update(['group_id' => $groupToReceive->id]);
+
+        foreach ( $groupToReceive->cases as $case) {
+            $case->save();
+            \Log::info($case->child->name);
+            $case->child->save(); //reindex
+        }
+        $group->delete();
+        return response()->json(['status' => 'ok', 'users_and_cases_moved_to' => $groupToReceive->id]);
+    }
 
     public function transform($data) {
         if(is_array($data)) return $data;
