@@ -166,6 +166,10 @@ class GroupsController extends BaseController {
 	public function update(Group $group) {
 		$group->fill(request()->only(['name','parent_id']));
 		$group->save();
+        foreach ( $group->cases as $case) {
+            $case->save();
+            $case->child->save(); //reindex
+        }
 		return response()->json(['status' => 'ok', 'group' => $group]);
 	}
 
@@ -189,7 +193,6 @@ class GroupsController extends BaseController {
 
         foreach ( $groupToReceive->cases as $case) {
             $case->save();
-            \Log::info($case->child->name);
             $case->child->save(); //reindex
         }
         $group->delete();
