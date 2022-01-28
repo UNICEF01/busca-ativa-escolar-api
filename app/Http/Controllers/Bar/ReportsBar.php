@@ -434,12 +434,13 @@ class ReportsBar extends BaseController
         //meta --------------------------------------------------------
 
         if (Auth::user()->isRestrictedToTenant()) {
-            $goal_final = Auth::user()->tenant->city->goal ? $this->currentUser()->tenant->city->goal->goal : 0;
+            $goal_final = Auth::user()->tenant->city->goal ?
+                $this->currentUser()->tenant->city->goal->goal + $this->currentUser()->tenant->city->goal->accumulated_ciclo1 : 0;
         }
 
         if (Auth::user()->isRestrictedToUF()) {
 
-            $goal = Goal::selectRaw('sum(goals.goal) as goals')
+            $goal = Goal::selectRaw('sum(goals.goal+goals.accumulated_ciclo1) as goals')
                 ->join('cities', 'cities.ibge_city_id', '=', 'goals.id')
                 ->join('tenants', 'tenants.city_id', '=', 'cities.id')
                 ->where([
@@ -458,7 +459,7 @@ class ReportsBar extends BaseController
 
         if (Auth::user()->isGlobal()) {
 
-            $goal = Goal::selectRaw('sum(goals.goal) as goals')
+            $goal = Goal::selectRaw('sum(goals.goal+goals.accumulated_ciclo1) as goals')
                 ->join('cities', 'cities.ibge_city_id', '=', 'goals.id')
                 ->join('tenants', 'tenants.city_id', '=', 'cities.id');
 
