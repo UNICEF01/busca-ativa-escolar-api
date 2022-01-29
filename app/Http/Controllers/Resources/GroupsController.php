@@ -30,7 +30,7 @@ class GroupsController extends BaseController {
             : Group::query();
 
 		$groups = $query
-            ->with('children.children.children')
+            ->with('children.children.children.children')
             ->orderBy('created_at', 'ASC')->get();
 
 		return fractal()
@@ -48,7 +48,7 @@ class GroupsController extends BaseController {
             : Group::query();
         $groups = $query
             ->orderBy('created_at', 'ASC')
-            ->with('children.children.children')
+            ->with('children.children.children.children')
             ->whereDoesntHave('parent')
             ->get();
 
@@ -203,5 +203,59 @@ class GroupsController extends BaseController {
         if(is_array($data)) return $data;
         if(is_object($data)) return (array) $data;
         throw new \Exception('Cannot apply generic transformation to a non-object');
+    }
+
+    public function getGroup($groupId){
+
+        $query = $this->currentUser()->isRestrictedToUF()
+            ? Group::withoutGlobalScope()->where('uf', $this->currentUser()->uf)
+            : Group::query();
+
+        $groups = $query
+            ->orderBy('created_at', 'ASC')
+            ->where('id', '=', $groupId)
+            ->with('children.children.children')
+            ->get();
+
+        $groups = $groups->map(function ($group) {
+
+            $settings = $group->getSettings();
+            if(!$settings) { $settings = null; }
+            else{ $group->settings = $this->transform($settings); }
+
+            $group->children = $group->children->map(function ($group2){
+
+                $settings = $group2->getSettings();
+                if(!$settings) { $settings = null; }
+                else{ $group2->settings = $this->transform($settings); }
+
+                $group2->children = $group2->children->map(function ($group3){
+
+                    $settings = $group3->getSettings();
+                    if(!$settings) { $settings = null; }
+                    else{ $group3->settings = $this->transform($settings); }
+
+                    $group3->children = $group3->children->map(function ($group4){
+
+                        $settings = $group4->getSettings();
+                        if(!$settings) { $settings = null; }
+                        else{ $group4->settings = $this->transform($settings); }
+
+                        return $group4;
+
+                    });
+
+                    return $group3;
+
+                });
+
+                return $group2;
+
+            });
+
+            return $group;
+        });
+
+        return response()->json(['data' => $groups]);
     }
 }
