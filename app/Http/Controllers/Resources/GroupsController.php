@@ -30,7 +30,7 @@ class GroupsController extends BaseController {
             : Group::query();
 
 		$groups = $query
-            ->with('children.children.children.children')
+            ->with('children.children.children')
             ->orderBy('created_at', 'ASC')->get();
 
 		return fractal()
@@ -48,7 +48,7 @@ class GroupsController extends BaseController {
             : Group::query();
         $groups = $query
             ->orderBy('created_at', 'ASC')
-            ->with('children.children.children.children')
+            ->with('children.children.children')
             ->whereDoesntHave('parent')
             ->get();
 
