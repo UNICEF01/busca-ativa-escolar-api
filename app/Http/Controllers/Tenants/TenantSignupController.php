@@ -148,6 +148,8 @@ class TenantSignupController extends BaseController
 				break;
 		}
 
+		$pending->where('is_state', 0);
+
 		if (isset($filter['created_at']) && strlen($filter['created_at']) > 0) {
 			$numDays = intval($filter['created_at']);
 			$cutoffDate = Carbon::now()->addDays(-$numDays);

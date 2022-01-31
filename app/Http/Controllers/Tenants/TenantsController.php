@@ -94,6 +94,8 @@ class TenantsController extends BaseController
         $tenants = Tenant::query()->with(['operationalAdmin', 'politicalAdmin', 'users']);
         Tenant::applySorting($tenants, $sort);
 
+        $tenants->where('is_state', 0);
+
         if (isset($filter['name']) && strlen($filter['name']) > 0) {
             $tenants->where('name_ascii', 'REGEXP', strtolower(Str::ascii($filter['name'])));
         }
