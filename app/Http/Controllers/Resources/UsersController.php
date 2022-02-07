@@ -50,6 +50,11 @@ class UsersController extends BaseController
     public function search()
     {
         $query = User::with('group');
+        $group_id = $this->currentUser()->group_id;
+        $groups_ids = DB::table('groups')
+                        ->where('id',$group_id)
+                        ->orWhere('parent_id',$group_id)
+                        ->get();
 
         // If user is global user, they can filter by tenant_id
         if ($this->currentUser()->isGlobal() && !empty(request()->get('tenant_id'))) {
@@ -101,6 +106,8 @@ class UsersController extends BaseController
         if (!empty(request()->get('sort'))) {
             User::applySorting($query, request('sort', []));
         }
+
+        $query->whereIn('group_id', $groups_ids);
 
         $max = request('max', 128);
         if ($max > 128) $max = 128;
