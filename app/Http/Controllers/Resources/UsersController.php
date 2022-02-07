@@ -54,7 +54,7 @@ class UsersController extends BaseController
         $groups_ids = DB::table('groups')
                         ->where('id',$group_id)
                         ->orWhere('parent_id',$group_id)
-                        ->get();
+                        ->get()->toArray();
 
         // If user is global user, they can filter by tenant_id
         if ($this->currentUser()->isGlobal() && !empty(request()->get('tenant_id'))) {
