@@ -37,6 +37,7 @@ use League\Fractal\Pagination\IlluminatePaginatorAdapter;
 use Mail;
 use Maatwebsite\Excel\Excel as ExcelB;
 use BuscaAtivaEscolar\LGPD\Interfaces\ILgpd;
+use DB;
 
 class UsersController extends BaseController
 {
