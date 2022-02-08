@@ -56,6 +56,38 @@ class UsersController extends BaseController
                         ->where('id',$group_id)
                         ->orWhere('parent_id',$group_id)
                         ->get()->toArray();
+        $ids = [];
+        foreach($groups_ids as $id){
+            array_push($ids, $id->id);
+            $groups_ids2 = DB::table('groups')
+                        ->where('id',$id->id)
+                        ->orWhere('parent_id',$id->id)
+                        ->get()->toArray();
+            if($groups_ids2){
+                foreach($groups_ids2 as $id2){
+                    array_push($ids, $id2->id);
+                    $groups_ids3 = DB::table('groups')
+                            ->where('id',$id->id2)
+                            ->orWhere('parent_id',$id->id2)
+                            ->get()->toArray();
+                    if($groups_ids3){
+                        foreach($groups_ids3 as $id3){
+                            array_push($ids, $id3->id);
+                            $groups_ids4 = DB::table('groups')
+                                ->where('id',$id->id2)
+                                ->orWhere('parent_id',$id->id2)
+                                ->get()->toArray();
+                            if($groups_ids4){
+                                foreach($groups_ids4 as $id4){
+                                    array_push($ids, $id4->id);
+                                }
+                            }
+                        }
+                    } 
+                }
+            }   
+        }
+        $ids = array_unique($ids);
 
         // If user is global user, they can filter by tenant_id
         if ($this->currentUser()->isGlobal() && !empty(request()->get('tenant_id'))) {
@@ -108,7 +140,7 @@ class UsersController extends BaseController
             User::applySorting($query, request('sort', []));
         }
 
-        $query->whereIn('group_id', $groups_ids);
+        $query->whereIn('group_id', $ids);
 
         $max = request('max', 128);
         if ($max > 128) $max = 128;
