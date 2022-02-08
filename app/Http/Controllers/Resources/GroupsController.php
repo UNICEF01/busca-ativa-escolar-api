@@ -94,6 +94,42 @@ class GroupsController extends BaseController {
         return response()->json(['data' => $groups]);
     }
 
+    public function getGroupByUser(){
+        $group_id = $this->currentUser()->group_id;
+        $groups_ids = Group::where('id',$group_id)
+                        ->orWhere('parent_id',$group_id)
+                        ->get()->toArray();
+        $ids = [];
+        for($i = 0; $i < count($groups_ids); ++$i){
+            $ids[$i] = [$groups_ids[$i]['id'], $groups_ids[$i]['name']];
+            $groups_ids2 = Group::where('id',$groups_ids[$i]['id'])
+                ->orWhere('parent_id',$groups_ids[$i]['id'])
+                ->get()->toArray();
+            if($groups_ids2){
+                for($j = 0; $j < count($groups_ids2); ++$j){
+                    $ids[$i][$j] = [$groups_ids2[$j]['id'], $groups_ids2[$j]['name']];
+                    $groups_ids3 = Group::where('id',$groups_ids2[$j]['id'])
+                        ->orWhere('parent_id',$groups_ids2[$j]['id'])
+                        ->get()->toArray();
+                    if($groups_ids3){
+                        for($l = 0; $l < count($groups_ids3); ++$l){
+                            $ids[$i][$j][$l] = [$groups_ids3[$l]['id'], $groups_ids3[$l]['name']];
+                            $groups_ids4 = Group::where('id',$groups_ids3[$l]['id'])
+                                ->orWhere('parent_id',$groups_ids3[$l]['id'])
+                                ->get()->toArray();
+                            if($groups_ids4){
+                                for($k = 0; $k < count($groups_ids3); ++$k)
+                                    $ids[$i][$j][$l][$k] = [$groups_ids4[$k]['id'], $groups_ids4[$k]['name']];
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        $ids = array_map("unserialize", array_unique(array_map("serialize", $ids)));
+        return response()->json(['data' => $ids]);
+    }
+
 	public function findByTenant(){
 
         $tenant_id = request('tenant_id');
