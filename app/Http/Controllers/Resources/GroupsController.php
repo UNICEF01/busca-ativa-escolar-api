@@ -111,6 +111,7 @@ class GroupsController extends BaseController {
                         ->get()->toArray();
                     if($groups_ids3){
                         for($l = 0; $l < count($groups_ids3); ++$l){
+                            $ids[$i][$j][$l] = [$groups_ids3[$l]['id'], $groups_ids3[$l]['name']];
                             $groups_ids4 = Group::where('id',$groups_ids3[$l]['id'])
                                 ->orWhere('parent_id',$groups_ids3[$l]['id'])
                                 ->get()->toArray();
@@ -118,20 +119,14 @@ class GroupsController extends BaseController {
                                 for($k = 0; $k < count($groups_ids4); ++$k)
                                     $ids[$i][$j][$l][$k] = [$groups_ids4[$k]['id'], $groups_ids4[$k]['name']];
                             }
-                            else{
-                                $ids[$i][$j][$l] = [$groups_ids3[$l]['id'], $groups_ids3[$l]['name']];
-                            }
                         }
                     }
-                    else{
-                        $ids[$i][$j] = [$groups_ids2[$j]['id'], $groups_ids2[$j]['name']];
-                    }
+                    $ids[$i][$j] = [$groups_ids2[$j]['id'], $groups_ids2[$j]['name']];
                 }
             }
-            else{
-                $ids[$i] = [$groups_ids[$i]['id'], $groups_ids[$i]['name']];
-            }
+            $ids[$i] = [$groups_ids[$i]['id'], $groups_ids[$i]['name']];
         }
+
         $ids = array_map("unserialize", array_unique(array_map("serialize", $ids)));
         return response()->json(['data' => $ids]);
     }
