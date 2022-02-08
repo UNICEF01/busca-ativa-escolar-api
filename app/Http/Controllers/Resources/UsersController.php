@@ -67,15 +67,15 @@ class UsersController extends BaseController
                 foreach($groups_ids2 as $id2){
                     array_push($ids, $id2->id);
                     $groups_ids3 = DB::table('groups')
-                            ->where('id',$id->id2)
-                            ->orWhere('parent_id',$id->id2)
+                            ->where('id',$id2->id)
+                            ->orWhere('parent_id',$id2->id)
                             ->get()->toArray();
                     if($groups_ids3){
                         foreach($groups_ids3 as $id3){
                             array_push($ids, $id3->id);
                             $groups_ids4 = DB::table('groups')
-                                ->where('id',$id->id2)
-                                ->orWhere('parent_id',$id->id2)
+                                ->where('id',$id3->id)
+                                ->orWhere('parent_id',$id3->id)
                                 ->get()->toArray();
                             if($groups_ids4){
                                 foreach($groups_ids4 as $id4){
