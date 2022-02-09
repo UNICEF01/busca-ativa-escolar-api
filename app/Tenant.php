@@ -93,7 +93,8 @@ class Tenant extends Model  {
 
 		'educacenso_import_details',
 
-        'goal'
+        'goal',
+        'is_state'
 	];
 
 	protected $casts = [
