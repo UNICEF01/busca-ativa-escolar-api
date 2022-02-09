@@ -139,8 +139,10 @@ class UsersController extends BaseController
         if (!empty(request()->get('sort'))) {
             User::applySorting($query, request('sort', []));
         }
-
-        $query->whereIn('group_id', $ids);
+        if(!str_contains($this->currentUser()->type, 'estadual') || !str_contains($this->currentUser()->type, 'nacional')){
+            $query->whereIn('group_id', $ids);
+        }
+        
 
         $max = request('max', 128);
         if ($max > 128) $max = 128;
