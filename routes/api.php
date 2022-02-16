@@ -87,6 +87,7 @@ Route::group(['prefix' => 'v1', 'middleware' => 'api'], function () {
         Route::get('/grouped_groups', 'Resources\GroupsController@returnsGroupedGroups');
 		Route::get('/user_groups', 'Resources\GroupsController@getGroupByUser');
 		Route::post('/groups/tenant', 'Resources\GroupsController@findByTenant');
+        Route::post('/groups/grouped/tenant', 'Resources\GroupsController@findGroupedByTenant');
 		Route::post('/groups/uf', 'Resources\GroupsController@findByUf');
 		Route::post('/groups', 'Resources\GroupsController@store')->middleware('can:groups.manage');
 		Route::get('/groups/{group}', 'Resources\GroupsController@show')->middleware('can:groups.manage');

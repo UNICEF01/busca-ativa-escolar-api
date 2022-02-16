@@ -286,4 +286,25 @@ class GroupsController extends BaseController {
 
         return response()->json(['data' => $groups]);
     }
+
+    public function findGroupedByTenant(){
+
+        $tenant_id = request('tenant_id');
+
+        $query = Group::where('is_primary', '=', 1)
+            ->whereHas('tenant', function($query) use ($tenant_id){
+                $query->where('id', '=', $tenant_id);
+            });
+        $query->with('children.children.children.children');
+        $groups = $query->orderBy('created_at', 'ASC')->get();
+
+        return fractal()
+            ->collection($groups)
+            ->transformWith(new GroupTransformer())
+            ->serializeWith(new SimpleArraySerializer())
+            ->parseIncludes(request('with'))
+            ->respond();
+
+    }
+
 }
