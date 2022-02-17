@@ -99,7 +99,7 @@ class ChildrenController extends BaseController
 			}
 			if($check == 1){
 				unset($params['case_cause_ids']);
-				$params['case_cause_ids_null'] = 'NULL';
+				$params['case_cause_ids_null'] = true;
 			}
 		}
 		
@@ -120,7 +120,7 @@ class ChildrenController extends BaseController
 			->filterByTerm('current_step_type', false)
 			->filterByTerm('step_slug', false)
 			->filterByTerms('gender', $params['gender_null'] ?? false)
-			->filterByTerms('case_cause_ids', false)
+			->filterByTerms('case_cause_ids', $params['case_cause_ids_null'] ?? false)
 			->filterByTerms('place_kind', $params['place_kind_null'] ?? false)
 			->filterByRange('age', $params['age_null'] ?? false);
 
