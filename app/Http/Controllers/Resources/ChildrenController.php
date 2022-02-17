@@ -103,7 +103,6 @@ class ChildrenController extends BaseController
 				$params['case_cause_ids_null'] = true;
 			}
 		}
-		print_r($params);
 		$query = ElasticSearchQuery::withParameters($params)
 			->filterByTerm('tenant_id', false)
 			->filterByTerm('uf', false)
