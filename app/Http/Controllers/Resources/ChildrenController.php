@@ -104,7 +104,7 @@ class ChildrenController extends BaseController
 			->filterByTerm('current_step_type', false)
 			->filterByTerm('step_slug', false)
 			->filterByTerms('gender', $params['gender_null'] ?? false)
-			->filterByTerms('case_cause_ids', false)
+			->filterByTerm('case_cause_ids', false)
 			->filterByTerms('place_kind', $params['place_kind_null'] ?? false)
 			->filterByRange('age', $params['age_null'] ?? false);
 
