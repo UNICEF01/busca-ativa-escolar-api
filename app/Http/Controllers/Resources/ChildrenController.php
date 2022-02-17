@@ -99,7 +99,7 @@ class ChildrenController extends BaseController
 			}
 			if($check == 1){
 				unset($params['case_cause_ids']);
-				$params['case_cause_ids'] = "NULL";
+				$params['case_cause_ids_null'];
 			}
 		}
 		
