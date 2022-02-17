@@ -65,6 +65,7 @@ class ChildrenController extends BaseController
 	{
 		
 		$params = $this->filterAsciiFields(request()->all(), ['name', 'cause_name', 'assigned_user_name', 'location_full', 'step_name', 'city_name']);
+		
 		// Scope the query within the tenant
 		if (Auth::user()->isRestrictedToTenant()) 
 			$params['tenant_id'] = Auth::user()->tenant_id;
@@ -86,7 +87,12 @@ class ChildrenController extends BaseController
 
 		if (isset($params['uf'])) $params['uf'] = Str::lower($params['uf']);
 		if (isset($params['assigned_uf'])) $params['assigned_uf'] = Str::lower($params['assigned_uf']);
-
+		
+		if(array_key_exists("case_cause_ids", $params)) {
+			if(array_search(601, array_column($params, 'case_cause_ids')))
+				$params['case_cause_ids'] = null;
+		}
+		
 		$query = ElasticSearchQuery::withParameters($params)
 			->filterByTerm('tenant_id', false)
 			->filterByTerm('uf', false)
@@ -104,7 +110,7 @@ class ChildrenController extends BaseController
 			->filterByTerm('current_step_type', false)
 			->filterByTerm('step_slug', false)
 			->filterByTerms('gender', $params['gender_null'] ?? false)
-			->filterByTerm('case_cause_ids', false)
+			->filterByTerms('case_cause_ids', false)
 			->filterByTerms('place_kind', $params['place_kind_null'] ?? false)
 			->filterByRange('age', $params['age_null'] ?? false);
 
