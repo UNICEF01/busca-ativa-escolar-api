@@ -99,10 +99,11 @@ class ChildrenController extends BaseController
 			}
 			if($check == 1){
 				unset($params['case_cause_ids']);
+				$params['case_cause_ids'] = [];
 				$params['case_cause_ids_null'] = true;
 			}
 		}
-		
+		print_r($params);
 		$query = ElasticSearchQuery::withParameters($params)
 			->filterByTerm('tenant_id', false)
 			->filterByTerm('uf', false)
