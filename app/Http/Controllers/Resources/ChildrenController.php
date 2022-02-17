@@ -66,14 +66,12 @@ class ChildrenController extends BaseController
 		
 		$params = $this->filterAsciiFields(request()->all(), ['name', 'cause_name', 'assigned_user_name', 'location_full', 'step_name', 'city_name']);
 		// Scope the query within the tenant
-		if (Auth::user()->isRestrictedToTenant()) {
+		if (Auth::user()->isRestrictedToTenant()) 
 			$params['tenant_id'] = Auth::user()->tenant_id;
-		}
-
+		
 		// Scope the query to state agents
-		if (Auth::user()->isRestrictedToUF()) {
+		if (Auth::user()->isRestrictedToUF()) 
 			$params['assigned_uf'] = Auth::user()->uf;
-		}
 
 		// Scope the query to visitantes estaduais
 		if (
@@ -93,31 +91,22 @@ class ChildrenController extends BaseController
 			->filterByTerm('tenant_id', false)
 			->filterByTerm('uf', false)
 			->filterByTerm('assigned_uf', false)
-
-			
-
 			->addTextFields(['name', 'cause_name', 'step_name', 'assigned_user_name', 'city_name', 'group_id'], 'match')
 			->searchTextInColumns(
 				'location_full',
 				['place_address^3', 'place_cep^2', 'place_city^2', 'place_uf', 'place_neighborhood', 'place_reference']
 
 			)
-
-			->searchTextInColumns(
-				'city_name_full',
-				['place_uf','place_city_name']
-			)
-			
+			->searchTextInColumns('city_name_full',['place_uf','place_city_name'])
 			->filterByTerms('alert_status', false)
 			->filterByTerms('case_status', false)
 			->filterByTerms('risk_level', $params['risk_level_null'] ?? false)
 			->filterByTerm('current_step_type', false)
 			->filterByTerm('step_slug', false)
 			->filterByTerms('gender', $params['gender_null'] ?? false)
+			->filterByTerms('case_cause_ids', false)
 			->filterByTerms('place_kind', $params['place_kind_null'] ?? false)
 			->filterByRange('age', $params['age_null'] ?? false);
-;
-
 
 		// Scope query within user, when relevant
 		if (Auth::user()->type === User::TYPE_TECNICO_VERIFICADOR) {
@@ -140,17 +129,8 @@ class ChildrenController extends BaseController
 
 			$filters = [
 				'assigned_user_id' => ['type' => 'term', 'search' => Auth::user()->id],
-
-				// Essa regra está sendo desativada, pois não é possível retornar o getHandledCaseCauses dos grupos ...
-				//'case_cause_ids' => ['type' => 'terms', 'search' => $group->getSettings()->getHandledCaseCauses()],
 				'alert_cause_id' => ['type' => 'terms', 'search' => $handledAlertCauses],
 			];
-
-
-			//Essa regra impossibilita o retorno das outras etapas para Supervisores da educacao
-			//			if($group->id === $tenant->primaryGroup->id) {
-			//				$filters['current_step_type'] = ['type' => 'term', 'search' => 'BuscaAtivaEscolar\\CaseSteps\\Rematricula'];
-			//			}
 
 			$query->filterByOneOf($filters);
 		}
@@ -168,7 +148,6 @@ class ChildrenController extends BaseController
 
 		$results = $search->search(new Child(), $query, 2000);
 
-//return ($results);
 		return fractal()
 			->item($results)
 			->transformWith(new SearchResultsTransformer(new ChildSearchResultsTransformer(), $query, $attempted))
@@ -196,7 +175,6 @@ class ChildrenController extends BaseController
 			->toArray();
 
 		$tenantID = auth()->user()->tenant_id ?? 'global';
-
 
 		$this->excel->store(new ChildrenExport($data), 'attachment/children_reports/' . auth()->user()->id . '/' . auth()->user()->id . '.xls');
 
