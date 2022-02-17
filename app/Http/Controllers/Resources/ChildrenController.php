@@ -89,8 +89,18 @@ class ChildrenController extends BaseController
 		if (isset($params['assigned_uf'])) $params['assigned_uf'] = Str::lower($params['assigned_uf']);
 		
 		if(array_key_exists("case_cause_ids", $params)) {
-			if(array_search(601, array_column($params, 'case_cause_ids')))
+			$check = 0;
+			for($i = 0; $i < count($params['case_cause_ids']); ++$i){
+				if($params['case_cause_ids'][$i] == 601){
+					$check = 1;
+					break;
+				}
+					
+			}
+			if($check == 1){
+				unset($params['case_cause_ids']);
 				$params['case_cause_ids'] = null;
+			}
 		}
 		
 		$query = ElasticSearchQuery::withParameters($params)
