@@ -128,8 +128,7 @@ class StepsController extends BaseController {
 
 			$query->where(function($q) use ($step) {
 				return $q // Allow both tenant users or state agent users
-					->where('tenant_id', $step->tenant_id)
-					->orWhereRaw('(tenant_id IS NULL AND uf = ?)', [$step->tenant->uf]);
+					->where('tenant_id', $step->tenant_id);
 			});
 
 			$users = $query->get();
