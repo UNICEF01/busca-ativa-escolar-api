@@ -87,6 +87,7 @@ class ChildSearchResultsTransformer extends TransformerAbstract {
 			'group_name' =>  $document['_source']['group_name'] ?? null,
 			'group_id' =>  $document['_source']['group_id'] ?? null,
             'dob' => $document['_source']['dob'] ?? null,
+            'assigned_uf' => $document['_source']['assigned_uf'] ?? null,
 		];
 	}
 
