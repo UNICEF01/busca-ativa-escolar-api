@@ -48,6 +48,7 @@ class UserTransformer extends TransformerAbstract {
 
 			'tenant_id' => $user->tenant_id,
 			'group_id' => $user->group_id,
+            'group_name' => $user->group ? $user->group->name : null,
 			'city_id' => $user->city_id,
 			'uf' => $user->uf,
 
