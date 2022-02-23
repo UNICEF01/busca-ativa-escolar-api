@@ -266,7 +266,7 @@ class ElasticSearchQuery {
 		}
 		else{
 			for($i = 0; $i < count($params['case_cause_ids']); ++$i)
-				$this->query['bool']['must']['bool']['should'][$i]['match']['case_cause_ids'] = $params['case_cause_ids'][$i];	
+				$this->query['bool']['must'][$i]['match']['case_cause_ids'] = $params['case_cause_ids'][$i];	
 		}
 		return $this->query;
 	}
