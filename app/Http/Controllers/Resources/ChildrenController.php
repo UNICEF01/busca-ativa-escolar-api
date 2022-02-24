@@ -88,21 +88,7 @@ class ChildrenController extends BaseController
 		if (isset($params['uf'])) $params['uf'] = Str::lower($params['uf']);
 		if (isset($params['assigned_uf'])) $params['assigned_uf'] = Str::lower($params['assigned_uf']);
 		
-		if(array_key_exists("case_cause_ids", $params)) {
-			$check = 0;
-			for($i = 0; $i < count($params['case_cause_ids']); ++$i){
-				if($params['case_cause_ids'][$i] == 601){
-					$check = 1;
-					break;
-				}
-					
-			}
-			if($check == 1){
-				unset($params['case_cause_ids']);
-				$params['case_cause_ids'] = [];
-				$params['case_cause_ids_null'] = true;
-			}
-		}
+		
 		$query = ElasticSearchQuery::withParameters($params)
 			->filterByTerm('tenant_id', false)
 			->filterByTerm('uf', false)
@@ -120,7 +106,7 @@ class ChildrenController extends BaseController
 			->filterByTerm('current_step_type', false)
 			->filterByTerm('step_slug', false)
 			->filterByTerms('gender', $params['gender_null'] ?? false)
-			->filterByTerms('case_cause_ids', $params['case_cause_ids_null'] ?? false)
+			//->filterByTerms('case_cause_ids', $params['case_cause_ids_null'] ?? false)
 			->filterByTerms('place_kind', $params['place_kind_null'] ?? false)
 			->filterByRange('age', $params['age_null'] ?? false);
 
@@ -150,15 +136,23 @@ class ChildrenController extends BaseController
 
 			$query->filterByOneOf($filters);
 		}
-
+		if(array_key_exists("case_not_info", $params) == 1){
+			if($params["case_not_info"][0] == 'yes')
+				$query->getNonInformedCases(1, array());
+			else{
+				if(array_key_exists("case_cause_ids", $params)){
+					$query->getNonInformedCases(0, $params);
+				}	
+			}		
+		}
 		return $query;
 	}
 
 	public function search(Search $search)
 	{
-
+		
 		$query = $this->prepareSearchQuery();
-
+		//print_r($query);
 		$attempted = $query->getAttemptedQuery();
 		$query = $query->getQuery();
 

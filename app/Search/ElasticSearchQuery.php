@@ -259,4 +259,15 @@ class ElasticSearchQuery {
 		return new self($params);
 	}
 
+
+	public function getNonInformedCases(int $validate, array $params){
+		if($validate == 1){
+			$this->query['bool']['must_not']['exists']['field'] = 'case_cause_ids';
+		}
+		else{
+			for($i = 0; $i < count($params['case_cause_ids']); ++$i)
+				$this->query['bool']['must'][$i]['match']['case_cause_ids'] = $params['case_cause_ids'][$i];	
+		}
+		return $this->query;
+	}
 }
