@@ -341,13 +341,16 @@ class Tenant extends Model  {
 			throw new ValidationException('invalid_operational_admin_data', $validator);
 		}
 
-        $politicalAdmin->lgpd = 0;
+		$primaryGroup = Group::createDefaultPrimaryGroup($tenant);
+
+		$politicalAdmin->lgpd = 0;
         $operationalAdmin->lgpd = 0;
+
+		$politicalAdmin->group_id = $primaryGroup->id;
+        $operationalAdmin->group_id = $primaryGroup->id;
 
 		$politicalAdmin->save();
 		$operationalAdmin->save();
-
-		$primaryGroup = Group::createDefaultPrimaryGroup($tenant);
 
 		$tenant->political_admin_id = $politicalAdmin->id;
 		$tenant->operational_admin_id = $operationalAdmin->id;
