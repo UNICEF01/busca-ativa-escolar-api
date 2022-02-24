@@ -344,10 +344,10 @@ class Tenant extends Model  {
 		$primaryGroup = Group::createDefaultPrimaryGroup($tenant);
 
 		$politicalAdmin->lgpd = 0;
-        $operationalAdmin->lgpd = 0;
+        	$operationalAdmin->lgpd = 0;
 
 		$politicalAdmin->group_id = $primaryGroup->id;
-        $operationalAdmin->group_id = $primaryGroup->id;
+        	$operationalAdmin->group_id = $primaryGroup->id;
 
 		$politicalAdmin->save();
 		$operationalAdmin->save();
