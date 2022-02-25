@@ -33,9 +33,21 @@ class PendingAlertTransformer extends TransformerAbstract {
 	];
 
 	public function transform(Child $child) {
+
+
+		$nameOfGroup = null;
+		if ($child->currentCase() != null){
+			if ($child->currentCase->group != null){
+				$nameOfGroup = $child->currentCase->group->name;
+			}
+		}
+
+	
+
 		return [
 			'id' => $child->id,
 			'name' => $child->name,
+			'group_name' => $nameOfGroup,
 
 			'tenant_id' => $child->tenant_id,
 
