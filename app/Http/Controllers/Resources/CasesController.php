@@ -117,10 +117,20 @@ class CasesController extends BaseController  {
     }
 
     public function update(ChildCase $case) {
-        $case->fill(request()->only(['group_id']));
-        $case->save();
-        $case->child->save(); //reindex elastic
-        return response()->json(['status' => 'ok', 'case' => $case]);
+
+        if ( request()->has('detach_user') ){
+
+            $case->fill(request()->only(['group_id']));
+            $case->save();
+            if (request('detach_user') && $case->currentStep != null) {
+                $case->currentStep->detachUser();
+            }
+            $case->child->save(); //reindex elastic
+            return response()->json(['status' => 'ok', 'case' => $case]);
+
+        }
+
+
     }
 
 }

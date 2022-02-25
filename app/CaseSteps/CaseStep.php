@@ -274,6 +274,15 @@ abstract class CaseStep extends Model {
 		event(new CaseStepAssigned($this, $user));
 	}
 
+    /**
+     * Detach the user of step.
+     */
+    public function detachUser() {
+        $this->is_pending_assignment = true;
+        $this->assigned_user_id = null;
+        $this->save();
+    }
+
 	/**
 	 * Updates the step fields, ignoring fields not in stepFields.
 	 * Emits the "updated" event.
