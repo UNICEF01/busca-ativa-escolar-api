@@ -20,6 +20,8 @@ use BuscaAtivaEscolar\Http\Controllers\BaseController;
 use BuscaAtivaEscolar\Serializers\SimpleArraySerializer;
 use BuscaAtivaEscolar\Transformers\GenericTransformer;
 use BuscaAtivaEscolar\Transformers\GroupTransformer;
+use BuscaAtivaEscolar\Groups\GroupService;
+use Illuminate\Http\Request;
 
 class GroupsController extends BaseController {
 
@@ -94,32 +96,9 @@ class GroupsController extends BaseController {
         return response()->json(['data' => $groups]);
     }
 
-    public function getGroupByUser(){
-        $group_id = $this->currentUser()->group_id;
-        $groups_ids = Group::where('id',$group_id)
-                        ->get()->toArray();
-        $ids = [];
-        $ids[0] = ['id' => $groups_ids[0]['id'], 'name' => $groups_ids[0]['name']];
-        $groups_ids2 = Group::where('parent_id',$ids[0]['id'])->get()->toArray();
-        if($groups_ids2){
-            for($i = 0; $i < count($groups_ids2); ++$i){
-                $ids[0][$i] = ['id' => $groups_ids2[$i]['id'], 'name' => $groups_ids2[$i]['name']];
-                $groups_ids3 = Group::where('parent_id',$groups_ids2[$i]['id'])->get()->toArray();
-                if($groups_ids3){
-                    for($j = 0; $j < count($groups_ids3); ++$j){
-                        $ids[0][$i][$j] = ['id' => $groups_ids3[$j]['id'], 'name' => $groups_ids3[$j]['name']];
-                        $groups_ids4 = Group::where('parent_id',$groups_ids3[$j]['id'])->get()->toArray();
-                        if($groups_ids4){
-                            for($l = 0; $l < count($groups_ids4); ++$l)
-                                $ids[0][$i][$j][$l] = ['id' => $groups_ids4[$l]['id'], 'name' => $groups_ids4[$l]['name']];
-                        }
-                    }
-                }
-            }
-        }
-        
-        $ids = array_map("unserialize", array_unique(array_map("serialize", $ids)));
-        return response()->json(['data' => $ids]);
+    public function getGroupByUser(Request $request){
+        $groups = new GroupService;
+        return response()->json(['data' => $groups->groups($this->currentUser()->email)]);
     }
 
 	public function findByTenant(){
