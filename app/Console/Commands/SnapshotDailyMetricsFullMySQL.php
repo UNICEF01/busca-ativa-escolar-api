@@ -47,7 +47,7 @@ class SnapshotDailyMetricsFullMySQL extends Command
 
             $today = date('Y-m-d');
 
-            $this->info("[index] Building children index: {$today}...");
+            //$this->info("[index] Building children index: {$today}...");
 
             foreach ($children as $child) {
                 if (!empty($child->currentCase)) {
@@ -55,7 +55,7 @@ class SnapshotDailyMetricsFullMySQL extends Command
                     $rematricula = Rematricula::where('child_id', '=', $child->id)->first();
                     $reinsertion_grade = $rematricula ? $rematricula->reinsertion_grade : null;
 
-                    $this->comment("[index:{$today}] Child #{$child->id} - {$child->name}");
+                    //$this->comment("[index:{$today}] Child #{$child->id} - {$child->name}");
 
                     $tenant = Tenant::withTrashed()->where([ ['id', '=', $child->tenant_id] ])->first();
 
