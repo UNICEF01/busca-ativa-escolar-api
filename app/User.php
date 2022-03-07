@@ -37,6 +37,8 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
 //use Illuminate\Auth\Authenticatable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
+use DB;
+
 
 /**
  * @property int $id
@@ -696,4 +698,57 @@ class User extends Authenticatable implements JWTSubject
 	{
 		return sha1(env('APP_KEY') . $this->id . $this->created_at);
 	}
+
+    /**
+     * Return a array containing id of Group and Children Groups of User.
+     *
+     * @return array
+     */
+    public function getArrayOfGroupWithChildrenGroups(){
+
+        $group_id = $this->group()->id;
+
+        $groups_ids = DB::table('groups')->where('id', $group_id)->orWhere('parent_id', $group_id)->get()
+            ->toArray();
+        $ids = [];
+
+        foreach ($groups_ids as $id)
+        {
+            array_push($ids, $id->id);
+            $groups_ids2 = DB::table('groups')->where('id', $id->id)
+                ->orWhere('parent_id', $id->id)
+                ->get()
+                ->toArray();
+            if ($groups_ids2)
+            {
+                foreach ($groups_ids2 as $id2)
+                {
+                    array_push($ids, $id2->id);
+                    $groups_ids3 = DB::table('groups')->where('id', $id2->id)
+                        ->orWhere('parent_id', $id2->id)
+                        ->get()
+                        ->toArray();
+                    if ($groups_ids3)
+                    {
+                        foreach ($groups_ids3 as $id3)
+                        {
+                            array_push($ids, $id3->id);
+                            $groups_ids4 = DB::table('groups')->where('id', $id3->id)
+                                ->orWhere('parent_id', $id3->id)
+                                ->get()
+                                ->toArray();
+                            if ($groups_ids4)
+                            {
+                                foreach ($groups_ids4 as $id4)
+                                {
+                                    array_push($ids, $id4->id);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return array_unique($ids);
+    }
 }
