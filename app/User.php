@@ -37,6 +37,9 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
 //use Illuminate\Auth\Authenticatable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
+use DB;
+use function React\Promise\map;
+
 
 /**
  * @property int $id
@@ -696,4 +699,25 @@ class User extends Authenticatable implements JWTSubject
 	{
 		return sha1(env('APP_KEY') . $this->id . $this->created_at);
 	}
+
+    /**
+     * Return an array containing id of Group and Children Groups of User.
+     *
+     * @return array
+     */
+    public function getArrayOfGroupWithChildrenGroups(){
+        $groups = [];
+        $group = $this->group;
+        array_push($groups, $this->group->id);
+        foreach($group->children as $group2) {
+            array_push($groups, $group2->id);
+            foreach($group2->children as $group3) {
+                array_push($groups, $group3->id);
+                foreach($group3->children as $group4) {
+                    array_push($groups, $group4->id);
+                }
+            }
+        }
+        return $groups;
+    }
 }

@@ -286,4 +286,19 @@ class GroupsController extends BaseController {
 
     }
 
+    public function getGroupWithParents($groupId){
+
+        $query = $this->currentUser()->isRestrictedToUF()
+            ? Group::withoutGlobalScope()->where('uf', $this->currentUser()->uf)
+            : Group::query();
+
+        $groups = $query
+            ->orderBy('created_at', 'ASC')
+            ->where('id', '=', $groupId)
+            ->with('parent.parent.parent')
+            ->get();
+
+        return response()->json(['data' => $groups]);
+    }
+
 }
