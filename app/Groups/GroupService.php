@@ -102,50 +102,55 @@ class GroupService{
         $grupos = [];
         $index = $this->search($data, count($data), $userData[0]['group_id']);
         $grupos[0] = ['id' => $data[$index]['id'], 'name' => $data[$index]['name']];
-
+        
         $max = $this->upper_bound($data, $userData[0]['group_id']);
         $min  = $this->lower_bound($data, $userData[0]['group_id']);
 
         $children = [];
         $children2 = [];
+        $j = 0;
         $i = 0;
-
         while($min < $max){
             $grupos[0][$i] = ['id' => $data[$min]['id'], 'name' => $data[$min]['name']];
-            $max1 = $this->upper_bound($data, $data[$min]['id']);
-            $min1  = $this->lower_bound($data, $data[$min]['id']);
+            $max1 = $this->upper_bound($data, $data[$min]['id'], 0, count($data) - 1);
+            $min1  = $this->lower_bound($data, $data[$min]['id'], 0, count($data) - 1);
             if($min1 != $max1)
-                $children[$i] = ['pai' => $i, 'min' => $min1, 'max' => $max1];
+                $children[$j++] = ['pai' => $i, 'min' => $min1, 'max' => $max1];
             $i++;
             $min++;
         }
 
-        for($j = 0; $j < count($children); ++$j){
+        $j = 0;
+        foreach($children as $child){
             $i = 0;
-            $min = $children[$j]['min'];
-            $max = $children[$j]['max'];
+            $min = $child['min'];
+            $max = $child['max'];
+            $pai = $child['pai'];
             while($min < $max){
-                $grupos[0][$children[$j]['pai']][$i] = ['id' => $data[$min]['id'], 'name' => $data[$min]['name']];
-                $max1 = $this->upper_bound($data, $data[$min]['id']);
-                $min1  = $this->lower_bound($data, $data[$min]['id']);
+                $grupos[0][$pai][$i] = ['id' => $data[$min]['id'], 'name' => $data[$min]['name']];
+                $max1 = $this->upper_bound($data, $data[$min]['id'], 0, count($data) - 1);
+                $min1  = $this->lower_bound($data, $data[$min]['id'], 0, count($data) - 1);
                 if($min1 != $max1)
-                    $children2[$i] = ['pai' => $j, 'pai1' => $i, 'min' => $min1, 'max' => $max1];
+                    $children2[$j++] = ['pai' => $pai, 'pai1' => $i, 'min' => $min1, 'max' => $max1];
+                $i++;
+                $min++;   
+            }
+        }
+        $j = 0;
+        foreach($children2 as $child){
+            $i = 0;
+            $min = $child['min'];
+            $max = $child['max'];
+            $pai = $child['pai'];
+            $pai1 = $child['pai1'];
+            while($min < $max){
+                $grupos[0][$pai][$pai1][$i] = ['id' => $data[$min]['id'], 'name' => $data[$min]['name']];
+                $max1 = $this->upper_bound($data, $data[$min]['id'], 0, count($data) - 1);
+                $min1  = $this->lower_bound($data, $data[$min]['id'], 0, count($data) - 1);
                 $i++;
                 $min++;
             }
-        }
-
-        for($j = 0; $j < count($children2); ++$j){
-            $i = 0;
-            $min = $children2[$j]['min'];
-            $max = $children2[$j]['max'];
-            while($min < $max){
-                $grupos[0][$children2[$j]['pai']][$children2[$j]['pai1']][$i] = ['id' => $data[$min]['id'], 'name' => $data[$min]['name']];
-                $max1 = $this->upper_bound($data, $data[$min]['id']);
-                $min1  = $this->lower_bound($data, $data[$min]['id']);
-                $i++;
-                $min++;
-            }  
+            $j++;
         }
         return $grupos;
     }
