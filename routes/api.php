@@ -83,6 +83,7 @@ Route::group(['prefix' => 'v1', 'middleware' => 'api'], function () {
 
 		// User Groups
         Route::get('/groups/{id}', 'Resources\GroupsController@getGroup');
+        Route::get('/groups_with_parents/{id}', 'Resources\GroupsController@getGroupWithParents');
 		Route::get('/groups', 'Resources\GroupsController@index');
         Route::get('/grouped_groups', 'Resources\GroupsController@returnsGroupedGroups');
 		Route::get('/user_groups', 'Resources\GroupsController@getGroupByUser');

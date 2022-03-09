@@ -67,23 +67,12 @@ class ChildrenController extends BaseController
 		$params = $this->filterAsciiFields(request()->all(), ['name', 'cause_name', 'assigned_user_name', 'location_full', 'step_name', 'city_name']);
 		
 		// Scope the query within the tenant
-		if (Auth::user()->isRestrictedToTenant()) 
+		if (Auth::user()->isRestrictedToTenant())
 			$params['tenant_id'] = Auth::user()->tenant_id;
 		
 		// Scope the query to state agents
 		if (Auth::user()->isRestrictedToUF()) 
 			$params['assigned_uf'] = Auth::user()->uf;
-
-		// Scope the query to visitantes estaduais
-		if (
-			Auth::user()->type == User::TYPE_VISITANTE_ESTADUAL_UM
-			or Auth::user()->type == User::TYPE_VISITANTE_ESTADUAL_DOIS
-			or Auth::user()->type == User::TYPE_VISITANTE_ESTADUAL_TRES
-			or Auth::user()->type == User::TYPE_VISITANTE_ESTADUAL_QUATRO
-		) {
-			unset($params['assigned_uf']);
-			$params['uf'] = Auth::user()->uf;
-		}
 
 		if (isset($params['uf'])) $params['uf'] = Str::lower($params['uf']);
 		if (isset($params['assigned_uf'])) $params['assigned_uf'] = Str::lower($params['assigned_uf']);
@@ -97,7 +86,6 @@ class ChildrenController extends BaseController
 			->searchTextInColumns(
 				'location_full',
 				['place_address^3', 'place_cep^2', 'place_city^2', 'place_uf', 'place_neighborhood', 'place_reference']
-
 			)
 			->searchTextInColumns('city_name_full',['place_uf','place_city_name'])
 			->filterByTerms('alert_status', false)
@@ -115,28 +103,16 @@ class ChildrenController extends BaseController
 			$query->filterByOneOf(['assigned_user_id' => ['type' => 'term', 'search' => Auth::user()->id]]);
 		}
 
-		// Scope query within group responsabilities (via parameterized case cause ids)
-		if (Auth::user()->type === User::TYPE_SUPERVISOR_INSTITUCIONAL) {
-			$group = Auth::user()->group; /* @var $group Group */
-			$tenant = Auth::user()->tenant;
+        // Scope the query within the tenant
+        if (Auth::user()->isRestrictedToTenant()){
+            $idGroups = $this->currentUser()->getArrayOfGroupWithChildrenGroups();
+            $filters = [
+                'group_id' => ['type' => 'terms', 'search' => $idGroups]
+            ];
+            $query->filterByOneOf($filters);
+        }
 
-			if (!$group) $group = $tenant->primaryGroup;
-			if (!$group) $group = new Group();
-
-			//adiciona os motivos de alertas 500 e 600 a supervisores da educacao sempre
-			$handledAlertCauses = $group->getSettings()->getHandledAlertCauses();
-			if ($group->is_primary) {
-				array_unshift($handledAlertCauses, 500, 600);
-			}
-
-			$filters = [
-				'assigned_user_id' => ['type' => 'term', 'search' => Auth::user()->id],
-				'alert_cause_id' => ['type' => 'terms', 'search' => $handledAlertCauses],
-			];
-
-			$query->filterByOneOf($filters);
-		}
-		if(array_key_exists("case_not_info", $params) == 1){
+        if(array_key_exists("case_not_info", $params) == 1){
 			if($params["case_not_info"][0] == 'yes')
 				$query->getNonInformedCases(1, array());
 			else{
@@ -150,9 +126,7 @@ class ChildrenController extends BaseController
 
 	public function search(Search $search)
 	{
-		
 		$query = $this->prepareSearchQuery();
-		//print_r($query);
 		$attempted = $query->getAttemptedQuery();
 		$query = $query->getQuery();
 

@@ -32,7 +32,7 @@ class SnapshotDailyMetrics extends Command
 
         Child::with(['currentCase', 'submitter', 'city'])->chunk(500, function ($children) use ($today){
 
-            $this->info("[index] Building children index: {$today}...");
+            //$this->info("[index] Building children index: {$today}...");
 
             foreach ($children as $child) {
                 if (!empty($child->currentCase)) {
@@ -43,7 +43,7 @@ class SnapshotDailyMetrics extends Command
         });
 
 
-        $this->info("[index] Index built!");
+       //$this->info("[index] Index built!");
 
     }
 

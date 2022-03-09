@@ -45,7 +45,7 @@ class SnapshotDailyMetricsConsolidated extends Command
 
         $today = date('Y-m-d');
 
-        $this->info("Iniciando Snapshot do número de rematriculas - {$today}");
+        //$this->info("Iniciando Snapshot do número de rematriculas - {$today}");
 
         Tenant::withTrashed()->chunk(500, function ($t) use ($today) {
 
@@ -111,7 +111,7 @@ class SnapshotDailyMetricsConsolidated extends Command
 
                 $goal = $tenant->city->goal != null ? 1 : 0;
 
-                $this->comment("[index:{$today}] Tenant #{$tenant->id} - {$tenant->name} - {$goal}");
+                //$this->comment("[index:{$today}] Tenant #{$tenant->id} - {$tenant->name} - {$goal}");
 
                 $saved_daily = DailyMetricsConsolidated::where([ ['date', '=', $today], ['tenant_id', '=', $tenant->id] ] )->first();
 

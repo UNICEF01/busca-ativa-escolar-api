@@ -46,7 +46,7 @@ class SendEmailsActualizeFrequency extends Command
         set_time_limit(0);
         //ini_set('memory_limit', '2G');
 
-        $this->comment("INICIANDO PROCESSO DE ENVIO DE EMAILS PARA AS ESCOLAS COM BASE NAS ESCOLAS");
+        //$this->comment("INICIANDO PROCESSO DE ENVIO DE EMAILS PARA AS ESCOLAS COM BASE NAS ESCOLAS");
         School::has('classes')->chunk(50, function($schools){
 
             foreach ($schools as $school){
@@ -61,10 +61,10 @@ class SendEmailsActualizeFrequency extends Command
                     try {
                         $message = new ClassFrequencyNotification($school, School::PERIODICIDADE_DIARIA);
                         Mail::to($school->school_email)->send($message);
-                        $this->info("MENSAGEM ENCAMINHADA COM SUCESSO - INEP: ". $school->id. " | ". $school->name);
+                        //$this->info("MENSAGEM ENCAMINHADA COM SUCESSO - INEP: ". $school->id. " | ". $school->name);
                     } catch (\Exception $ex) {
-                        $this->info($ex->getMessage());
-                        $this->info("ERRO NO ENVIO DE MENSAGEM INEP: ". $school->id. " | ". $school->name);
+                        //$this->info($ex->getMessage());
+                        //$this->info("ERRO NO ENVIO DE MENSAGEM INEP: ". $school->id. " | ". $school->name);
                     }
                 }
 
@@ -74,10 +74,10 @@ class SendEmailsActualizeFrequency extends Command
                     try {
                         $message = new ClassFrequencyNotification($school, School::PERIODICIDADE_SEMANAL);
                         Mail::to($school->school_email)->send($message);
-                        $this->info("MENSAGEM ENCAMINHADA COM SUCESSO - INEP: ". $school->id. " | ". $school->name);
+                        //$this->info("MENSAGEM ENCAMINHADA COM SUCESSO - INEP: ". $school->id. " | ". $school->name);
                     } catch (\Exception $ex) {
-                        $this->info($ex->getMessage());
-                        $this->info("ERRO NO ENVIO DE MENSAGEM INEP: ". $school->id. " | ". $school->name);
+                        //$this->info($ex->getMessage());
+                        //$this->info("ERRO NO ENVIO DE MENSAGEM INEP: ". $school->id. " | ". $school->name);
                     }
                 }
 
@@ -87,10 +87,10 @@ class SendEmailsActualizeFrequency extends Command
                     try {
                         $message = new ClassFrequencyNotification($school, School::PERIODICIDADE_QUINZENAL);
                         Mail::to($school->school_email)->send($message);
-                        $this->info("MENSAGEM ENCAMINHADA COM SUCESSO - INEP: ". $school->id. " | ". $school->name);
+                        //$this->info("MENSAGEM ENCAMINHADA COM SUCESSO - INEP: ". $school->id. " | ". $school->name);
                     } catch (\Exception $ex) {
-                        $this->info($ex->getMessage());
-                        $this->info("ERRO NO ENVIO DE MENSAGEM INEP: ". $school->id. " | ". $school->name);
+                        //$this->info($ex->getMessage());
+                        //$this->info("ERRO NO ENVIO DE MENSAGEM INEP: ". $school->id. " | ". $school->name);
                     }
                 }
 
@@ -100,17 +100,17 @@ class SendEmailsActualizeFrequency extends Command
                     try {
                         $message = new ClassFrequencyNotification($school, School::PERIODICIDADE_MENSAL);
                         Mail::to($school->school_email)->send($message);
-                        $this->info("MENSAGEM ENCAMINHADA COM SUCESSO - INEP: ". $school->id. " | ". $school->name);
+                        //$this->info("MENSAGEM ENCAMINHADA COM SUCESSO - INEP: ". $school->id. " | ". $school->name);
                     } catch (\Exception $ex) {
-                        $this->info($ex->getMessage());
-                        $this->info("ERRO NO ENVIO DE MENSAGEM INEP: ". $school->id. " | ". $school->name);
+                        //$this->info($ex->getMessage());
+                        //$this->info("ERRO NO ENVIO DE MENSAGEM INEP: ". $school->id. " | ". $school->name);
                     }
                 }
 
             }
 
         });
-        $this->comment("FINALIZANDO PROCESSO DE ENVIO DE EMAILS PARA AS ESCOLAS COM BASE NAS ESCOLAS");
+        //$this->comment("FINALIZANDO PROCESSO DE ENVIO DE EMAILS PARA AS ESCOLAS COM BASE NAS ESCOLAS");
 
     }
 
