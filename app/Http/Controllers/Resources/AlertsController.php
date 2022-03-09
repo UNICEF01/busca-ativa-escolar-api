@@ -15,6 +15,7 @@ namespace BuscaAtivaEscolar\Http\Controllers\Resources;
 
 use Auth;
 use BuscaAtivaEscolar\Child;
+use BuscaAtivaEscolar\ChildCase;
 use BuscaAtivaEscolar\Group;
 use BuscaAtivaEscolar\Http\Controllers\BaseController;
 use BuscaAtivaEscolar\Serializers\SimpleArraySerializer;
@@ -33,19 +34,18 @@ class AlertsController extends BaseController {
 
         $where = [];
 
-        if(request('show_suspended') == "true") {
+        if(request('show_suspended') == "true") 
             array_push($where, ['alert_status','=', 'rejected']);
-        }else{
+        else
             array_push($where, ['alert_status','=', 'pending']);
-        }
-
+        
         //filter to name
-        if(!empty(request()->get('name'))) {
+        if(!empty(request()->get('name'))) 
             array_push($where, ['name', 'LIKE', request('name').'%']);
-        }
+        
 
-        $query->where($where);
-
+        $query= Child::where($where);
+      
         $stdRequest = null;
 
         //make a filter by json filter (olnly fields from Children)
@@ -58,17 +58,7 @@ class AlertsController extends BaseController {
             if( property_exists($stdRequest, 'neighborhood') ) { $sq->orderBy('place_neighborhood', $stdRequest->neighborhood); }
             if( property_exists($stdRequest, 'city_name') ) { $sq->orderBy('place_city_name', $stdRequest->city_name); }
             if( property_exists($stdRequest, 'alert_cause_id') ) { $sq->orderBy('alert_cause_id', $stdRequest->alert_cause_id); }
-        }
-
-        if(Auth::user()->type === User::TYPE_SUPERVISOR_INSTITUCIONAL) {
-            $group = Auth::user()->group; /* @var $group Group */
-            if(!$group) $group = Auth::user()->tenant->primary_group;
-            if(!$group) $group = new Group();
-            $query->whereHas('alert', function ($sq) use ($group) {
-                $handledAlertCauses = $group->getSettings()->getHandledAlertCauses();
-                if ($group->is_primary) { array_unshift($handledAlertCauses, 500, 600 ); }
-                $sq->whereIn('alert_cause_id', $handledAlertCauses);
-            });
+            if( property_exists($stdRequest, 'group_id') ) { $sq->orderBy('group_id', $stdRequest->alert_cause_id); }
         }
 
         if(!empty(request()->get('submitter_name')) || property_exists($stdRequest, 'agent') ) {
@@ -98,8 +88,13 @@ class AlertsController extends BaseController {
                 if( property_exists($stdRequest, 'alert_cause_id') ) { $sq->orderBy('alert_cause_id', $stdRequest->alert_cause_id); }
             });
         }
-        
 
+        //join children_case
+        if(!empty(request()->get('group_id'))  && request()->get('group_id') !== ""|| property_exists($stdRequest, 'group_id') ){
+            $ids = ChildCase::select('child_id')->where('children_cases.group_id', request('group_id'))->where('tenant_id', $this->currentUser()->tenant_id)->get()->toArray();
+            $query->whereIn('id', $ids);
+        }
+              
         $max = request('max', 128);
         if($max > 128) $max = 128;
         if($max < 16) $max = 16;
