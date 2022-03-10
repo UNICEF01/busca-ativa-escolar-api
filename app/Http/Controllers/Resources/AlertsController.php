@@ -15,7 +15,7 @@ namespace BuscaAtivaEscolar\Http\Controllers\Resources;
 
 use Auth;
 use BuscaAtivaEscolar\Child;
-use BuscaAtivaEscolar\ChildCase;
+use DB;
 use BuscaAtivaEscolar\Group;
 use BuscaAtivaEscolar\Http\Controllers\BaseController;
 use BuscaAtivaEscolar\Serializers\SimpleArraySerializer;
@@ -24,14 +24,23 @@ use BuscaAtivaEscolar\Transformers\PendingAlertTransformer;
 use BuscaAtivaEscolar\User;
 use Illuminate\Database\Query\Builder;
 use League\Fractal\Pagination\IlluminatePaginatorAdapter;
+use BuscaAtivaEscolar\Groups\GroupService;
 
 class AlertsController extends BaseController {
 
 	public function get_pending() {
 
+        $groups = new GroupService;
+        $groups = $groups->groups($this->currentUser()->email, true);
         /** @var Builder $query */
         $query = Child::query();
-
+        $tenant = $this->currentUser()->tenant_id;
+        
+        //get alerts
+        $ids = DB::table('children_cases')->select('child_id')
+        ->where('tenant_id','=',$tenant)->whereNull('deleted_at')
+        ->whereIn('group_id',$groups)->get()->toArray();
+        
         $where = [];
 
         if(request('show_suspended') == "true") 
@@ -43,9 +52,17 @@ class AlertsController extends BaseController {
         if(!empty(request()->get('name'))) 
             array_push($where, ['name', 'LIKE', request('name').'%']);
         
-
-        $query= Child::where($where);
-      
+        $i = 0;
+        $children_ids = [];
+        if(count($ids) > 0){
+            foreach($ids as $id){
+                $children_ids[$i++] =  $id->child_id;
+            }
+            $query= Child::where($where)->whereIn('id', $children_ids);
+        }
+        else
+            $query= Child::where($where);
+        
         $stdRequest = null;
 
         //make a filter by json filter (olnly fields from Children)
@@ -89,9 +106,9 @@ class AlertsController extends BaseController {
             });
         }
 
-        //join children_case
+        //join children_case to filter.
         if(!empty(request()->get('group_id'))  && request()->get('group_id') !== ""|| property_exists($stdRequest, 'group_id') ){
-            $ids = ChildCase::select('child_id')->where('children_cases.group_id', request('group_id'))->where('tenant_id', $this->currentUser()->tenant_id)->get()->toArray();
+            $ids = ChildCase::select('child_id')->where('children_cases.group_id', request('group_id'))->where('tenant_id', $tenant)->get()->toArray();
             $query->whereIn('id', $ids);
         }
               

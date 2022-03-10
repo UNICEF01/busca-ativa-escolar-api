@@ -98,7 +98,7 @@ class GroupsController extends BaseController {
 
     public function getGroupByUser(Request $request){
         $groups = new GroupService;
-        return response()->json(['data' => $groups->groups($this->currentUser()->email)]);
+        return response()->json(['data' => $groups->groups($this->currentUser()->email, false)]);
     }
 
 	public function findByTenant(){
