@@ -47,11 +47,10 @@ class GroupsController extends BaseController {
     public function returnsGroupedGroups() {
         $query = $this->currentUser()->isRestrictedToUF()
             ? Group::withoutGlobalScope()->where('uf', $this->currentUser()->uf)
-            : Group::query();
+            : Group::withoutGlobalScope()->where([ ['tenant_id', '=', $this->currentUser()->tenant_id], ['is_primary', '=', 1] ]);
         $groups = $query
             ->orderBy('created_at', 'ASC')
             ->with('children.children.children.children')
-            ->whereDoesntHave('parent')
             ->get();
 
         $groups = $groups->map(function ($group) {
