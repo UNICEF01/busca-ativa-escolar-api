@@ -84,12 +84,13 @@ class GroupService{
     }
 
     /**
-     * Método responsável por retornar o array de grupos com seus respectivos filhos até a quarta ordem hierárquica.  
+     * Método responsável por retornar ou array de grupos com seus respectivos filhos até a quarta ordem hierárquica  ou array de ids dos grupos e seus filhos. É utilizado uma variável booleana de checagem.  
      * @param string $email String com o email do usuário
+     * @param bool $check variavel de verificação
      * 
-     * @return array Array de grupos. 
+     * @return array O retorno será um array, porém depende do valor da variável check. Caso seja TRUE o retorno será uma array com os ids dos grupos, caso seja falso retornará o array de grupos com seus respectivos filhos. 
      */
-    public function groups(string $email): array{
+    public function groups(string $email, bool $check): array{
 
         $userData = User::select('tenant_id', 'group_id')->where('email', $email)->get()->toArray();
         
@@ -100,23 +101,32 @@ class GroupService{
         ->get()->toArray();
 
         $grupos = [];
-        $index = $this->search($data, count($data), $userData[0]['group_id']);
+
+        $size = count($data);
+        $index = $this->search($data, $size, $userData[0]['group_id']);
         $grupos[0] = ['id' => $data[$index]['id'], 'name' => $data[$index]['name']];
         
         $max = $this->upper_bound($data, $userData[0]['group_id']);
         $min  = $this->lower_bound($data, $userData[0]['group_id']);
 
+        $groups_index = [];
+        $indexs = 1;
+        $groups_index[0] = $data[$index]['id'];
+
         $children = [];
         $children2 = [];
+
         $j = 0;
         $i = 0;
         while($min < $max){
             $grupos[0][$i] = ['id' => $data[$min]['id'], 'name' => $data[$min]['name']];
-            $max1 = $this->upper_bound($data, $data[$min]['id'], 0, count($data) - 1);
-            $min1  = $this->lower_bound($data, $data[$min]['id'], 0, count($data) - 1);
+            $groups_index[$indexs] = $data[$min]['id'];
+            $max1 = $this->upper_bound($data, $data[$min]['id'], 0, $size - 1);
+            $min1  = $this->lower_bound($data, $data[$min]['id'], 0, $size - 1);
             if($min1 != $max1)
                 $children[$j++] = ['pai' => $i, 'min' => $min1, 'max' => $max1];
             $i++;
+            $indexs++;
             $min++;
         }
 
@@ -128,11 +138,13 @@ class GroupService{
             $pai = $child['pai'];
             while($min < $max){
                 $grupos[0][$pai][$i] = ['id' => $data[$min]['id'], 'name' => $data[$min]['name']];
-                $max1 = $this->upper_bound($data, $data[$min]['id'], 0, count($data) - 1);
-                $min1  = $this->lower_bound($data, $data[$min]['id'], 0, count($data) - 1);
+                $groups_index[$indexs] = $data[$min]['id'];
+                $max1 = $this->upper_bound($data, $data[$min]['id'], 0, $size - 1);
+                $min1  = $this->lower_bound($data, $data[$min]['id'], 0, $size - 1);
                 if($min1 != $max1)
                     $children2[$j++] = ['pai' => $pai, 'pai1' => $i, 'min' => $min1, 'max' => $max1];
                 $i++;
+                $indexs++;
                 $min++;   
             }
         }
@@ -145,13 +157,17 @@ class GroupService{
             $pai1 = $child['pai1'];
             while($min < $max){
                 $grupos[0][$pai][$pai1][$i] = ['id' => $data[$min]['id'], 'name' => $data[$min]['name']];
-                $max1 = $this->upper_bound($data, $data[$min]['id'], 0, count($data) - 1);
-                $min1  = $this->lower_bound($data, $data[$min]['id'], 0, count($data) - 1);
+                $groups_index[$indexs] = $data[$min]['id'];
+                $max1 = $this->upper_bound($data, $data[$min]['id'], 0, $size - 1);
+                $min1  = $this->lower_bound($data, $data[$min]['id'], 0, $size - 1);
                 $i++;
+                $indexs++;
                 $min++;
             }
             $j++;
         }
-        return $grupos;
+        if($check == false)
+            return $grupos;
+        return $groups_index;
     }
 }
