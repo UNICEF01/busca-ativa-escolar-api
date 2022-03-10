@@ -39,6 +39,7 @@ class PendingAlertTransformer extends TransformerAbstract {
 		if ($child->currentCase() != null){
 			if ($child->currentCase->group != null){
 				$nameOfGroup = $child->currentCase->group->name;
+				$idGroup = $child->currentCase->group->id;
 			}
 		}
 
@@ -48,6 +49,7 @@ class PendingAlertTransformer extends TransformerAbstract {
 			'id' => $child->id,
 			'name' => $child->name,
 			'group_name' => $nameOfGroup,
+			'group_id' => $idGroup,
 
 			'tenant_id' => $child->tenant_id,
 
