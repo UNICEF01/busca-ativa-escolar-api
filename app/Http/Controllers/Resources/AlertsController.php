@@ -25,6 +25,7 @@ use BuscaAtivaEscolar\User;
 use Illuminate\Database\Query\Builder;
 use League\Fractal\Pagination\IlluminatePaginatorAdapter;
 use BuscaAtivaEscolar\Groups\GroupService;
+use BuscaAtivaEscolar\ChildCase;
 
 class AlertsController extends BaseController {
 
