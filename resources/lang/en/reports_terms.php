@@ -207,7 +207,7 @@ return [
         '180' => 'Violência no território',
         '500' => 'Evasão reportada pelo Educacenso/INEP',
         '600' => 'Evasão e/ou infrequência reportada pela escola ou município',
-        'null' => 'Não informado'
+        'null' => 'Casos pendentes de informação'
     ],
 
     'place_uf' => [
