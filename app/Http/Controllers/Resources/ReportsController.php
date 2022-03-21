@@ -63,7 +63,7 @@ class ReportsController extends BaseController
 
         //Verifica se a cidade foi informada no filtro. Neste caso remove o filtro de cidade e cria-se um filtro de tenant
         if (isset($filters['place_city'])) {
-            if($filters['place_city'] == 'f6408be7-a456-5ab8-98e5-823be9f9db37')
+            if($filters['place_city_id'] == 'f6408be7-a456-5ab8-98e5-823be9f9db37')
                 $tenant = Tenant::where('city_id', $filters['place_city_id'])->first();
             else
                 $tenant = Tenant::where('city_id', $filters['place_city_id'])->withTrashed()->first();
