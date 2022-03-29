@@ -325,6 +325,8 @@ class ChildCase extends Model
 
         $data = $this->returnDataFromChild($child);
 
+        $data['group_id'] = $currentUser->tenant->primary_group_id;
+
         $objChild = Child::spawnFromAlertData($currentUser->tenant, $currentUser->id, $data);
 
         $newChildObj = Child::where('id', $objChild->id)->first();
@@ -565,6 +567,8 @@ class ChildCase extends Model
         $pesquisaArray = $this->returnPesquisaArray( $this->child->pesquisa->replicate()->toArray() );
 
         $data = $this->returnDataFromChild($child);
+
+        $data['group_id'] = \Auth::user()->tenant->primary_group_id;
 
         $objChild = Child::spawnFromAlertData(\Auth::user()->tenant, \Auth::user()->id, $data);
 
