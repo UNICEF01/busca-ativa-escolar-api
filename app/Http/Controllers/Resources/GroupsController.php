@@ -101,6 +101,18 @@ class GroupsController extends BaseController {
         return response()->json(['data' => $groups->groups($this->currentUser()->email, false)]);
     }
 
+    public function findPrimaryByTenant(){
+        $tenant_id = $this->currentUser()->tenant_id;
+        $query = Group::whereHas('tenant', function($query) use ($tenant_id){
+            $query->where([
+                ['id', '=', $tenant_id],
+                ['is_primary', '=', 1]
+            ]);
+        });
+        $groups = $query->orderBy('created_at', 'ASC')->get();
+        return response()->json(['data' => $groups]);
+    }
+
 	public function findByTenant(){
 
         $tenant_id = request('tenant_id');
