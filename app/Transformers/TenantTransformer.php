@@ -56,7 +56,9 @@ class TenantTransformer extends TransformerAbstract {
 			'registered_at' => $tenant->registered_at ? $tenant->registered_at->toIso8601String() : null,
 			'activated_at' => $tenant->activated_at ? $tenant->activated_at->toIso8601String() : null,
 
-            'is_state' => $tenant->is_state
+            'is_state' => $tenant->is_state,
+
+            'primary_group_id' => $tenant->primary_group_id
 
 		];
 
