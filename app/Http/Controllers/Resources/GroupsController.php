@@ -113,6 +113,11 @@ class GroupsController extends BaseController {
         return response()->json(['data' => $groups]);
     }
 
+    public function findGroupsByParent($parentId){
+        $query = Group::where('parent_id', '=', $parentId);
+        $groups = $query->orderBy('created_at', 'ASC')->get();
+        return response()->json(['data' => $groups]);
+    }
 	public function findByTenant(){
 
         $tenant_id = request('tenant_id');
