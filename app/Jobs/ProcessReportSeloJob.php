@@ -4,12 +4,10 @@ namespace BuscaAtivaEscolar\Jobs;
 
 use BuscaAtivaEscolar\Child;
 use BuscaAtivaEscolar\City;
-use BuscaAtivaEscolar\Goal;
 use BuscaAtivaEscolar\Tenant;
 use BuscaAtivaEscolar\TenantSignup;
 use Carbon\Carbon;
 use DB;
-use Excel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
@@ -17,6 +15,7 @@ use Illuminate\Queue\SerializesModels;
 use Log;
 use Rap2hpoutre\FastExcel\FastExcel;
 use File;
+use Illuminate\Database\Eloquent\Builder;
 
 class ProcessReportSeloJob implements ShouldQueue
 {
@@ -30,7 +29,9 @@ class ProcessReportSeloJob implements ShouldQueue
         //File::makeDirectory(storage_path("app/attachments/selo_reports/" . Carbon::now()->timestamp), $mode = 0777, true, true);
 
         $cities = [];
-        $cities_with_goal = City::has('goal')->get();
+        $cities_with_goal = City::whereHas('goal', function (Builder $q){
+            $q->where('goal', '>', 0);
+        })->get();
 
         foreach ($cities_with_goal as $city) {
 
@@ -39,7 +40,6 @@ class ProcessReportSeloJob implements ShouldQueue
             $tenant_signup = TenantSignup::where('city_id', $city->id)->first();
 
             if ($tenant != null) {
-
                 $adesao = 'Sim';
             } else {
 
