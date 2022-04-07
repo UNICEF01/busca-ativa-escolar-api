@@ -29,12 +29,12 @@ class ReportsLandingPageController extends BaseController
             'state' => request('uf')
         ];
         try {
-            $typeOfCache = '';
+            $typeOfCache = 'country';
             foreach ($resqueted as $key => $value) {
                 if (!empty($value)) $typeOfCache = $key;
             }
             $cache = new CacheService();
-            return response()->json(['status' => 'ok', '_data' => $cache->returnData($resqueted[$typeOfCache])]);
+            return response()->json(['status' => 'ok', '_data' => $cache->returnData($resqueted[$typeOfCache] ? $resqueted[$typeOfCache] : 'BR')]);
         } catch (\Exception $ex) {
             return $this->api_exception($ex);
         }
