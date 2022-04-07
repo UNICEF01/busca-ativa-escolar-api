@@ -26,7 +26,7 @@ class ReportsLandingPageController extends BaseController
         $resqueted = [
             'country' => request(''),
             'reg' => request('reg'),
-            'state' => $this->currentUser()->uf ?? request('uf')
+            'state' => request('uf')
         ];
         try {
             $typeOfCache = '';
