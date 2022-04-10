@@ -16,6 +16,7 @@ use BuscaAtivaEscolar\Tenant;
 use BuscaAtivaEscolar\TenantSignup;
 use Carbon\Carbon;
 use Cache;
+use BuscaAtivaEscolar\Cache\CacheService;
 
 class ReportsLandingPageController extends BaseController
 {
@@ -32,74 +33,8 @@ class ReportsLandingPageController extends BaseController
             foreach ($resqueted as $key => $value) {
                 if (!empty($value)) $typeOfCache = $key;
             }
-            $keyOfCache = "report_" . ($typeOfCache === 'country' ? $typeOfCache : $typeOfCache . '_' . $resqueted[$typeOfCache]);
-            $i = $typeOfCache === 'country' ? 21 : 18;
-            $stat = Cache::get($keyOfCache);
-            $stat = explode(" ", $stat);
-            $causes = [];
-            foreach (CaseCause::getAll() as $case) {
-                //alerta pemanece com status de aceito se caso for cancelado!
-                array_push($causes, ['id' => $case->id, 'cause' => $case->label, 'qtd' => $stat[$i++]]);
-            }
-            if ($typeOfCache === 'country') {
-                $stats =  [
-                    'ufs' => [
-                        "num_ufs" => intval($stat[0]),
-                    ],
-                    'tenants' => [
-                        "num_tenants" => intval($stat[2]),
-                        "active" => intval($stat[3]),
-                        "inactive" => intval($stat[4]),
-                        "num_signups" => intval($stat[5]),
-                        "num_pending_setup" => intval($stat[6]),
-                    ],
-                    'alerts' => [
-
-                        "_approved" => intval($stat[9]),
-                        "_pending" => intval($stat[10]),
-                        "_rejected" => intval($stat[11]),
-                    ],
-                    'cases' => [
-                        '_enrollment' => intval($stat[14]),
-                        '_in_school' => intval($stat[15]),
-                        '_transferred' => intval($stat[19]),
-                        '_in_observation' => intval($stat[16]),
-                        '_out_of_school' => intval($stat[17]),
-                        '_cancelled' => intval($stat[18]),
-                        '_interrupted' => intval($stat[20]),
-                    ],
-                    'causes_cases' => $causes
-                ];
-            } else {
-                $stats =  [
-                    'tenants' => [
-                        'is_approved' => intval($stat[0]),
-                        'num_tenants' => intval($stat[1]),
-                        'active' => intval($stat[5]),
-                        'inactive' => intval($stat[6]),
-                        'num_pending_setup' => intval($stat[4]),
-                    ],
-                    'alerts' => [
-
-                        '_approved' => intval($stat[8]),
-
-                        '_pending' => intval($stat[9]),
-
-                        '_rejected' => intval($stat[10]),
-                    ],
-                    'cases' => [
-                        '_enrollment' => intval($stat[11]),
-                        '_in_school' => intval($stat[12]),
-                        '_transferred' => intval($stat[13]),
-                        '_in_observation' => intval($stat[14]),
-                        '_out_of_school' => intval($stat[15]),
-                        '_cancelled' => intval($stat[16]),
-                        '_interrupted' => intval($stat[17]),
-                    ],
-                    'causes_cases' => $causes
-                ];
-            }
-            return response()->json(['status' => 'ok', '_data' => $stats]);
+            $cache = new CacheService();
+            return response()->json(['status' => 'ok', '_data' => $cache->returnData($resqueted[$typeOfCache] ? $resqueted[$typeOfCache] : 'BR')]);
         } catch (\Exception $ex) {
             return $this->api_exception($ex);
         }
