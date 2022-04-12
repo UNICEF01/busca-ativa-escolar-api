@@ -248,9 +248,9 @@ class ProcessReportSeloJob implements ShouldQueue
 
                         'ID-CIDADE' => $city->id,
 
-                        'Criados antes do dia 31 NOV 2021 - Cancelados depois do dia 31 NOV 2021' => $createdBefore1NovAndCancelledAfter1Nov,
+                        'Criados antes do dia 31 OUT 2021 - Cancelados depois do dia 31 OUT 2021' => $createdBefore1NovAndCancelledAfter1Nov,
 
-                        'Criados depois do dia 31 NOV 2021 - Cancelados depois do dia 31 NOV 2021' => $createdAfter1NovAndCancelledAfter1Nov,
+                        'Criados depois do dia 31 OUT 2021 - Cancelados depois do dia 31 OUT 2021' => $createdAfter1NovAndCancelledAfter1Nov,
                     ]
                 );
             } else {
