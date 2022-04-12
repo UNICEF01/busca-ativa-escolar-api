@@ -1,4 +1,5 @@
 <?php
+
 /**
  * busca-ativa-escolar-api
  * GroupsController.php
@@ -23,28 +24,30 @@ use BuscaAtivaEscolar\Transformers\GroupTransformer;
 use BuscaAtivaEscolar\Groups\GroupService;
 use Illuminate\Http\Request;
 
-class GroupsController extends BaseController {
+class GroupsController extends BaseController
+{
 
-	public function index() {
+    public function index()
+    {
 
-		$query = $this->currentUser()->isRestrictedToUF()
+        $query = $this->currentUser()->isRestrictedToUF()
             ? Group::withoutGlobalScope()->where('uf', $this->currentUser()->uf)
             : Group::query();
 
-		$groups = $query
+        $groups = $query
             ->with('children.children.children.children')
             ->orderBy('created_at', 'ASC')->get();
 
-		return fractal()
-			->collection($groups)
-			->transformWith(new GroupTransformer())
-			->serializeWith(new SimpleArraySerializer())
-			->parseIncludes(request('with'))
-			->respond();
+        return fractal()
+            ->collection($groups)
+            ->transformWith(new GroupTransformer())
+            ->serializeWith(new SimpleArraySerializer())
+            ->parseIncludes(request('with'))
+            ->respond();
+    }
 
-	}
-
-    public function returnsGroupedGroups() {
+    public function returnsGroupedGroups()
+    {
         $query = $this->currentUser()->isRestrictedToUF()
             ? Group::withoutGlobalScope()->where('uf', $this->currentUser()->uf)
             : Group::query();
@@ -57,37 +60,46 @@ class GroupsController extends BaseController {
         $groups = $groups->map(function ($group) {
 
             $settings = $group->getSettings();
-            if(!$settings) { $settings = null; }
-            else{ $group->settings = $this->transform($settings); }
+            if (!$settings) {
+                $settings = null;
+            } else {
+                $group->settings = $this->transform($settings);
+            }
 
-            $group->children = $group->children->map(function ($group2){
+            $group->children = $group->children->map(function ($group2) {
 
                 $settings = $group2->getSettings();
-                if(!$settings) { $settings = null; }
-                else{ $group2->settings = $this->transform($settings); }
+                if (!$settings) {
+                    $settings = null;
+                } else {
+                    $group2->settings = $this->transform($settings);
+                }
 
-                $group2->children = $group2->children->map(function ($group3){
+                $group2->children = $group2->children->map(function ($group3) {
 
                     $settings = $group3->getSettings();
-                    if(!$settings) { $settings = null; }
-                    else{ $group3->settings = $this->transform($settings); }
+                    if (!$settings) {
+                        $settings = null;
+                    } else {
+                        $group3->settings = $this->transform($settings);
+                    }
 
-                    $group3->children = $group3->children->map(function ($group4){
+                    $group3->children = $group3->children->map(function ($group4) {
 
                         $settings = $group4->getSettings();
-                        if(!$settings) { $settings = null; }
-                        else{ $group4->settings = $this->transform($settings); }
+                        if (!$settings) {
+                            $settings = null;
+                        } else {
+                            $group4->settings = $this->transform($settings);
+                        }
 
                         return $group4;
-
                     });
 
                     return $group3;
-
                 });
 
                 return $group2;
-
             });
 
             return $group;
@@ -96,14 +108,16 @@ class GroupsController extends BaseController {
         return response()->json(['data' => $groups]);
     }
 
-    public function getGroupByUser(Request $request){
+    public function getGroupByUser(Request $request)
+    {
         $groups = new GroupService;
         return response()->json(['data' => $groups->groups($this->currentUser()->email, false)]);
     }
 
-    public function findPrimaryByTenant(){
+    public function findPrimaryByTenant()
+    {
         $tenant_id = $this->currentUser()->tenant_id;
-        $query = Group::whereHas('tenant', function($query) use ($tenant_id){
+        $query = Group::whereHas('tenant', function ($query) use ($tenant_id) {
             $query->where([
                 ['id', '=', $tenant_id],
                 ['is_primary', '=', 1]
@@ -113,17 +127,19 @@ class GroupsController extends BaseController {
         return response()->json(['data' => $groups]);
     }
 
-    public function findGroupsByParent($parentId){
+    public function findGroupsByParent($parentId)
+    {
         $query = Group::where('parent_id', '=', $parentId);
         $groups = $query->orderBy('created_at', 'ASC')->get();
         return response()->json(['data' => $groups]);
     }
-	public function findByTenant(){
+    public function findByTenant()
+    {
 
         $tenant_id = request('tenant_id');
 
-	    $query = Group::whereHas('tenant', function($query) use ($tenant_id){
-	        $query->where('id', '=', $tenant_id);
+        $query = Group::whereHas('tenant', function ($query) use ($tenant_id) {
+            $query->where('id', '=', $tenant_id);
         });
 
         $groups = $query->orderBy('created_at', 'ASC')->get();
@@ -134,10 +150,10 @@ class GroupsController extends BaseController {
             ->serializeWith(new SimpleArraySerializer())
             ->parseIncludes(request('with'))
             ->respond();
-
     }
 
-    public function findByUf(){
+    public function findByUf()
+    {
 
         $uf = request('uf');
 
@@ -151,71 +167,98 @@ class GroupsController extends BaseController {
             ->serializeWith(new SimpleArraySerializer())
             ->parseIncludes(request('with'))
             ->respond();
-
     }
 
-	public function store() {
-	    $isUF = Auth::user()->isRestrictedToUF();
+    public function store()
+    {
+        $isUF = Auth::user()->isRestrictedToUF();
 
-		$group = new Group();
-		$group->fill(request()->all());
-		$group->is_primary = false;
+        $name = request('name');
+        $nameFound = Group::where('name', $name)->first();
 
-		$group->tenant_id = $isUF ? null : Auth::user()->tenant_id;
-		$group->uf = $isUF ? Auth::user()->uf : null;
+        $j = 0;
+        $suggestNames = [];
+        $evaluate = strrpos($name, " ");
+        $sufix = substr($name, $evaluate + 1, strlen($name));
+        $prefix = substr($name, 0, $evaluate + 1);
 
-		$group->save();
+        if ($nameFound) {
+            for ($i = 1; $i < 50000; ++$i) {
+                if (is_numeric($sufix))
+                    $nameSearch = $prefix . '' . $i;
+                else
+                    $nameSearch = $name . ' ' . $i;
+                $nameFounded = Group::where('name', $nameSearch)->first();
+                if (!$nameFounded)
+                    $suggestNames[$j++] =  $nameSearch;
+                if ($j == 5)
+                    break;
+            }
+            return response()->json(['status' => 'ok', 'group' => $suggestNames]);
+        }
 
-		return response()->json(['status' => 'ok', 'group' => $group]);
+        $group = new Group();
+        $group->fill(request()->all());
+        $group->is_primary = false;
 
-	}
+        $group->tenant_id = $isUF ? null : Auth::user()->tenant_id;
+        $group->uf = $isUF ? Auth::user()->uf : null;
 
-	public function update_settings(Group $group) {
-		$settings = $group->getSettings();
+        $group->save();
 
-		if( strtolower($group->name) == "secretaria municipal de educação" || strtolower($group->name) == "secretaria de educação" ){
+        return response()->json(['status' => 'ok', 'group' => $group]);
+    }
+
+    public function update_settings(Group $group)
+    {
+        $settings = $group->getSettings();
+
+        if (strtolower($group->name) == "secretaria municipal de educação" || strtolower($group->name) == "secretaria de educação") {
             $request = request('settings', []);
-            foreach ($request['alerts'] as $key => $alert){
-                if($key !== 500 AND $key !== 600 AND $alert !== true){
-                    return response()->json(['status' => 'error', 'message' => 'O grupo Secretaria Municipal de Educação, obrigatoriamente, deve estar selecionado para todos os motivos de evasão escolar.' ], 405);
+            foreach ($request['alerts'] as $key => $alert) {
+                if ($key !== 500 and $key !== 600 and $alert !== true) {
+                    return response()->json(['status' => 'error', 'message' => 'O grupo Secretaria Municipal de Educação, obrigatoriamente, deve estar selecionado para todos os motivos de evasão escolar.'], 405);
                 }
             }
-		}
+        }
 
-		$settings->update( request('settings', []) );
-		$group->setSettings($settings);
+        $settings->update(request('settings', []));
+        $group->setSettings($settings);
         return response()->json(['status' => 'ok']);
-	}
+    }
 
-	public function update(Group $group) {
-		$group->fill(request()->only(['name','parent_id']));
-		$group->save();
-        foreach ( $group->cases as $case) {
+    public function update(Group $group)
+    {
+        $group->fill(request()->only(['name', 'parent_id']));
+        $group->save();
+        foreach ($group->cases as $case) {
             $case->save();
             $case->child->save(); //reindex
         }
-		return response()->json(['status' => 'ok', 'group' => $group]);
-	}
+        return response()->json(['status' => 'ok', 'group' => $group]);
+    }
 
-	public function destroy(Group $group) {
+    public function destroy(Group $group)
+    {
 
-	    $targetGroup = Auth::user()->isRestrictedToTenant()
+        $targetGroup = Auth::user()->isRestrictedToTenant()
             ? $group->tenant->primaryGroup->id // If group is tenant-bound, existing users get moved to primary group
             : null; // Else (if UF-bound), users get moved to no group at all.
 
         $group->users()->update(['group_id' => $targetGroup]);
-		$group->delete();
+        $group->delete();
 
-		return response()->json(['status' => 'ok', 'users_moved_to' => $targetGroup]);
-	}
+        return response()->json(['status' => 'ok', 'users_moved_to' => $targetGroup]);
+    }
 
-    public function replaceAndDelete(Group $group){
+    public function replaceAndDelete(Group $group)
+    {
         //$group -> to remove
         $groupToReceive = Group::where('id', '=', request()['replace'])->get()->first();
         $group->users()->update(['group_id' => $groupToReceive->id]);
         $group->cases()->update(['group_id' => $groupToReceive->id]);
 
-        foreach ( $groupToReceive->cases as $case) {
+        foreach ($groupToReceive->cases as $case) {
             $case->save();
             $case->child->save(); //reindex
         }
@@ -223,13 +266,15 @@ class GroupsController extends BaseController {
         return response()->json(['status' => 'ok', 'users_and_cases_moved_to' => $groupToReceive->id]);
     }
 
-    public function transform($data) {
-        if(is_array($data)) return $data;
-        if(is_object($data)) return (array) $data;
+    public function transform($data)
+    {
+        if (is_array($data)) return $data;
+        if (is_object($data)) return (array) $data;
         throw new \Exception('Cannot apply generic transformation to a non-object');
     }
 
-    public function getGroup($groupId){
+    public function getGroup($groupId)
+    {
 
         $query = $this->currentUser()->isRestrictedToUF()
             ? Group::withoutGlobalScope()->where('uf', $this->currentUser()->uf)
@@ -244,37 +289,46 @@ class GroupsController extends BaseController {
         $groups = $groups->map(function ($group) {
 
             $settings = $group->getSettings();
-            if(!$settings) { $settings = null; }
-            else{ $group->settings = $this->transform($settings); }
+            if (!$settings) {
+                $settings = null;
+            } else {
+                $group->settings = $this->transform($settings);
+            }
 
-            $group->children = $group->children->map(function ($group2){
+            $group->children = $group->children->map(function ($group2) {
 
                 $settings = $group2->getSettings();
-                if(!$settings) { $settings = null; }
-                else{ $group2->settings = $this->transform($settings); }
+                if (!$settings) {
+                    $settings = null;
+                } else {
+                    $group2->settings = $this->transform($settings);
+                }
 
-                $group2->children = $group2->children->map(function ($group3){
+                $group2->children = $group2->children->map(function ($group3) {
 
                     $settings = $group3->getSettings();
-                    if(!$settings) { $settings = null; }
-                    else{ $group3->settings = $this->transform($settings); }
+                    if (!$settings) {
+                        $settings = null;
+                    } else {
+                        $group3->settings = $this->transform($settings);
+                    }
 
-                    $group3->children = $group3->children->map(function ($group4){
+                    $group3->children = $group3->children->map(function ($group4) {
 
                         $settings = $group4->getSettings();
-                        if(!$settings) { $settings = null; }
-                        else{ $group4->settings = $this->transform($settings); }
+                        if (!$settings) {
+                            $settings = null;
+                        } else {
+                            $group4->settings = $this->transform($settings);
+                        }
 
                         return $group4;
-
                     });
 
                     return $group3;
-
                 });
 
                 return $group2;
-
             });
 
             return $group;
@@ -283,12 +337,13 @@ class GroupsController extends BaseController {
         return response()->json(['data' => $groups]);
     }
 
-    public function findGroupedByTenant(){
+    public function findGroupedByTenant()
+    {
 
         $tenant_id = request('tenant_id');
 
         $query = Group::where('is_primary', '=', 1)
-            ->whereHas('tenant', function($query) use ($tenant_id){
+            ->whereHas('tenant', function ($query) use ($tenant_id) {
                 $query->where('id', '=', $tenant_id);
             });
         $query->with('children.children.children.children');
@@ -300,10 +355,10 @@ class GroupsController extends BaseController {
             ->serializeWith(new SimpleArraySerializer())
             ->parseIncludes(request('with'))
             ->respond();
-
     }
 
-    public function getGroupWithParents($groupId){
+    public function getGroupWithParents($groupId)
+    {
 
         $query = $this->currentUser()->isRestrictedToUF()
             ? Group::withoutGlobalScope()->where('uf', $this->currentUser()->uf)
@@ -317,5 +372,4 @@ class GroupsController extends BaseController {
 
         return response()->json(['data' => $groups]);
     }
-
 }
