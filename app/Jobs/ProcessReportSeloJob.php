@@ -16,6 +16,8 @@ use Log;
 use Rap2hpoutre\FastExcel\FastExcel;
 use File;
 use Illuminate\Database\Eloquent\Builder;
+use BuscaAtivaEscolar\CaseSteps\Rematricula;
+use BuscaAtivaEscolar\ChildCase;
 
 class ProcessReportSeloJob implements ShouldQueue
 {
@@ -104,6 +106,28 @@ class ProcessReportSeloJob implements ShouldQueue
                         ]
                     )->count();
 
+                //Searching for cases cancelleds during or after rematricula
+                $createdBefore1NovAndCancelledAfter1Nov = Rematricula::whereHas('cases', function ($query) {
+                    $query->whereIn('case_status', [ChildCase::STATUS_CANCELLED, ChildCase::STATUS_INTERRUPTED, ChildCase::STATUS_TRANSFERRED])
+                        ->where([
+                            ['created_at', '<', '2021-11-01 00:00:00'],
+                            ['updated_at', '>', '2021-11-01 00:00:00']
+                        ]);
+                    })->where([
+                        ['tenant_id' , '=', $tenant->id],
+                        ['is_completed', '=', true]
+                    ])->count();
+
+                $createdAfter1NovAndCancelledAfter1Nov = Rematricula::whereHas('cases', function ($query) {
+                    $query->whereIn('case_status', [ChildCase::STATUS_CANCELLED, ChildCase::STATUS_INTERRUPTED, ChildCase::STATUS_TRANSFERRED])
+                        ->where([
+                            ['created_at', '>', '2021-11-01 00:00:00'],
+                            ['updated_at', '>', '2021-11-01 00:00:00']
+                        ]);
+                    })->where([
+                        ['tenant_id' , '=', $tenant->id],
+                        ['is_completed', '=', true],
+                    ])->count();
 
                 array_push(
                     $cities,
@@ -222,7 +246,11 @@ class ProcessReportSeloJob implements ShouldQueue
                         'CeA na Escola' => $obs1 + $obs2 + $obs3 + $obs4 + $concluidos,
                         '% Atingimento da Meta' => $city->goal->goal > 0 ? ((($obs1 + $obs2 + $obs3 + $obs4 + $concluidos)-($city->goal->accumulated_ciclo1)) * 100) / $city->goal->goal : 0,
 
-                        'ID-CIDADE' => $city->id
+                        'ID-CIDADE' => $city->id,
+
+                        'Criados antes do dia 31 NOV 2021 - Cancelados depois do dia 31 NOV 2021' => $createdBefore1NovAndCancelledAfter1Nov,
+
+                        'Criados depois do dia 31 NOV 2021 - Cancelados depois do dia 31 NOV 2021' => $createdAfter1NovAndCancelledAfter1Nov,
                     ]
                 );
             } else {
