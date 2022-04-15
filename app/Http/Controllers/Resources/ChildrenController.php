@@ -63,38 +63,37 @@ class ChildrenController extends BaseController
 	}
 	protected function prepareSearchQuery(): ElasticSearchQuery
 	{
-		
+
 		$params = $this->filterAsciiFields(request()->all(), ['name', 'cause_name', 'assigned_user_name', 'location_full', 'step_name', 'city_name']);
-		
+
 		// Scope the query within the tenant
 		if (Auth::user()->isRestrictedToTenant())
 			$params['tenant_id'] = Auth::user()->tenant_id;
-		
+
 		// Scope the query to state agents
-		if (Auth::user()->isRestrictedToUF()) 
+		if (Auth::user()->isRestrictedToUF())
 			$params['assigned_uf'] = Auth::user()->uf;
 
 		if (isset($params['uf'])) $params['uf'] = Str::lower($params['uf']);
 		if (isset($params['assigned_uf'])) $params['assigned_uf'] = Str::lower($params['assigned_uf']);
-		
-		
+
+
 		$query = ElasticSearchQuery::withParameters($params)
 			->filterByTerm('tenant_id', false)
 			->filterByTerm('uf', false)
 			->filterByTerm('assigned_uf', false)
-			->addTextFields(['name', 'cause_name', 'step_name', 'assigned_user_name', 'city_name', 'group_id'], 'match')
+			->addTextFields(['name', 'cause_name', 'step_name', 'assigned_user_name', 'city_name'], 'match')
 			->searchTextInColumns(
 				'location_full',
 				['place_address^3', 'place_cep^2', 'place_city^2', 'place_uf', 'place_neighborhood', 'place_reference']
 			)
-			->searchTextInColumns('city_name_full',['place_uf','place_city_name'])
+			->searchTextInColumns('city_name_full', ['place_uf', 'place_city_name'])
 			->filterByTerms('alert_status', false)
 			->filterByTerms('case_status', false)
 			->filterByTerms('risk_level', $params['risk_level_null'] ?? false)
 			->filterByTerm('current_step_type', false)
 			->filterByTerm('step_slug', false)
 			->filterByTerms('gender', $params['gender_null'] ?? false)
-			//->filterByTerms('case_cause_ids', $params['case_cause_ids_null'] ?? false)
 			->filterByTerms('place_kind', $params['place_kind_null'] ?? false)
 			->filterByRange('age', $params['age_null'] ?? false);
 
@@ -103,23 +102,27 @@ class ChildrenController extends BaseController
 			$query->filterByOneOf(['assigned_user_id' => ['type' => 'term', 'search' => Auth::user()->id]]);
 		}
 
-        // Scope the query within the tenant
-        if (Auth::user()->isRestrictedToTenant()){
-            $idGroups = $this->currentUser()->getArrayOfGroupWithChildrenGroups();
-            $filters = [
-                'group_id' => ['type' => 'terms', 'search' => $idGroups]
-            ];
-            $query->filterByOneOf($filters);
-        }
+		// Scope the query within the tenant
+		if (Auth::user()->isRestrictedToTenant()) {
+			$idGroups = $this->currentUser()->getArrayOfGroupWithChildrenGroups();
+			$filters = [
+				'group_id' => ['type' => 'terms', 'search' => $idGroups]
+			];
+			$query->filterByOneOf($filters);
+		}
 
-        if(array_key_exists("case_not_info", $params) == 1){
-			if($params["case_not_info"][0] == 'yes')
+		if (array_key_exists("case_not_info", $params) == 1) {
+			if ($params["case_not_info"][0] == 'yes')
 				$query->getNonInformedCases(1, array());
-			else{
-				if(array_key_exists("case_cause_ids", $params)){
+			else {
+				if (array_key_exists("case_cause_ids", $params)) {
 					$query->getNonInformedCases(0, $params);
-				}	
-			}		
+				}
+			}
+		}
+		if (array_key_exists("group_id", $params) == 1) {
+			if ($params['group_id'])
+				$query->getGroups($params);
 		}
 		return $query;
 	}
@@ -450,20 +453,18 @@ class ChildrenController extends BaseController
 		}
 	}
 
-    public function create_report_child(Search $search)
-    {
-        $query = $this->prepareSearchQuery();
-        $query = $query->getQuery();
-        $job = new ProcessExportChildrenJob(Auth::user(), $query);
-        $job->handle($search);
-        return response()->json(
-            [
-                'msg' => 'Arquivo criado',
-                'date' => Carbon::now()->timestamp
-            ],
-            200
-        );
-
-    }
-
+	public function create_report_child(Search $search)
+	{
+		$query = $this->prepareSearchQuery();
+		$query = $query->getQuery();
+		$job = new ProcessExportChildrenJob(Auth::user(), $query);
+		$job->handle($search);
+		return response()->json(
+			[
+				'msg' => 'Arquivo criado',
+				'date' => Carbon::now()->timestamp
+			],
+			200
+		);
+	}
 }

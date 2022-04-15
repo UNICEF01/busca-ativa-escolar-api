@@ -1,4 +1,5 @@
 <?php
+
 /**
  * busca-ativa-escolar-api
  * SearchQuery.php
@@ -14,7 +15,8 @@
 namespace BuscaAtivaEscolar\Search;
 
 
-class ElasticSearchQuery {
+class ElasticSearchQuery
+{
 
 	/**
 	 * @var array The given search parameters.
@@ -41,7 +43,8 @@ class ElasticSearchQuery {
 	 *
 	 * @param array $params The search parameters (associative array of fields to search and expected values).
 	 */
-	public function __construct(array $params) {
+	public function __construct(array $params)
+	{
 		$this->params = $params;
 	}
 
@@ -55,11 +58,12 @@ class ElasticSearchQuery {
 	 * @param string $priority The 'priority' to use (must/should/filter). See ElasticSearch docs for more info.
 	 * @return self Same query instance, for fluid composition.
 	 */
-	public function addTextField(string $name, string $mode = 'term', string $priority = 'must') : self {
+	public function addTextField(string $name, string $mode = 'term', string $priority = 'must'): self
+	{
 		array_push($this->attemptedQuery, ['addTextField', $name, $priority, $this->params[$name] ?? null]);
 
-		if(!isset($this->params[$name])) return $this;
-		if(strlen($this->params[$name]) <= 0) return $this;
+		if (!isset($this->params[$name])) return $this;
+		if (strlen($this->params[$name]) <= 0) return $this;
 
 		array_push($this->query['bool'][$priority], [$mode => [$name => $this->params[$name]]]);
 
@@ -76,11 +80,12 @@ class ElasticSearchQuery {
 	 * @param string $priority The 'priority' to use (must/should/filter). See ElasticSearch docs for more info.
 	 * @return self Same query instance, for fluid composition.
 	 */
-	public function addTextFields(array $names, string $mode = 'term', string $priority = 'must') : self {
+	public function addTextFields(array $names, string $mode = 'term', string $priority = 'must'): self
+	{
 		array_push($this->attemptedQuery, ['addTextFields+', $names, $priority, sizeof($names)]);
 
-		if(sizeof($names) <= 0) return $this;
-		foreach($names as $name) $this->addTextField($name, $mode, $priority);
+		if (sizeof($names) <= 0) return $this;
+		foreach ($names as $name) $this->addTextField($name, $mode, $priority);
 		return $this;
 	}
 
@@ -94,12 +99,13 @@ class ElasticSearchQuery {
 	 * @param string $priority The 'priority' to use (must/should/filter). See ElasticSearch docs for more info.
 	 * @return self Same query instance, for fluid composition.
 	 */
-	public function searchTextInColumns(string $name, array $fields = [], string $priority = 'must') : self {
+	public function searchTextInColumns(string $name, array $fields = [], string $priority = 'must'): self
+	{
 		array_push($this->attemptedQuery, ['searchTextInColumns', $name, $fields, $priority, $this->params[$name] ?? null, sizeof($fields)]);
 
-		if(!isset($this->params[$name])) return $this;
-		if(strlen($this->params[$name]) <= 0) return $this;
-		if(sizeof($fields) <= 0) return $this;
+		if (!isset($this->params[$name])) return $this;
+		if (strlen($this->params[$name]) <= 0) return $this;
+		if (sizeof($fields) <= 0) return $this;
 
 		array_push($this->query['bool'][$priority], ['multi_match' => [
 			'query' => $this->params[$name],
@@ -118,19 +124,20 @@ class ElasticSearchQuery {
 	 * @param string $priority The 'priority' to use (must/should/filter). See ElasticSearch docs for more info.
 	 * @return self Same query instance, for fluid composition.
 	 */
-	public function autocompleteTextInColumns(string $name, array $fields = [], string $priority = 'must') : self {
+	public function autocompleteTextInColumns(string $name, array $fields = [], string $priority = 'must'): self
+	{
 		array_push($this->attemptedQuery, ['autocompleteTextInColumns', $name, $fields, $priority, $this->params[$name] ?? null]);
 
-		if(!isset($this->params[$name])) return $this;
-		if(strlen($this->params[$name]) <= 0) return $this;
-		if(sizeof($fields) <= 0) return $this;
+		if (!isset($this->params[$name])) return $this;
+		if (strlen($this->params[$name]) <= 0) return $this;
+		if (sizeof($fields) <= 0) return $this;
 
 		array_push($this->query['bool'][$priority], ['suggest' => [
 
 			"prefix" => $this->params[$name],
-	        "completion" => [
+			"completion" => [
 				"field" => "name_ascii"
-	        ],
+			],
 
 		]]);
 
@@ -149,15 +156,16 @@ class ElasticSearchQuery {
 	 * @param string $requirement Required or optional filtering
 	 * @return self Same query instance, for fluid composition.
 	 */
-	public function filterByTerm(string $name, bool $includeNullFields = false, string $priority = 'filter', string $requirement = "should") : self {
+	public function filterByTerm(string $name, bool $includeNullFields = false, string $priority = 'filter', string $requirement = "should"): self
+	{
 		array_push($this->attemptedQuery, ['filterByTerm', $name, $includeNullFields, $priority, $this->params[$name] ?? null]);
 
-		if(!isset($this->params[$name])) return $this;
-		if(strlen($this->params[$name]) <= 0) return $this;
+		if (!isset($this->params[$name])) return $this;
+		if (strlen($this->params[$name]) <= 0) return $this;
 
 		$filter = ['bool' => [$requirement => [['term' => [$name => $this->params[$name]]]]]];
 
-		if($includeNullFields) array_push($filter['bool'][$requirement], ['missing' => ['field' => $name]]);
+		if ($includeNullFields) array_push($filter['bool'][$requirement], ['missing' => ['field' => $name]]);
 
 		array_push($this->query['bool'][$priority], $filter);
 
@@ -175,29 +183,31 @@ class ElasticSearchQuery {
 	 * @param string $priority The 'priority' to use (must/should/filter). See ElasticSearch docs for more info.
 	 * @return self Same query instance, for fluid composition.
 	 */
- 	public function filterByTerms(string $name, bool $includeNullFields = false, string $priority = 'filter') : self {
+	public function filterByTerms(string $name, bool $includeNullFields = false, string $priority = 'filter'): self
+	{
 		array_push($this->attemptedQuery, ['filterByTerms', $name, $includeNullFields, $priority, $this->params[$name] ?? null]);
 
-		if(!isset($this->params[$name])) return $this;
-		if(!is_array($this->params[$name])) return $this;
+		if (!isset($this->params[$name])) return $this;
+		if (!is_array($this->params[$name])) return $this;
 
 		$filter = ['bool' => ['should' => [['terms' => [$name => $this->params[$name]]]]]];
 
-		if($includeNullFields) array_push($filter['bool']['should'], ['missing' => ['field' => $name]]);
+		if ($includeNullFields) array_push($filter['bool']['should'], ['missing' => ['field' => $name]]);
 
 		array_push($this->query['bool'][$priority], $filter);
 
 		return $this;
 	}
 
-	public function filterByOneOf(array $conditions, $includeNullFields = false, $priority = 'filter') : self {
+	public function filterByOneOf(array $conditions, $includeNullFields = false, $priority = 'filter'): self
+	{
 		array_push($this->attemptedQuery, ['filterByOneOf', $conditions]);
 
 		$filter = ['bool' => ['should' => []]];
 
-		foreach($conditions as $field => $params) {
+		foreach ($conditions as $field => $params) {
 			array_push($filter['bool']['should'], [$params['type'] => [$field => $params['search']]]);
-			if($includeNullFields) array_push($filter['bool']['should'], ['missing' => ['field' => $field]]);
+			if ($includeNullFields) array_push($filter['bool']['should'], ['missing' => ['field' => $field]]);
 		}
 
 		array_push($this->query['bool'][$priority], $filter);
@@ -216,15 +226,16 @@ class ElasticSearchQuery {
 	 * @param string $priority The 'priority' to use (must/should/filter). See ElasticSearch docs for more info.
 	 * @return self Same query instance, for fluid composition.
 	 */
-	public function filterByRange(string $name, bool $includeNullFields = false, string $priority = 'filter') : self {
+	public function filterByRange(string $name, bool $includeNullFields = false, string $priority = 'filter'): self
+	{
 		array_push($this->attemptedQuery, ['filterByRange', $name, $priority, $this->params[$name] ?? null, is_array($this->params[$name] ?? null)]);
 
-		if(!isset($this->params[$name])) return $this;
-		if(!is_array($this->params[$name])) return $this;
+		if (!isset($this->params[$name])) return $this;
+		if (!is_array($this->params[$name])) return $this;
 
 		$filter = ['bool' => ['should' => [['range' => [$name => $this->params[$name]]]]]];
 
-		if($includeNullFields) array_push($filter['bool']['should'], ['missing' => ['field' => $name]]);
+		if ($includeNullFields) array_push($filter['bool']['should'], ['missing' => ['field' => $name]]);
 
 		array_push($this->query['bool'][$priority], $filter);
 
@@ -236,15 +247,18 @@ class ElasticSearchQuery {
 	 *
 	 * @return array
 	 */
-	public function getQuery() : array {
+	public function getQuery(): array
+	{
 		return $this->query;
 	}
 
-	public function getAttemptedQuery() : array {
+	public function getAttemptedQuery(): array
+	{
 		return $this->attemptedQuery;
 	}
 
-	public function appendBoolQuery($priority, $query) {
+	public function appendBoolQuery($priority, $query)
+	{
 		array_push($this->attemptedQuery, ['appendedQuery', $priority, $query]);
 		array_push($this->query['bool'][$priority], $query);
 	}
@@ -255,19 +269,26 @@ class ElasticSearchQuery {
 	 * @param array $params The search parameters (associative array of fields to search and expected values).
 	 * @return self The created search query, for fluid composition.
 	 */
-	public static function withParameters(array $params) : self {
+	public static function withParameters(array $params): self
+	{
 		return new self($params);
 	}
 
 
-	public function getNonInformedCases(int $validate, array $params){
-		if($validate == 1){
+	public function getNonInformedCases(int $validate, array $params)
+	{
+		if ($validate == 1) {
 			$this->query['bool']['must_not']['exists']['field'] = 'case_cause_ids';
+		} else {
+			for ($i = 0; $i < count($params['case_cause_ids']); ++$i)
+				$this->query['bool']['must'][$i]['match']['case_cause_ids'] = $params['case_cause_ids'][$i];
 		}
-		else{
-			for($i = 0; $i < count($params['case_cause_ids']); ++$i)
-				$this->query['bool']['must'][$i]['match']['case_cause_ids'] = $params['case_cause_ids'][$i];	
-		}
+		return $this->query;
+	}
+
+	public function getGroups(array $params)
+	{
+		$this->query['bool']['must'][0]['match']['group_id'] = $params['group_id'];
 		return $this->query;
 	}
 }
