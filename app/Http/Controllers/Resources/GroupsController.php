@@ -19,7 +19,6 @@ use Auth;
 use BuscaAtivaEscolar\Group;
 use BuscaAtivaEscolar\Http\Controllers\BaseController;
 use BuscaAtivaEscolar\Serializers\SimpleArraySerializer;
-use BuscaAtivaEscolar\Transformers\GenericTransformer;
 use BuscaAtivaEscolar\Transformers\GroupTransformer;
 use BuscaAtivaEscolar\Groups\GroupService;
 use Illuminate\Http\Request;
@@ -230,6 +229,30 @@ class GroupsController extends BaseController
     public function update(Group $group)
     {
         $group->fill(request()->only(['name', 'parent_id']));
+        $name = request('name');
+        $nameFound = Group::where('name', $name)->first();
+
+        $j = 0;
+        $suggestNames = [];
+        $evaluate = strrpos($name, " ");
+        $sufix = substr($name, $evaluate + 1, strlen($name));
+        $prefix = substr($name, 0, $evaluate + 1);
+
+        if ($nameFound) {
+            for ($i = 1; $i < 50000; ++$i) {
+                if (is_numeric($sufix))
+                    $nameSearch = $prefix . '' . $i;
+                else
+                    $nameSearch = $name . ' ' . $i;
+                $nameFounded = Group::where('name', $nameSearch)->first();
+                if (!$nameFounded)
+                    $suggestNames[$j++] =  $nameSearch;
+                if ($j == 5)
+                    break;
+            }
+            return response()->json(['status' => 'ok', 'group' => $suggestNames]);
+        }
+
         $group->save();
         foreach ($group->cases as $case) {
             $case->save();
