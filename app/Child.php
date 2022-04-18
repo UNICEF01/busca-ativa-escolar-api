@@ -1,4 +1,5 @@
 <?php
+
 /**
  * busca-ativa-escolar-api
  * Child.php
@@ -362,6 +363,7 @@ class Child extends Model implements Searchable, CanBeAggregated, CollectsDailyM
 
         $prevStatus = $this->alert_status;
         $this->alert_status = 'accepted';
+
         $this->save();
 
         $this->currentCase->case_status = ChildCase::STATUS_IN_PROGRESS;
@@ -372,7 +374,7 @@ class Child extends Model implements Searchable, CanBeAggregated, CollectsDailyM
 
         if (sizeof($updatedDetails) > 0) {
             $updatedDetails = collect($updatedDetails)
-                ->only(['place_address', 'place_neighborhood'])
+                ->only(['place_address', 'place_neighborhood', 'group_id', 'group_name'])
                 ->toArray();
 
             $alertStep->fill($updatedDetails);
@@ -435,27 +437,27 @@ class Child extends Model implements Searchable, CanBeAggregated, CollectsDailyM
      */
     public function updateCoordinatesThroughGeocoding($rawAddress)
     {
-//        $geocoder = app('geocoder');
-//        /* @var $geocoder Geocoder */
-//        $address = null;
-//        $endPoint = "https://geocoder.ls.hereapi.com/6.2/geocode.json";
-//        $key = env('HERE_API_KEY');
-//        $client = new \GuzzleHttp\Client();
-//        $url = $endPoint . '?searchtext=' . $rawAddress . '&gen=9&apiKey=' . $key;
+        //        $geocoder = app('geocoder');
+        //        /* @var $geocoder Geocoder */
+        //        $address = null;
+        //        $endPoint = "https://geocoder.ls.hereapi.com/6.2/geocode.json";
+        //        $key = env('HERE_API_KEY');
+        //        $client = new \GuzzleHttp\Client();
+        //        $url = $endPoint . '?searchtext=' . $rawAddress . '&gen=9&apiKey=' . $key;
 
-//        $address = null;
-//        $endPoint = "https://geocoder.ls.hereapi.com/6.2/geocode.json";
-//        $key = env('HERE_API_KEY');
-//        $client = new \GuzzleHttp\Client();
-//        $url = $endPoint . '?searchtext=' . $rawAddress . '&gen=9&apiKey=' . $key;
-//
-//        $request = $client->request('GET', $endPoint . '?searchtext=' . $rawAddress . '&gen=9&apiKey=' . $key);
-//        $stream = json_decode($request->getBody()->getContents());
-//        $location = $stream->Response->View[0]->Result[0]->Location;
+        //        $address = null;
+        //        $endPoint = "https://geocoder.ls.hereapi.com/6.2/geocode.json";
+        //        $key = env('HERE_API_KEY');
+        //        $client = new \GuzzleHttp\Client();
+        //        $url = $endPoint . '?searchtext=' . $rawAddress . '&gen=9&apiKey=' . $key;
+        //
+        //        $request = $client->request('GET', $endPoint . '?searchtext=' . $rawAddress . '&gen=9&apiKey=' . $key);
+        //        $stream = json_decode($request->getBody()->getContents());
+        //        $location = $stream->Response->View[0]->Result[0]->Location;
 
         $location = $this->getLocationByRawAddress($rawAddress);
 
-        if($location){
+        if ($location) {
             if ($location->Address->Country == 'BRA') {
                 $this->update([
                     'lat' => ($location->DisplayPosition) ? $location->DisplayPosition->Latitude : null,
@@ -469,7 +471,7 @@ class Child extends Model implements Searchable, CanBeAggregated, CollectsDailyM
                     'map_geocoded_address' => null,
                 ]);
             }
-        }else{
+        } else {
             $this->update([
                 'lat' => null,
                 'lng' => null,
@@ -513,7 +515,7 @@ class Child extends Model implements Searchable, CanBeAggregated, CollectsDailyM
     public function buildSearchDocument(): array
     {
 
-        if (!$this->exists){
+        if (!$this->exists) {
             return 'null';
         }
 
@@ -570,7 +572,6 @@ class Child extends Model implements Searchable, CanBeAggregated, CollectsDailyM
                     if ($this->currentStep->getSlug() === "gestao_do_caso") {
                         $data['deadline_status'] = "normal";
                     }
-
                 } else {
                     $data['deadline_status'] = "normal";
                 }
@@ -596,7 +597,6 @@ class Child extends Model implements Searchable, CanBeAggregated, CollectsDailyM
 
             $data['group_id'] = $this->currentCase->group ? $this->currentCase->group->id : null;
             $data['group_name'] = $this->currentCase->group ? $this->currentCase->group->name : null;
-
         }
 
         $data['city_name'] = $this->city->name ?? null;
@@ -604,7 +604,6 @@ class Child extends Model implements Searchable, CanBeAggregated, CollectsDailyM
         $data['country_region'] = $this->city->region ?? null;
 
         return $data;
-
     }
 
     // ------------------------------------------------------------------------
@@ -678,7 +677,6 @@ class Child extends Model implements Searchable, CanBeAggregated, CollectsDailyM
             "assigned_uf",
             "country_region",
         ]);
-
     }
 
     // ------------------------------------------------------------------------
@@ -743,7 +741,6 @@ class Child extends Model implements Searchable, CanBeAggregated, CollectsDailyM
         event(new AlertSpawned($child, $case, $alertStep));
 
         return $child;
-
     }
 
     /**
@@ -804,7 +801,6 @@ class Child extends Model implements Searchable, CanBeAggregated, CollectsDailyM
         $sons = $this->getSon($idForGetSon, $value);
         $fathers = $this->getFather($idForGetFather, $value);
         return array_merge($fathers, $sons);;
-
     }
 
     private function getFather($id, $value)
