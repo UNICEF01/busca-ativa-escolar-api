@@ -94,4 +94,117 @@ class CacheService
         ];
         return $data;
     }
+
+    public function binarySerchString(array $arr, string $target): int
+    {
+        $l = 0;
+        $r = count($arr) - 1;
+
+        while ($l <= $r) {
+            $m = $l + (int)(($r - $l) / 2);
+            $string = $arr[$m][0] == '&' ? substr($arr[$m], 1, 2) : substr($arr[$m], 0, 2);
+            $res = strcmp($target, $string);
+
+            if ($res == 0)
+                return $m;
+
+            else if ($res > 0)
+                $l = $m + 1;
+
+            else
+                $r = $m - 1;
+        }
+
+        return -1;
+    }
+
+    public function returnMap($uf)
+    {
+
+        $ufs = [
+            'AC' => ['001', 'Acre'],
+            'AL' => ['002', 'Alagoas'],
+            'AP' => ['003', 'Amapa'],
+            'AM' => ['004', 'Amazonas'],
+            'BA' => ['005', 'Bahia'],
+            'CE' => ['006', 'Ceara'],
+            'DF' => ['007', 'Distrito Federal'],
+            'ES' => ['008', 'Espirito Santo'],
+            'GO' => ['009', 'Goias'],
+            'MA' => ['010', 'Maranhao'],
+            'MT' => ['011', 'Mato Grosso'],
+            'MS' => ['012', 'Mato Grosso do Sul'],
+            'MG' => ['013', 'Minas Gerais'],
+            'PA' => ['014', 'Para'],
+            'PB' => ['015', 'Paraiba'],
+            'PR' => ['016', 'Parana'],
+            'PE' => ['017', 'Pernambuco'],
+            'PI' => ['018', 'Piaui'],
+            'RJ' => ['019', 'Rio de Janeiro'],
+            'RN' => ['020', 'Rio Grande do Norte'],
+            'RS' => ['021', 'Rio Grande do Sul'],
+            'RO' => ['022', 'Rondonia'],
+            'RR' => ['023', 'Roraima'],
+            'SC' => ['024', 'Santa Catarina'],
+            'SP' => ['025', 'Sao Paulo'],
+            'SE' => ['026', 'Sergipe'],
+            'TO' => ['027', 'Tocantins']
+        ];
+        $cache = Cache::get("map_cache");
+        $cache = explode("-BR", $cache);
+        $states = explode(" uf ", $cache[0]);
+        $country = explode(" ", $cache[1]);
+        $country = explode("&", $country[0]);
+        $k = 0;
+        $all_values = [];
+        if ($uf != null and $uf != "null") {
+            $index =  $this->binarySerchString($states, $uf);
+            $state = explode("city", $states[$index]);
+            for ($i = 0; $i < count($state) - 1; ++$i) {
+                array_push($all_values, explode("&", $state[$i])[4]);
+                $data[$k++] = [
+                    "id" => explode("&", $state[$i])[2],
+                    "value" => explode("&", $state[$i])[4],
+                    "name_city" => utf8_encode(explode("&", $state[$i])[3]),
+                    "showLabel" => 0,
+                ];
+            }
+        } else {
+            $k = 0;
+            $j = 2;
+            for ($i = 1; $i < count($country) - 2 && $j < count($country) - 1; $i += 2, $j += 2) {
+                array_push($all_values, $country[$j]);
+                $name = $country[$i];
+                if ($country[$j] > 0) {
+                    $data[$k++] = [
+                        "place_uf" => $name,
+                        "value" => $country[$j],
+                        "id" => $ufs[$name][0],
+                        "displayValue" => $name,
+                        "showLabel" => 1,
+                        "simple_name" => strtolower($name)
+                    ];
+                }
+            }
+        }
+
+        usort($data, function ($item1, $item2) {
+            return $item2['value'] <=> $item1['value'];
+        });
+
+        $final_data = [
+            'colors' => [
+                [
+                    "maxvalue" => count($all_values) > 0 ? max($all_values) : 0,
+                    "code" => "#e44a00"
+                ],
+                [
+                    "maxvalue" => count($all_values) > 0 ? max($all_values) / 2 : 0,
+                    "code" => "#f8bd19"
+                ]
+            ],
+            'data' => $data
+        ];
+        return $final_data;
+    }
 }
