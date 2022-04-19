@@ -47,6 +47,7 @@ Route::group(['prefix' => 'v1', 'middleware' => 'api'], function () {
 
 		// Pending alerts
 		Route::get('/alerts/pending', 'Resources\AlertsController@get_pending')->middleware('can:alerts.pending');
+		Route::post('/alerts/edit', 'Resources\AlertsController@edit')->middleware('can:alerts.pending');
 		Route::post('/alerts/{child}/accept', 'Resources\AlertsController@accept')->middleware('can:alerts.pending');
 		Route::post('/alerts/{child}/reject', 'Resources\AlertsController@reject')->middleware('can:alerts.pending');
 
@@ -57,7 +58,7 @@ Route::group(['prefix' => 'v1', 'middleware' => 'api'], function () {
 			Route::post('/cases/{case}/transfer', 'Resources\CasesController@transfer')->middleware('can:cases.transfer');
 			Route::post('/cases/{case}/request-reopen', 'Resources\CasesController@requestReopen')->middleware('can:cases.request-reopen');
 			Route::post('/cases/{case}/request-transfer', 'Resources\CasesController@requestTransfer')->middleware('can:cases.request-transfer');
-            Route::resource('/cases', 'Resources\CasesController');
+			Route::resource('/cases', 'Resources\CasesController');
 		});
 
 		// Requests
@@ -82,22 +83,22 @@ Route::group(['prefix' => 'v1', 'middleware' => 'api'], function () {
 		});
 
 		// User Groups
-        Route::get('/groups/{id}', 'Resources\GroupsController@getGroup');
-        Route::get('/groups_with_parents/{id}', 'Resources\GroupsController@getGroupWithParents');
-        Route::get('/groups/parent/{id}', 'Resources\GroupsController@findGroupsByParent');
+		Route::get('/groups/{id}', 'Resources\GroupsController@getGroup');
+		Route::get('/groups_with_parents/{id}', 'Resources\GroupsController@getGroupWithParents');
+		Route::get('/groups/parent/{id}', 'Resources\GroupsController@findGroupsByParent');
 		Route::get('/groups', 'Resources\GroupsController@index');
-        Route::get('/grouped_groups', 'Resources\GroupsController@returnsGroupedGroups');
+		Route::get('/grouped_groups', 'Resources\GroupsController@returnsGroupedGroups');
 		Route::get('/user_groups', 'Resources\GroupsController@getGroupByUser');
 		Route::post('/groups/tenant', 'Resources\GroupsController@findByTenant');
-        Route::get('/groups/primary/tenant', 'Resources\GroupsController@findPrimaryByTenant');
-        Route::post('/groups/grouped/tenant', 'Resources\GroupsController@findGroupedByTenant');
+		Route::get('/groups/primary/tenant', 'Resources\GroupsController@findPrimaryByTenant');
+		Route::post('/groups/grouped/tenant', 'Resources\GroupsController@findGroupedByTenant');
 		Route::post('/groups/uf', 'Resources\GroupsController@findByUf');
 		Route::post('/groups', 'Resources\GroupsController@store')->middleware('can:groups.manage');
 		Route::get('/groups/{group}', 'Resources\GroupsController@show')->middleware('can:groups.manage');
 		Route::put('/groups/{group}/settings', 'Resources\GroupsController@update_settings')->middleware('can:groups.manage');
 		Route::put('/groups/{group}', 'Resources\GroupsController@update')->middleware('can:groups.manage');
 		Route::delete('/groups/{group}', 'Resources\GroupsController@destroy')->middleware('can:groups.manage');
-        Route::put('/groups/{group}/replace_delete', 'Resources\GroupsController@replaceAndDelete')->middleware('can:groups.manage');
+		Route::put('/groups/{group}/replace_delete', 'Resources\GroupsController@replaceAndDelete')->middleware('can:groups.manage');
 
 		// Tenant Settings
 		Route::get('/settingstenantcase/tenant/{id}', 'Resources\SettingsController@get_tenant_settings_of_case');

@@ -16,6 +16,7 @@ namespace BuscaAtivaEscolar\Http\Controllers\Resources;
 
 use Auth;
 use BuscaAtivaEscolar\Child;
+use BuscaAtivaEscolar\CaseSteps\Alerta;
 use DB;
 use BuscaAtivaEscolar\Group;
 use BuscaAtivaEscolar\Http\Controllers\BaseController;
@@ -171,8 +172,6 @@ class AlertsController extends BaseController
                 return response()->json(['status' => 'failed', 'reason' => 'not_pending']);
             }
 
-            ChildCase::where('child_id', request()->all()['id'])->update(['group_id' => request()->all()['group_id']]);
-
             $child->acceptAlert(request()->all());
 
             return response()->json(['status' => 'ok']);
@@ -209,5 +208,23 @@ class AlertsController extends BaseController
             ->serializeWith(new SimpleArraySerializer())
             ->parseIncludes(request('with'))
             ->respond();
+    }
+
+
+    public function edit()
+    {
+        try {
+
+            $dados = request()->all();
+            if (gettype($dados['data']) == 'array') {
+                ChildCase::where('child_id', $dados['id'])->update(['group_id' => $dados['data'][1]]);
+            } else {
+                Alerta::where('child_id', $dados['id'])->update([$dados['type'] => $dados['data']]);
+            }
+
+            return response()->json(['status' => 'ok']);
+        } catch (\Exception $ex) {
+            return $this->api_exception($ex);
+        }
     }
 }
