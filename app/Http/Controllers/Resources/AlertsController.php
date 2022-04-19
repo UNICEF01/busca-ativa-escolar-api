@@ -221,7 +221,6 @@ class AlertsController extends BaseController
             } else {
                 Alerta::where('child_id', $dados['id'])->update([$dados['type'] => $dados['data']]);
             }
-
             return response()->json(['status' => 'ok']);
         } catch (\Exception $ex) {
             return $this->api_exception($ex);
