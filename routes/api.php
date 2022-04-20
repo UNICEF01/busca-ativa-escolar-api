@@ -130,7 +130,7 @@ Route::group(['prefix' => 'v1', 'middleware' => 'api'], function () {
 
 		// Case Steps
 		Route::post('/steps/{step_type}/{step_id}/complete', 'Resources\StepsController@complete')->middleware('can:cases.manage');
-		Route::get('/steps/{step_type}/{step_id}/assignable_users', 'Resources\StepsController@getAssignableUsers')->middleware('can:cases.manage');
+		Route::get('/steps/{step_type}/{step_id}/{nodes_groups}/assignable_users', 'Resources\StepsController@getAssignableUsers')->middleware('can:cases.manage');
 		Route::post('/steps/{step_type}/{step_id}/assign_user', 'Resources\StepsController@assignUser')->middleware('can:cases.manage');
 		Route::post('/steps/{step_type}/{step_id}', 'Resources\StepsController@update')->middleware('can:cases.manage');
 		Route::get('/steps/{step_type}/{step_id}', 'Resources\StepsController@show')->middleware('can:cases.view');

@@ -119,16 +119,17 @@ class StepsController extends BaseController {
 
 	}
 
-	public function getAssignableUsers($step_type, $step_id) {
+	public function getAssignableUsers($step_type, $step_id, $nodes_groups) {
 		try {
 			$step = CaseStep::fetch($step_type, $step_id);
 
 			$query = User::withoutGlobalScope(TenantScope::class)->orderBy('type', 'ASC');
 			$query = $step->applyAssignableUsersFilter($query);
 
-			$query->where(function($q) use ($step) {
+			$query->where(function($q) use ($step, $nodes_groups) {
 				return $q // Allow both tenant users or state agent users
-					->where('tenant_id', $step->tenant_id);
+					->where('tenant_id', $step->tenant_id)
+                    ->whereIn('group_id', explode(',', $nodes_groups));
 			});
 
 			$users = $query->get();
