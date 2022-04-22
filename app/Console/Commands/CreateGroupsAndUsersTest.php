@@ -133,7 +133,7 @@ class CreateGroupsAndUsersTest extends Command
             $primaryGroup = new Group();
             $primaryGroup->tenant_id = null;
             $primaryGroup->uf = null;
-            $primaryGroup->name = "Secretaria Estadual de Educacação";
+            $primaryGroup->name = "Secretaria de Estado de Educação";
             $primaryGroup->is_primary = true;
             $primaryGroup->created_at = Carbon::now();
             $primaryGroup->updated_at = Carbon::now();
