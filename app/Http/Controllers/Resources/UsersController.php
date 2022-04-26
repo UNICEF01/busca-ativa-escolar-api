@@ -33,7 +33,6 @@ use League\Fractal\Pagination\IlluminatePaginatorAdapter;
 use Mail;
 use Maatwebsite\Excel\Excel as ExcelB;
 use BuscaAtivaEscolar\LGPD\Interfaces\ILgpd;
-use BuscaAtivaEscolar\Groups\GroupService;
 
 class UsersController extends BaseController
 {
@@ -47,12 +46,7 @@ class UsersController extends BaseController
     public function search()
     {
         $query = User::with('group');
-        $groups = new GroupService;
-        $ids  = $groups->groups($this->currentUser()->email, true);
-        if (!str_contains($this->currentUser()->type, 'nacional')) {
-            if (!str_contains($this->currentUser()->type, 'estadual'))
-                $query->whereIn('group_id', $ids);
-        }
+        $query->where('group_id', $this->currentUser()->group_id);
 
         // If user is global user, they can filter by tenant_id
         if (

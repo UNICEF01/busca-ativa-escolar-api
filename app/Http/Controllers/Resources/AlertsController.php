@@ -18,15 +18,12 @@ use Auth;
 use BuscaAtivaEscolar\Child;
 use BuscaAtivaEscolar\CaseSteps\Alerta;
 use DB;
-use BuscaAtivaEscolar\Group;
 use BuscaAtivaEscolar\Http\Controllers\BaseController;
 use BuscaAtivaEscolar\Serializers\SimpleArraySerializer;
 use BuscaAtivaEscolar\Transformers\AgentAlertTransformer;
 use BuscaAtivaEscolar\Transformers\PendingAlertTransformer;
-use BuscaAtivaEscolar\User;
 use Illuminate\Database\Query\Builder;
 use League\Fractal\Pagination\IlluminatePaginatorAdapter;
-use BuscaAtivaEscolar\Groups\GroupService;
 use BuscaAtivaEscolar\ChildCase;
 
 class AlertsController extends BaseController
@@ -35,8 +32,6 @@ class AlertsController extends BaseController
     public function get_pending()
     {
 
-        $groups = new GroupService;
-        $groups = $groups->groups($this->currentUser()->email, true);
         /** @var Builder $query */
         $query = Child::query();
         $tenant = $this->currentUser()->tenant_id;
@@ -44,7 +39,7 @@ class AlertsController extends BaseController
         //get alerts
         $ids = DB::table('children_cases')->select('child_id')
             ->where('tenant_id', '=', $tenant)->whereNull('deleted_at')
-            ->whereIn('group_id', $groups)->get()->toArray();
+            ->where('group_id', $this->currentUser()->group_id)->get()->toArray();
 
         $where = [];
 
@@ -82,19 +77,19 @@ class AlertsController extends BaseController
                 $query->orderBy('created_at', $stdRequest->created_at);
             }
             if (property_exists($stdRequest, 'agent')) {
-                $sq->orderBy('name', $stdRequest->agent);
+                $query->orderBy('name', $stdRequest->agent);
             }
             if (property_exists($stdRequest, 'neighborhood')) {
-                $sq->orderBy('place_neighborhood', $stdRequest->neighborhood);
+                $query->orderBy('place_neighborhood', $stdRequest->neighborhood);
             }
             if (property_exists($stdRequest, 'city_name')) {
-                $sq->orderBy('place_city_name', $stdRequest->city_name);
+                $query->orderBy('place_city_name', $stdRequest->city_name);
             }
             if (property_exists($stdRequest, 'alert_cause_id')) {
-                $sq->orderBy('alert_cause_id', $stdRequest->alert_cause_id);
+                $query->orderBy('alert_cause_id', $stdRequest->alert_cause_id);
             }
             if (property_exists($stdRequest, 'group_id')) {
-                $sq->orderBy('group_id', $stdRequest->alert_cause_id);
+                $query->orderBy('group_id', $stdRequest->alert_cause_id);
             }
         }
 

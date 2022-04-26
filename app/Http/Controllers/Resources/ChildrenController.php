@@ -16,19 +16,14 @@ namespace BuscaAtivaEscolar\Http\Controllers\Resources;
 
 use Auth;
 use BuscaAtivaEscolar\City;
-use function Aws\map;
 use BuscaAtivaEscolar\ActivityLog;
 use BuscaAtivaEscolar\Attachment;
 use BuscaAtivaEscolar\CaseSteps\Alerta;
 use BuscaAtivaEscolar\Child;
-use BuscaAtivaEscolar\ChildCase;
 use BuscaAtivaEscolar\Comment;
-use BuscaAtivaEscolar\Data\CaseCause;
-use BuscaAtivaEscolar\Group;
 use BuscaAtivaEscolar\Http\Controllers\BaseController;
 use BuscaAtivaEscolar\IBGE\UF;
 use BuscaAtivaEscolar\Jobs\ProcessExportChildrenJob;
-use BuscaAtivaEscolar\Jobs\ProcessReportSeloJob;
 use BuscaAtivaEscolar\Search\ElasticSearchQuery;
 use BuscaAtivaEscolar\Search\Search;
 use BuscaAtivaEscolar\Serializers\SimpleArraySerializer;
@@ -43,16 +38,10 @@ use BuscaAtivaEscolar\Transformers\SearchResultsTransformer;
 use BuscaAtivaEscolar\Transformers\StepTransformer;
 use BuscaAtivaEscolar\User;
 use Carbon\Carbon;
-use File;
-use function foo\func;
-use function GuzzleHttp\Psr7\parse_query;
-use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use League\Fractal\Pagination\IlluminatePaginatorAdapter;
-use Rap2hpoutre\FastExcel\FastExcel;
 use Maatwebsite\Excel\Excel as ExcelB;
 use BuscaAtivaEscolar\Exports\ChildrenExport;
-use BuscaAtivaEscolar\Exports\CasesExports;
 
 class ChildrenController extends BaseController
 {
@@ -104,11 +93,7 @@ class ChildrenController extends BaseController
 
 		// Scope the query within the tenant
 		if (Auth::user()->isRestrictedToTenant()) {
-			$idGroups = $this->currentUser()->getArrayOfGroupWithChildrenGroups();
-			$filters = [
-				'group_id' => ['type' => 'terms', 'search' => $idGroups]
-			];
-			$query->filterByOneOf($filters);
+			$query->getGroups(['group_id' => $this->currentUser()->group_id]);
 		}
 
 		if (array_key_exists("case_not_info", $params) == 1) {
