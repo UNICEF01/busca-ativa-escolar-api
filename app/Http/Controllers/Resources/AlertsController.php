@@ -215,7 +215,11 @@ class AlertsController extends BaseController
         try {
 
             $dados = request()->all();
-            if (gettype($dados['data']) == 'array') {
+            if (gettype($dados['id']) == 'array') {
+                for ($i = 0; $i < count($dados['id']); ++$i) {
+                    ChildCase::where('child_id', $dados['id'][$i])->update(['group_id' => $dados['data'][1]]);
+                }
+            } else if (gettype($dados['data']) == 'array') {
                 ChildCase::where('child_id', $dados['id'])->update(['group_id' => $dados['data'][1]]);
             } else {
                 Alerta::where('child_id', $dados['id'])->update([$dados['type'] => $dados['data']]);
