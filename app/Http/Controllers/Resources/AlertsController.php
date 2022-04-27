@@ -134,7 +134,7 @@ class AlertsController extends BaseController
             $i = 0;
             foreach ($ids as $id)
                 $idsChild[$i++] = $id['child_id'];
-            $query->whereIn('id', $idsChild);
+            $query->where($where)->whereIn('id', $idsChild);
         } else {
             $i = 0;
             $children_ids = [];
@@ -142,9 +142,9 @@ class AlertsController extends BaseController
                 foreach ($ids as $id) {
                     $children_ids[$i++] =  $id->child_id;
                 }
-                $query = Child::where($where)->whereIn('id', $children_ids);
+                $query->where($where)->whereIn('id', $children_ids);
             } else
-                $query = Child::where($where);
+                $query->where($where);
         }
 
         $max = request('max', 128);
