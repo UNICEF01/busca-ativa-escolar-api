@@ -46,7 +46,7 @@ class UsersController extends BaseController
     public function search()
     {
         $query = User::with('group');
-        $query->where('group_id', $this->currentUser()->group_id);
+
 
         // If user is global user, they can filter by tenant_id
         if (
@@ -81,9 +81,10 @@ class UsersController extends BaseController
             }
         }
 
-        if (!empty(request()->get('group_id'))) {
+        if (!empty(request()->get('group_id')))
             $query->where('group_id', request('group_id'));
-        }
+        else
+            $query->where('group_id', $this->currentUser()->group_id);
 
         //filter for visitantes nacionais e estaduais
         if (!empty(request()
