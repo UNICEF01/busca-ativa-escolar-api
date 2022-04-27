@@ -52,16 +52,6 @@ class AlertsController extends BaseController
         if (!empty(request()->get('name')))
             array_push($where, ['name', 'LIKE', request('name') . '%']);
 
-        $i = 0;
-        $children_ids = [];
-        if (count($ids) > 0) {
-            foreach ($ids as $id) {
-                $children_ids[$i++] =  $id->child_id;
-            }
-            $query = Child::where($where)->whereIn('id', $children_ids);
-        } else
-            $query = Child::where($where);
-
         $stdRequest = null;
 
         //make a filter by json filter (olnly fields from Children)
@@ -89,7 +79,7 @@ class AlertsController extends BaseController
                 $query->orderBy('alert_cause_id', $stdRequest->alert_cause_id);
             }
             if (property_exists($stdRequest, 'group_id')) {
-                $query->orderBy('group_id', $stdRequest->alert_cause_id);
+                $query->orderBy('group_id', $stdRequest->group_id);
             }
         }
 
@@ -140,7 +130,21 @@ class AlertsController extends BaseController
         //join children_case to filter.
         if (!empty(request()->get('group_id'))  && request()->get('group_id') !== "" || property_exists($stdRequest, 'group_id')) {
             $ids = ChildCase::select('child_id')->where('children_cases.group_id', request('group_id'))->where('tenant_id', $tenant)->get()->toArray();
-            $query->whereIn('id', $ids);
+            $idsChild = [];
+            $i = 0;
+            foreach ($ids as $id)
+                $idsChild[$i++] = $id['child_id'];
+            $query->whereIn('id', $idsChild);
+        } else {
+            $i = 0;
+            $children_ids = [];
+            if (count($ids) > 0) {
+                foreach ($ids as $id) {
+                    $children_ids[$i++] =  $id->child_id;
+                }
+                $query = Child::where($where)->whereIn('id', $children_ids);
+            } else
+                $query = Child::where($where);
         }
 
         $max = request('max', 128);
