@@ -25,7 +25,7 @@ Route::group(['prefix' => 'v1', 'middleware' => 'api'], function () {
 	Route::group(['middleware' => 'jwt.auth'], function () { // Authenticated routes
 
 		// Children
-		Route::get('/children/map', 'Resources\ChildrenController@getMap')->middleware('can:cases.map');
+		Route::get('/children/map', 'Resources\ChildrenController@getMap');
 		Route::get('/children/{child}/alert', 'Resources\ChildrenController@getAlert')->middleware('can:cases.view');
 		Route::resource('/children', 'Resources\ChildrenController');
 		Route::post('/children/search', 'Resources\ChildrenController@search')->middleware('can:cases.view');
