@@ -43,37 +43,23 @@ class UsersController extends BaseController
         $this->excel = $excel;
         $this->lgpdService = $lgpdService;
     }
+
     public function search()
     {
         $query = User::with('group');
 
-
         // If user is global user, they can filter by tenant_id
-        if (
-            $this->currentUser()
-            ->isGlobal() && !empty(request()
-                ->get('tenant_id'))
-        ) {
+        if ($this->currentUser()->isGlobal() && !empty(request()->get('tenant_id'))) {
             $query->where('tenant_id', request('tenant_id'));
-        } else if ($this->currentUser()
-            ->isRestrictedToTenant()
-        ) {
+        } else if ($this->currentUser()->isRestrictedToTenant()) {
             $query->where('tenant_id', '!=', 'global');
         }
 
         // If user is global user, they can filter by UF
-        if (
-            $this->currentUser()
-            ->isGlobal() && !empty(request()
-                ->get('uf'))
-        ) {
+        if ( $this->currentUser()->isGlobal() && !empty(request()->get('uf'))) {
             $query->where('uf', request('uf'));
-        } else if ($this->currentUser()
-            ->isRestrictedToUF()
-        ) { // Else, check if they're bound to a UF
-            $query->where('uf', $this->currentUser()
-                ->uf);
-
+        } else if ($this->currentUser()->isRestrictedToUF() ) { // Else, check if they're bound to a UF
+            $query->where('uf', $this->currentUser()->uf);
             if (in_array($this->currentUser()->type, User::$TYPES_VISITANTES_UFS)) {
                 $query->whereIn('type', User::$UF_VISITANTES_SCOPED_TYPES);
             } else {
@@ -81,15 +67,16 @@ class UsersController extends BaseController
             }
         }
 
-        if (!empty(request()->get('group_id')))
-            $query->where('group_id', request('group_id'));
-        else
-            $query->where('group_id', $this->currentUser()->group_id);
+        if($this->currentUser()->isRestrictedToTenant()){
+            if (!empty(request()->get('group_id'))){
+                $query->where('group_id', request('group_id'));
+            } else {
+                $query->where('group_id', $this->currentUser()->group_id);
+            }
+        }
 
         //filter for visitantes nacionais e estaduais
-        if (!empty(request()
-            ->get('type'))) {
-
+        if (!empty(request()->get('type'))) {
             if (request('type') == User::TYPE_VISITANTE_NACIONAL) {
                 $query->where('type', '=', USER::TYPE_VISITANTE_NACIONAL_UM);
                 $query->orWhere('type', '=', USER::TYPE_VISITANTE_NACIONAL_DOIS);
@@ -110,8 +97,7 @@ class UsersController extends BaseController
 
         if (request('show_suspended', false)) $query->withTrashed();
 
-        if (!empty(request()
-            ->get('sort'))) {
+        if (!empty(request()->get('sort'))) {
             User::applySorting($query, request('sort', []));
         }
 
