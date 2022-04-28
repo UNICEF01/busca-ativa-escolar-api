@@ -172,20 +172,7 @@ class Tenant extends Model  {
 	 * @return array|null
 	 */
 	public function getMapCoordinates() {
-		if(!$this->map_lat || !$this->map_lng) {
-			$geocoder = app('geocoder'); /* @var $geocoder Geocoder */
-
-			$place = $geocoder->geocode("{$this->name} - Brasil")->get()->first();
-
-			if(!$place) {
-				Log::error("Failed to geocode tenant map center: {$this->name}");
-				return null;
-			}
-
-			$this->update(['map_lat' => $place->getLatitude(), 'map_lng' => $place->getLongitude()]);
-		}
-
-		return ['lat' => $this->map_lat, 'lng' => $this->map_lng, 'zoom' => 10];
+		return ['lat' => -15.799256, 'lng' => -47.865162, 'zoom' => 10];
 	}
 
 	/**

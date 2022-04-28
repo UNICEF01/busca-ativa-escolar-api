@@ -4,6 +4,8 @@
 namespace BuscaAtivaEscolar\Traits;
 
 
+use Illuminate\Support\Facades\Log;
+
 trait LocationHereTrait
 {
 
@@ -30,6 +32,7 @@ trait LocationHereTrait
             return $location;
 
         }catch (\Exception $exception){
+            Log::info($exception->getMessage());
             return null;
         }
 

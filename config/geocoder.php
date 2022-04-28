@@ -31,13 +31,14 @@ return [
 		BingMaps::class => [
 			'pt-BR',
 			env('BING_MAPS_API_KEY'),
-		],*/
+		],
         GoogleMaps::class => [
             'pt',
             'br',
             true,
             env('GOOGLE_MAPS_API_KEY'),
-        ],
+        ]
+	    */
     ],
     'adapter'  => CurlHttpAdapter::class,
 ];
