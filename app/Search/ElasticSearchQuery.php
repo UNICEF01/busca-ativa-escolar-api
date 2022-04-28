@@ -280,8 +280,9 @@ class ElasticSearchQuery
 		if ($validate == 1) {
 			$this->query['bool']['must_not']['exists']['field'] = 'case_cause_ids';
 		} else {
-			for ($i = 0; $i < count($params['case_cause_ids']); ++$i)
-				$this->query['bool']['must'][$i]['match']['case_cause_ids'] = $params['case_cause_ids'][$i];
+			$i = 1;
+			foreach ($params['case_cause_ids'] as $param)
+				$this->query['bool']['must'][$i++]['match']['case_cause_ids'] = $param;
 		}
 		return $this->query;
 	}
