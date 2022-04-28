@@ -52,8 +52,9 @@ class EducacensoXLSChunkImporter
 
     /**
      * @var int The year of Educacenso
+     * This is ony for register. The real value is registered in Children created_at.
      */
-    public $educacenso_year = 2019;
+    public $educacenso_year = 2022;
 
     /**
      * Handles the importing of Educacenso's XLS

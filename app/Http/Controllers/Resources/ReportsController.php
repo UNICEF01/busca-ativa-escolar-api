@@ -35,6 +35,7 @@ use Carbon\Carbon;
 use DB;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Excel as ExcelB;
+use BuscaAtivaEscolar\Cache\CacheService;
 
 class ReportsController extends BaseController
 {
@@ -104,11 +105,6 @@ class ReportsController extends BaseController
             ->filterByTerms('risk_level', $filters['risk_level_null'] ?? false)
             ->filterByTerms('gender', $filters['gender_null'] ?? false)
             ->filterByTerms('place_kind', $filters['place_kind_null'] ?? false);
-
-        //->filterByTerms('deadline_status', false)
-        //->filterByTerm('race',$filters['race_null'] ?? false)
-        //->filterByTerm('guardian_schooling',$filters['guardian_schooling_null'] ?? false)
-        //->filterByTerm('parents_income',$filters['parents_income_null'] ?? false)
 
         if ($params['view'] == "time_series") {
             if (!isset($filters['date'])) $filters['date'] = ['lte' => 'now', 'gte' => 'now-2d'];
@@ -431,35 +427,8 @@ class ReportsController extends BaseController
     {
 
         try {
-
-            $stat = Cache::get('report_country');
-            $stat = explode(" ", $stat);
-            $stats =  [
-                "num_ufs" => intval($stat[0]),
-                "num_pending_state_signups" => intval($stat[1]),
-                "num_tenants" => intval($stat[2]),
-                "active" => intval($stat[3]),
-                "inactive" => intval($stat[4]),
-                "num_signups" => intval($stat[5]),
-                "num_pending_setup" => intval($stat[6]),
-                "num_pending_signups" => intval($stat[7]),
-                "num_alerts" => intval($stat[9]),
-                "num_pending_alerts" => intval($stat[10]),
-                "num_rejected_alerts" => intval($stat[11]),
-                "num_total_alerts" => intval($stat[9]) + intval($stat[10]) + intval($stat[11]),
-                "num_cases_in_progress" => intval($stat[13]),
-                "num_children_reinserted" => intval($stat[14]),
-                "num_children_in_school" => intval($stat[15]),
-                "num_children_in_observation" => intval($stat[16]),
-                "num_children_out_of_school" => intval($stat[17]),
-                "num_children_cancelled" => intval($stat[18]),
-                "num_children_transferred" => intval($stat[19]),
-                "num_children_interrupted" => intval($stat[20]),
-
-
-            ];
-
-            return response()->json(['status' => 'ok', 'stats' => $stats]);
+            $cache = new CacheService();
+            return response()->json(['status' => 'ok', 'stats' => $cache->returnData('BR')]);
         } catch (\Exception $ex) {
             return $this->api_exception($ex);
         }
@@ -475,37 +444,12 @@ class ReportsController extends BaseController
         }
 
         try {
-            $key = "report_state_" . $uf;
-            $stat = Cache::get($key);
-            $stat = explode(" ", $stat);
-            $tenantIDs = Tenant::getIDsWithinUF($uf);
-            $cityIDs = City::getIDsWithinUF($uf);
-            $stats =  [
-                'num_tenants' => intval($stat[1]),
-                'num_signups' => intval($stat[2]),
-                'num_pending_setup' => intval($stat[3]),
-                'num_alerts' => intval($stat[8]),
-                'num_cases_in_progress' => intval($stat[7]),
-                'num_children_reinserted' => intval($stat[11]),
-                'num_pending_signups' => intval($stat[4]),
-                'num_total_alerts' => intval($stat[8]) + intval($stat[9]) + intval($stat[10]),
-                'num_accepted_alerts' =>  intval($stat[8]),
-                'num_pending_alerts' =>  intval($stat[9]),
-                'num_rejected_alerts' =>  intval($stat[10]),
-                'num_children_in_school' => intval($stat[12]),
-                'num_children_out_of_school' => intval($stat[15]),
-                'num_children_in_observation' => intval($stat[14]),
-                'num_children_cancelled' => intval($stat[16]),
-                'num_children_transferred' => intval($stat[13]),
-                'num_children_interrupted' => intval($stat[17]),
-            ];
-
-            return response()->json(['status' => 'ok', 'stats' => $stats, 'uf' => $uf, 'tenant_ids' => $tenantIDs, 'city_ids' => $cityIDs]);
+            $cache = new CacheService();
+            return response()->json(['status' => 'ok', 'stats' => $cache->returnData($uf, true)]);
         } catch (\Exception $ex) {
             return $this->api_exception($ex);
         }
     }
-
 
     protected function extractDimensionIDs($report, $view)
     {
