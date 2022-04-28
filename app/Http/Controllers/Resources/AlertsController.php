@@ -39,7 +39,7 @@ class AlertsController extends BaseController
         //get alerts
         $ids = DB::table('children_cases')->select('child_id')
             ->where('tenant_id', '=', $tenant)->whereNull('deleted_at')
-            ->where('group_id', $this->currentUser()->group_id)->get()->toArray();
+            ->where('group_id', $this->currentUser()->group_id)->get()->toArray();;
 
         $where = [];
 
@@ -144,7 +144,7 @@ class AlertsController extends BaseController
                 }
                 $query->where($where)->whereIn('id', $children_ids);
             } else
-                $query->where($where);
+                $query->where($where)->whereIn('id', []);
         }
 
         $max = request('max', 128);
