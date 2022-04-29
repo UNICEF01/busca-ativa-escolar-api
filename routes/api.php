@@ -83,7 +83,6 @@ Route::group(['prefix' => 'v1', 'middleware' => 'api'], function () {
 		});
 
 		// User Groups
-		Route::get('/groups/{id}', 'Resources\GroupsController@getGroup');
 		Route::get('/groups_with_parents/{id}', 'Resources\GroupsController@getGroupWithParents');
 		Route::get('/groups/parent/{id}', 'Resources\GroupsController@findGroupsByParent');
 		Route::get('/groups', 'Resources\GroupsController@index');
