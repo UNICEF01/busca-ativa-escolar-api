@@ -1,10 +1,12 @@
 <?php
 
 namespace BuscaAtivaEscolar\Groups;
+
 use BuscaAtivaEscolar\Group;
 use BuscaAtivaEscolar\User;
 
-class GroupService{
+class GroupService
+{
 
     /**
      * Método responsável por retornar o index do grupo do usuário no array de grupos. Utiliza busca linear.
@@ -18,14 +20,12 @@ class GroupService{
     {
         if ($arr[$n - 1]['id'] == $target)
             return $n - 1;
-  
+
         $backup = $arr[$n - 1]['id'];
         $arr[$n - 1]['id'] = $target;
-  
-        for ($i = 0; ; $i++)
-        {
-            if ($arr[$i]['id'] == $target) 
-            { 
+
+        for ($i = 0;; $i++) {
+            if ($arr[$i]['id'] == $target) {
                 $arr[$n - 1]['id'] = $backup;
                 if ($i < $n - 1)
                     return $i;
@@ -45,16 +45,16 @@ class GroupService{
     {
         $low = 0;
         $high = count($data) - 1;
-        while($low <= $high + 1){
+        while ($low <= $high + 1) {
             if ($low > $high)
                 return $low;
-        
+
             $mid = $low + (($high - $low) >> 1);
-            
+
             if ($data[$mid]['parent_id'] > $target)
                 $high = $mid - 1;
             else
-                $low = $mid + 1;        
+                $low = $mid + 1;
         }
     }
 
@@ -69,43 +69,43 @@ class GroupService{
     {
         $low = 0;
         $high = count($data) - 1;
-        while($low <= $high + 1){    
+        while ($low <= $high + 1) {
             if ($low > $high)
                 return $low;
-            
+
             $mid = $low + (($high - $low) >> 1);
-            
+
             if ($data[$mid]['parent_id'] >= $target)
                 $high = $mid - 1;
             else
                 $low = $mid + 1;
-            
         }
     }
 
     /**
      * Método responsável por retornar ou array de grupos com seus respectivos filhos até a quarta ordem hierárquica  ou array de ids dos grupos e seus filhos. É utilizado uma variável booleana de checagem.  
-     * @param string $email String com o email do usuário
+     * @param string $id String com o id do usuário
      * @param bool $check variavel de verificação
      * 
      * @return array O retorno será um array, porém depende do valor da variável check. Caso seja TRUE o retorno será uma array com os ids dos grupos, caso seja falso retornará o array de grupos com seus respectivos filhos. 
      */
-    public function groups(string $email, bool $check): array{
+    public function groups(string $id, bool $check): array
+    {
 
-        $userData = User::select('tenant_id', 'group_id')->where('email', $email)->get()->toArray();
-        
-        if(count($userData) == 0)
+        $userData = User::select('tenant_id', 'group_id')->where('id', $id)->get()->toArray();
+
+        if (count($userData) == 0)
             return [];
-            
-        $data = Group::select('id','name', 'parent_id')->where('tenant_id', $userData[0]['tenant_id'])->orderBy('parent_id')
-        ->get()->toArray();
+
+        $data = Group::select('id', 'name', 'parent_id')->where('tenant_id', $userData[0]['tenant_id'])->orderBy('parent_id')
+            ->get()->toArray();
 
         $grupos = [];
 
         $size = count($data);
         $index = $this->search($data, $size, $userData[0]['group_id']);
         $grupos[0] = ['id' => $data[$index]['id'], 'name' => $data[$index]['name']];
-        
+
         $max = $this->upper_bound($data, $userData[0]['group_id']);
         $min  = $this->lower_bound($data, $userData[0]['group_id']);
 
@@ -118,12 +118,12 @@ class GroupService{
 
         $j = 0;
         $i = 0;
-        while($min < $max){
+        while ($min < $max) {
             $grupos[0][$i] = ['id' => $data[$min]['id'], 'name' => $data[$min]['name']];
             $groups_index[$indexs] = $data[$min]['id'];
             $max1 = $this->upper_bound($data, $data[$min]['id'], 0, $size - 1);
             $min1  = $this->lower_bound($data, $data[$min]['id'], 0, $size - 1);
-            if($min1 != $max1)
+            if ($min1 != $max1)
                 $children[$j++] = ['pai' => $i, 'min' => $min1, 'max' => $max1];
             $i++;
             $indexs++;
@@ -131,31 +131,31 @@ class GroupService{
         }
 
         $j = 0;
-        foreach($children as $child){
+        foreach ($children as $child) {
             $i = 0;
             $min = $child['min'];
             $max = $child['max'];
             $pai = $child['pai'];
-            while($min < $max){
+            while ($min < $max) {
                 $grupos[0][$pai][$i] = ['id' => $data[$min]['id'], 'name' => $data[$min]['name']];
                 $groups_index[$indexs] = $data[$min]['id'];
                 $max1 = $this->upper_bound($data, $data[$min]['id'], 0, $size - 1);
                 $min1  = $this->lower_bound($data, $data[$min]['id'], 0, $size - 1);
-                if($min1 != $max1)
+                if ($min1 != $max1)
                     $children2[$j++] = ['pai' => $pai, 'pai1' => $i, 'min' => $min1, 'max' => $max1];
                 $i++;
                 $indexs++;
-                $min++;   
+                $min++;
             }
         }
         $j = 0;
-        foreach($children2 as $child){
+        foreach ($children2 as $child) {
             $i = 0;
             $min = $child['min'];
             $max = $child['max'];
             $pai = $child['pai'];
             $pai1 = $child['pai1'];
-            while($min < $max){
+            while ($min < $max) {
                 $grupos[0][$pai][$pai1][$i] = ['id' => $data[$min]['id'], 'name' => $data[$min]['name']];
                 $groups_index[$indexs] = $data[$min]['id'];
                 $max1 = $this->upper_bound($data, $data[$min]['id'], 0, $size - 1);
@@ -166,7 +166,7 @@ class GroupService{
             }
             $j++;
         }
-        if($check == false)
+        if ($check == false)
             return $grupos;
         return $groups_index;
     }
