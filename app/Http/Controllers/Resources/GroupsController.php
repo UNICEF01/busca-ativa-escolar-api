@@ -109,9 +109,9 @@ class GroupsController extends BaseController
 
     public function getGroupByUser(Request $request)
     {
-        $data = $request->only(['id', 'searched']);
+        $data = $request->only(['name', 'tenant']);
         $groups = new GroupService;
-        return response()->json(['data' => $groups->checkGroup($data['id'], $data['searched'])]);
+        return response()->json(['data' => $groups->getGroup($data['name'], $data['tenant'])]);
     }
 
     public function findPrimaryByTenant()
