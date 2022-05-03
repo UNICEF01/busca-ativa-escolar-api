@@ -170,4 +170,32 @@ class GroupService
             return $grupos;
         return $groups_index;
     }
+
+    public function binarySearch(array $arr, string $target): int
+    {
+        $l = 0;
+        $r = count($arr);
+        while ($l <= $r) {
+            $m = $l + (int)(($r - $l) / 2);
+
+            $res = strcmp($target, $arr[$m]);
+
+            if ($res == 0)
+                return $m - 1;
+            if ($res > 0)
+                $l = $m + 1;
+            else
+                $r = $m - 1;
+        }
+
+        return -1;
+    }
+
+
+    public function checkGroup(string $id, string $serchGroup): bool
+    {
+        $groups = $this->groups($id, true);
+        sort($groups);
+        return $this->binarySearch($groups, $serchGroup);
+    }
 }
