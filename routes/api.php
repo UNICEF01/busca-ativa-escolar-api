@@ -59,6 +59,7 @@ Route::group(['prefix' => 'v1', 'middleware' => 'api'], function () {
 			Route::post('/cases/{case}/request-reopen', 'Resources\CasesController@requestReopen')->middleware('can:cases.request-reopen');
 			Route::post('/cases/{case}/request-transfer', 'Resources\CasesController@requestTransfer')->middleware('can:cases.request-transfer');
 			Route::resource('/cases', 'Resources\CasesController');
+			Route::post('/change_groups', 'Resources\CasesController@changeGroup');
 		});
 
 		// Requests
@@ -87,7 +88,7 @@ Route::group(['prefix' => 'v1', 'middleware' => 'api'], function () {
 		Route::get('/groups/parent/{id}', 'Resources\GroupsController@findGroupsByParent');
 		Route::get('/groups', 'Resources\GroupsController@index');
 		Route::get('/grouped_groups', 'Resources\GroupsController@returnsGroupedGroups');
-		Route::get('/user_groups', 'Resources\GroupsController@getGroupByUser');
+
 		Route::post('/groups/tenant', 'Resources\GroupsController@findByTenant');
 		Route::get('/groups/primary/tenant', 'Resources\GroupsController@findPrimaryByTenant');
 		Route::post('/groups/grouped/tenant', 'Resources\GroupsController@findGroupedByTenant');

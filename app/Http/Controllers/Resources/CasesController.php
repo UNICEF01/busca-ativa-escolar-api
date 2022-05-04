@@ -20,6 +20,8 @@ use BuscaAtivaEscolar\Http\Controllers\BaseController;
 use BuscaAtivaEscolar\Serializers\SimpleArraySerializer;
 use BuscaAtivaEscolar\Transformers\CaseTransformer;
 use BuscaAtivaEscolar\User;
+use Illuminate\Http\Request;
+use BuscaAtivaEscolar\Groups\GroupService;
 
 class CasesController extends BaseController
 {
@@ -125,6 +127,18 @@ class CasesController extends BaseController
             }
             $case->child->save(); //reindex elastic
             return response()->json(['status' => 'ok', 'case' => $case]);
+        }
+    }
+
+    public function changeGroup(Request $request)
+    {
+        try {
+            $data = $request->only(['children', 'group']);
+            $service = new GroupService;
+            $service->changeGroupx($data, $this->currentUser()->tenant_id);
+            return response()->json(['status' => 'ok']);
+        } catch (\Exception $ex) {
+            return response()->json(['status' => 'error', 'result' => $ex->getMessage()]);
         }
     }
 }
