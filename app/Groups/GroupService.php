@@ -56,10 +56,14 @@ class GroupService
         for ($i = 0; $i < count($data['children']); ++$i) {
             if ($data['children'][$i]['assigned_user_id']) {
                 $user = User::where('id', $data['children'][$i]['assigned_user_id'])->get()->toArray();
-                if (!(array)$user && strpos($user[0]['type'], 'estadual') !== false)
+                if (!empty($user) && strpos($user[0]['type'], 'estadual') !== false)
                     $check = false;
-                else
-                    $check = $this->binarySearch($dados, $data['children'][$i]['assigned_group_name']);
+                else {
+                    if ($data['children'][$i]['assigned_group_name'])
+                        $check = $this->binarySearch($dados, $data['children'][$i]['assigned_group_name']);
+                    else
+                        $check = false;
+                }
             }
             $currentCase = [
                 'id' => $data['children'][$i]['current_case_id'],
