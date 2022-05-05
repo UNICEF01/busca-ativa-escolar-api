@@ -5,7 +5,6 @@ namespace BuscaAtivaEscolar\Http\Controllers\Resources;
 use BuscaAtivaEscolar\Http\Controllers\BaseController;
 use BuscaAtivaEscolar\Mail\ReopenCaseNotification;
 use BuscaAtivaEscolar\ReopeningRequests;
-use BuscaAtivaEscolar\Tenant;
 use BuscaAtivaEscolar\User;
 use Illuminate\Support\Facades\Mail;
 
@@ -24,7 +23,7 @@ class RequestsController extends BaseController
         $userType = $user->type;
 
         $user->type = User::TYPE_GESTOR_NACIONAL;
-        
+
         if ($userType == 'supervisor_institucional') {
             $column = 'requester_id';
             $param = $user->id;

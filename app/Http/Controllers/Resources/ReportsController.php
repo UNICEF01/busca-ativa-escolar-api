@@ -30,7 +30,6 @@ use BuscaAtivaEscolar\School;
 use BuscaAtivaEscolar\Search\ElasticSearchQuery;
 use BuscaAtivaEscolar\Tenant;
 use BuscaAtivaEscolar\User;
-use Cache;
 use Carbon\Carbon;
 use DB;
 use Illuminate\Support\Str;
@@ -64,7 +63,7 @@ class ReportsController extends BaseController
 
         //Verifica se a cidade foi informada no filtro. Neste caso remove o filtro de cidade e cria-se um filtro de tenant
         if (isset($filters['place_city'])) {
-            if($filters['place_city_id'] == 'f6408be7-a456-5ab8-98e5-823be9f9db37')
+            if ($filters['place_city_id'] == 'f6408be7-a456-5ab8-98e5-823be9f9db37')
                 $tenant = Tenant::where('city_id', $filters['place_city_id'])->first();
             else
                 $tenant = Tenant::where('city_id', $filters['place_city_id'])->withTrashed()->first();
@@ -268,7 +267,7 @@ class ReportsController extends BaseController
             ->groupBy('uf')
             ->select(['uf', DB::raw('COUNT(id) as num')])
             ->get()
-            ->map(function ($user) use ($ufs, $regionLabels) {
+            ->map(function ($user) use ($ufs) {
                 $user->region_id = $ufs[$user->uf]['region_id'];
                 $user->region_name = $labels[$user->region_id] ?? '';
                 return $user;

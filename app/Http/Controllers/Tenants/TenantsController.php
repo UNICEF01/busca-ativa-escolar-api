@@ -25,8 +25,6 @@ use BuscaAtivaEscolar\Transformers\TenantBasicTransformer;
 use BuscaAtivaEscolar\Transformers\TenantTransformer;
 use BuscaAtivaEscolar\User;
 use Carbon\Carbon;
-use DB;
-use Excel;
 use Illuminate\Support\Str;
 use League\Fractal\Pagination\IlluminatePaginatorAdapter;
 use Maatwebsite\Excel\Excel as ExcelB;
