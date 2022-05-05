@@ -1,4 +1,5 @@
 <?php
+
 /**
  * busca-ativa-escolar-api
  * UsersController.php
@@ -19,7 +20,6 @@ use BuscaAtivaEscolar\Http\Controllers\BaseController;
 use BuscaAtivaEscolar\Classe;
 use BuscaAtivaEscolar\School;
 use Illuminate\Http\Request;
-use function foo\func;
 
 class ClasseController extends BaseController
 {
@@ -106,12 +106,6 @@ class ClasseController extends BaseController
         $classes = Classe::where('schools_id', '=', $id)
             ->get()->toArray();
 
-//        if (!$classes) {
-//            return response()->json([
-//                'message' => 'Registro não encontrado',
-//            ], 404);
-//        }
-
         $school = School::find($id);
 
         $response = [
@@ -148,8 +142,7 @@ class ClasseController extends BaseController
     public function frequencies($id)
     {
         $classes = Classe::with([
-            'frequencies' => function($q)
-            {
+            'frequencies' => function ($q) {
                 $q->orderBy('created_at', 'asc');
             }
         ])
@@ -169,7 +162,8 @@ class ClasseController extends BaseController
         return response()->json($response, 200);
     }
 
-    public function updateFrequency(Request $request, $id){
+    public function updateFrequency(Request $request, $id)
+    {
 
         $frequency = Frequency::find($id);
 
@@ -189,37 +183,37 @@ class ClasseController extends BaseController
         ];
 
         return response()->json($response, 200);
-
     }
 
-    public function updateFrequencies(Request $request){
+    public function updateFrequencies(Request $request)
+    {
 
         $frequencies = json_decode($request->getContent());
         $arrayFrequencies = [];
 
-        foreach ($frequencies as $frequency){
+        foreach ($frequencies as $frequency) {
             array_push($arrayFrequencies, $frequency);
         }
 
-        \DB::transaction( function () use ($arrayFrequencies) {
-            foreach ($arrayFrequencies as $frequency){
+        \DB::transaction(function () use ($arrayFrequencies) {
+            foreach ($arrayFrequencies as $frequency) {
 
-               if (property_exists($frequency, 'id')){
-                   //update dos que já existem
-                   Frequency::where('id', $frequency->id)
-                       ->update(
-                           ['qty_presence' => (int)$frequency->qty_presence]
-                       );
-               }else {
-                   //cadastro dos que nao existem
-                   Frequency::create([
-                       'qty_presence' => $frequency->qty_presence,
-                       'qty_enrollment' => $frequency->qty_enrollment,
-                       'classes_id' => $frequency->classes_id,
-                       'created_at' => $frequency->created_at,
-                       'periodicidade' => $frequency->periodicidade
-                   ]);
-               }
+                if (property_exists($frequency, 'id')) {
+                    //update dos que já existem
+                    Frequency::where('id', $frequency->id)
+                        ->update(
+                            ['qty_presence' => (int)$frequency->qty_presence]
+                        );
+                } else {
+                    //cadastro dos que nao existem
+                    Frequency::create([
+                        'qty_presence' => $frequency->qty_presence,
+                        'qty_enrollment' => $frequency->qty_enrollment,
+                        'classes_id' => $frequency->classes_id,
+                        'created_at' => $frequency->created_at,
+                        'periodicidade' => $frequency->periodicidade
+                    ]);
+                }
             }
         });
 
@@ -229,6 +223,5 @@ class ClasseController extends BaseController
         ];
 
         return response()->json($response, 200);
-
     }
 }

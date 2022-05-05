@@ -2,7 +2,6 @@
 
 namespace BuscaAtivaEscolar\Exports;
 
-use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 use Maatwebsite\Excel\Concerns\Exportable;
 

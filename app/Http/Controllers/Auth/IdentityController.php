@@ -43,8 +43,8 @@ class IdentityController extends BaseController
         }
 
         $credentials = $request->only('email', 'password');
-        
-        
+
+
 
         try {
 

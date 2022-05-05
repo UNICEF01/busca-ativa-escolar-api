@@ -1,4 +1,5 @@
 <?php
+
 /**
  * busca-ativa-escolar-api
  * SchoolsController.php
@@ -25,12 +26,9 @@ use BuscaAtivaEscolar\School;
 use BuscaAtivaEscolar\Search\ElasticSearchQuery;
 use BuscaAtivaEscolar\Search\Search;
 use BuscaAtivaEscolar\Serializers\SimpleArraySerializer;
-use BuscaAtivaEscolar\Transformers\PendingAlertTransformer;
-use BuscaAtivaEscolar\Transformers\SchoolCustomTransformer;
 use BuscaAtivaEscolar\Transformers\SchoolSearchResultsTransformer;
 use BuscaAtivaEscolar\Transformers\SchoolTransformer;
 use BuscaAtivaEscolar\Transformers\SearchResultsTransformer;
-use BuscaAtivaEscolar\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -67,7 +65,6 @@ class SchoolsController extends BaseController
             ->serializeWith(new SimpleArraySerializer())
             ->parseIncludes(request('with'))
             ->respond();
-
     }
 
     public function openSearch(Search $search)
@@ -84,7 +81,7 @@ class SchoolsController extends BaseController
 
         $results = $search->search(new School(), $query, 12);
 
-        $values =$this->includeResultsForPesquisaWash($results);
+        $values = $this->includeResultsForPesquisaWash($results);
 
         return response()->json($values, 200);
     }
@@ -123,7 +120,6 @@ class SchoolsController extends BaseController
             if ($school->school_cell_phone != null && $school->school_cell_phone != "") {
                 Queue::pushOn('sms_school', new ProcessSmsEducacensoSchool($school));
             }
-
         }
 
         $data['status'] = "ok";
@@ -165,7 +161,6 @@ class SchoolsController extends BaseController
                 $job2 = new ProcessSmsFrequencySchool($school);
                 $job2->handle();
             }
-
         }
 
         $data['status'] = "ok";
@@ -196,7 +191,6 @@ class SchoolsController extends BaseController
         }
 
         return response()->json(['status' => 'ok', 'updated' => $input]);
-
     }
 
 
@@ -240,8 +234,8 @@ class SchoolsController extends BaseController
 
         $total_pages =
             $pagination->total % $pagination->per_page > 0 ?
-                (int)($pagination->total / $pagination->per_page + 1) :
-                $pagination->total / $pagination->per_page;
+            (int)($pagination->total / $pagination->per_page + 1) :
+            $pagination->total / $pagination->per_page;
 
         $pagination->total_pages = $total_pages;
 
@@ -251,18 +245,18 @@ class SchoolsController extends BaseController
 
         $schools = DB::select(
             "select " .
-            "sc.id, sc.name, sc.city_name, sc.uf, sc.school_cell_phone, sc.school_phone, sc.school_email, " .
-            "count(csp.school_last_id) as count_children, " .
-            "count(case when csa.place_address is not null and csa.place_neighborhood is not null then 0 end) as count_with_cep " .
-            "from schools as sc " .
-            "inner join case_steps_pesquisa as csp on sc.id = csp.school_last_id " .
-            "inner join case_steps_alerta as csa on csp.child_id = csa.child_id " .
-            "inner join children as ch on ch.id = csa.child_id " .
-            "where sc.id in (" . implode(",", $schools_array_id) . ") " .
-            "and year(ch.created_at) = " . request('year_educacenso', date("Y")) . " " .
-            //"and csa.place_cep is null ".
-            "group by sc.id " .
-            "limit " . $cursor . ", " . request('max', 5) . ""
+                "sc.id, sc.name, sc.city_name, sc.uf, sc.school_cell_phone, sc.school_phone, sc.school_email, " .
+                "count(csp.school_last_id) as count_children, " .
+                "count(case when csa.place_address is not null and csa.place_neighborhood is not null then 0 end) as count_with_cep " .
+                "from schools as sc " .
+                "inner join case_steps_pesquisa as csp on sc.id = csp.school_last_id " .
+                "inner join case_steps_alerta as csa on csp.child_id = csa.child_id " .
+                "inner join children as ch on ch.id = csa.child_id " .
+                "where sc.id in (" . implode(",", $schools_array_id) . ") " .
+                "and year(ch.created_at) = " . request('year_educacenso', date("Y")) . " " .
+                //"and csa.place_cep is null ".
+                "group by sc.id " .
+                "limit " . $cursor . ", " . request('max', 5) . ""
         );
 
         //add a array of emailjobs to each school of the last query
@@ -277,7 +271,6 @@ class SchoolsController extends BaseController
                 'meta' => $meta,
             ]
         );
-
     }
 
     //only for all_educacenso method
@@ -337,12 +330,12 @@ class SchoolsController extends BaseController
             ->paginateWith(new IlluminatePaginatorAdapter($paginator))
             ->parseIncludes(request('with'))
             ->respond();
-
     }
 
-    private function includeResults($result) {
-        if(!isset($result['hits'])) return null;
-        if(!isset($result['hits']['hits'])) return null;
+    private function includeResults($result)
+    {
+        if (!isset($result['hits'])) return null;
+        if (!isset($result['hits']['hits'])) return null;
         $values = $result['hits']['hits'];
 
         $arrayValues = [];
@@ -358,9 +351,10 @@ class SchoolsController extends BaseController
         return $arrayValues;
     }
 
-    private function includeResultsForPesquisaWash($result) {
-        if(!isset($result['hits'])) return null;
-        if(!isset($result['hits']['hits'])) return null;
+    private function includeResultsForPesquisaWash($result)
+    {
+        if (!isset($result['hits'])) return null;
+        if (!isset($result['hits']['hits'])) return null;
         $values = $result['hits']['hits'];
 
         $arrayValues = [];
@@ -371,10 +365,9 @@ class SchoolsController extends BaseController
             $objet->name = $value['_source']['name'];
             $objet->ibge_id = $value['_source']['city_ibge_id'];
             $objet->city_name = $value['_source']['city_name'];
-            $objet->id_name = $value['_id']." - ".$value['_source']['name'];
+            $objet->id_name = $value['_id'] . " - " . $value['_source']['name'];
             array_push($arrayValues, $objet);
         }
         return $arrayValues;
     }
-
 }
