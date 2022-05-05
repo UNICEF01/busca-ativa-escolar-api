@@ -180,6 +180,7 @@ class EducacensoXLSChunkImporter
         $data['place_kind'] = isset($data['place_kind']) ? ($placeKindMap[$data['place_kind']] ?? null) : null;
         $data['has_been_in_school'] = true;
         $data['educacenso_year'] = $this->educacenso_year;
+        $data['group_id'] = $this->tenant->primary_group_id;
 
         Log::info("[educacenso_import] \t Parsed data: " . print_r($data, true));
 
