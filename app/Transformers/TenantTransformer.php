@@ -59,7 +59,7 @@ class TenantTransformer extends TransformerAbstract {
             'is_state' => $tenant->is_state,
 
             'primary_group_id' => $tenant->primary_group_id,
-            'primary_group_name' => $tenant->primaryGroup->name
+            'primary_group_name' => $tenant->primaryGroup ? $tenant->primaryGroup->name : null
 
 		];
 
