@@ -279,8 +279,12 @@ class GroupsController extends BaseController
     {
         //$group -> to remove
         $groupToReceive = Group::where('id', '=', request()['replace'])->get()->first();
+
+        
+
         $group->users()->update(['group_id' => $groupToReceive->id]);
         $group->cases()->update(['group_id' => $groupToReceive->id]);
+        $group->children()->update(['parent_id' => $groupToReceive->id]);
 
         foreach ($groupToReceive->cases as $case) {
             $case->save();
