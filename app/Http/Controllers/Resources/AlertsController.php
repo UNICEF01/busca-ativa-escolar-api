@@ -33,13 +33,25 @@ class AlertsController extends BaseController
     {
 
         /** @var Builder $query */
-        $query = Child::query();
-        $tenant = $this->currentUser()->tenant_id;
 
-        //get alerts
-        $ids = DB::table('children_cases')->select('child_id')
-            ->where('tenant_id', '=', $tenant)->whereNull('deleted_at')
-            ->where('group_id', $this->currentUser()->group_id)->get()->toArray();;
+        //join children_case to filter.
+        if (!empty(request()->get('group_id'))  && request()->get('group_id') !== "") {
+            $query = DB::table(DB::raw('children c'))
+                ->select('c.*')
+                ->join(DB::raw('children_cases cc'), 'c.id', '=', 'cc.child_id')
+                ->whereNull('c.deleted_at')
+                ->whereNull('cc.deleted_at')
+                ->where('c.tenant_id', '=', $this->currentUser()->tenant_id)
+                ->where('group_id', '=', request('group_id'));
+        } else {
+            $query = DB::table(DB::raw('children c'))
+                ->select('c.*')
+                ->join(DB::raw('children_cases cc'), 'c.id', '=', 'cc.child_id')
+                ->whereNull('c.deleted_at')
+                ->whereNull('cc.deleted_at')
+                ->where('c.tenant_id', '=', $this->currentUser()->tenant_id)
+                ->where('group_id', '=', $this->currentUser()->group_id);
+        }
 
         $where = [];
 
@@ -125,26 +137,6 @@ class AlertsController extends BaseController
                     $sq->orderBy('alert_cause_id', $stdRequest->alert_cause_id);
                 }
             });
-        }
-
-        //join children_case to filter.
-        if (!empty(request()->get('group_id'))  && request()->get('group_id') !== "" || property_exists($stdRequest, 'group_id')) {
-            $ids = ChildCase::select('child_id')->where('children_cases.group_id', request('group_id'))->where('tenant_id', $tenant)->get()->toArray();
-            $idsChild = [];
-            $i = 0;
-            foreach ($ids as $id)
-                $idsChild[$i++] = $id['child_id'];
-            $query->where($where)->whereIn('id', $idsChild);
-        } else {
-            $i = 0;
-            $children_ids = [];
-            if (count($ids) > 0) {
-                foreach ($ids as $id) {
-                    $children_ids[$i++] =  $id->child_id;
-                }
-                $query->where($where)->whereIn('id', $children_ids);
-            } else
-                $query->where($where)->whereIn('id', []);
         }
 
         $max = request('max', 128);
