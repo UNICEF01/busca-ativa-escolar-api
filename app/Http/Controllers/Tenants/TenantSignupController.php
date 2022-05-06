@@ -360,10 +360,8 @@ class TenantSignupController extends BaseController
 			if ($lastTenant == null) {
 
 				$tenant = Tenant::provision($signup, $politicalAdmin, $operationalAdmin);
-				//$this->lgpdService->updateLgpd(array('plataform_id' => $signup->id), $signup->id);
 			} else {
 				$tenant = Tenant::recovere($signup, $politicalAdmin, $operationalAdmin, $lastTenant, $lastCoordinators);
-				//$this->lgpdService->updateLgpd(array('plataform_id' => $signup->id), $signup->id);
 			}
 
 			return response()->json(['status' => 'ok', 'tenant_id' => $tenant->id]);
@@ -453,16 +451,16 @@ class TenantSignupController extends BaseController
 
 		$user->fill($input['user']);
 
-        $firstLgp = Lgpd::where('plataform_id', '=', $user->id,)->get()->first();
+		$firstLgp = Lgpd::where('plataform_id', '=', $user->id,)->get()->first();
 
-        if($firstLgp == null){
-            $this->lgpdService->saveLgpd([
-                'plataform_id' => $user->id,
-                'name' => $user->name,
-                'ip_addr' => request()->ip()
-            ]);
-        }
-        
+		if ($firstLgp == null) {
+			$this->lgpdService->saveLgpd([
+				'plataform_id' => $user->id,
+				'name' => $user->name,
+				'ip_addr' => request()->ip()
+			]);
+		}
+
 		$user->save();
 
 		return response()->json(['status' => 'ok', 'updated' => $input['user']]);

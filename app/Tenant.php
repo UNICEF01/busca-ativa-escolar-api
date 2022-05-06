@@ -216,12 +216,6 @@ class Tenant extends Model
 		return [
 			'Nome' => $this->name,
 			'UF' => $this->uf,
-			//			'Gestor Operacional - Nome' => $this->politicalAdmin->name ?? null,
-			//			'Gestor Operacional - Email' => $this->operationalAdmin->email ?? null,
-			//			'Gestor Operacional - Telefone' => $this->operationalAdmin ? $this->operationalAdmin->getContactPhone() : null,
-			//			'Gestor Político - Nome' => $this->politicalAdmin->name ?? null,
-			//			'Gestor Político - Email' => $this->politicalAdmin->email ?? null,
-			//			'Gestor Político - Telefone' => $this->politicalAdmin ? $this->politicalAdmin->getContactPhone() : null,
 			'Está ativo?' => $this->last_active_at->diffInDays(Carbon::now()) >= 30 ? 'Inativo' : 'Ativo',
 			'Data última atividade' => $this->last_active_at ? $this->last_active_at->format('d/m/Y') : null,
 			'Tempo' => $this->last_active_at ? $this->last_active_at->diffInDays(Carbon::now()) . ' dias' : null,
@@ -426,6 +420,7 @@ class Tenant extends Model
 		$politicalAdminData['type'] = User::TYPE_GESTOR_POLITICO;
 		$politicalAdminData['uf'] = $tenant->uf;
 		$politicalAdminData['tenant_id'] = $tenant->id;
+		$politicalAdminData['group_id'] = $tenant->primary_group_id;
 
 		$politicalAdmin = new User();
 		$politicalAdmin->fill($politicalAdminData);
@@ -445,6 +440,7 @@ class Tenant extends Model
 			$operationalAdminData['type'] = User::TYPE_GESTOR_OPERACIONAL;
 			$operationalAdminData['tenant_id'] = $tenant->id;
 			$operationalAdminData['uf'] = $tenant->uf;
+			$operationalAdminData['group_id'] = $tenant->primary_group_id;
 
 			$operationalAdmin = new User();
 			$operationalAdmin->fill($operationalAdminData);
@@ -492,6 +488,7 @@ class Tenant extends Model
 					$registeredCoordenator = User::onlyTrashed()->where('id', '=', $coordinator['id'])->first();
 					$registeredCoordenator->email = $coordinator['email'];
 					$registeredCoordenator->lgpd = 0;
+					$registeredCoordenator->group_id = $tenant->primary_group_id;
 					$registeredCoordenator->save();
 					$registeredCoordenator->restore();
 					Mail::to($registeredCoordenator->email)->send(new UserRegisterNotification($registeredCoordenator, UserRegisterNotification::TYPE_REGISTER_REACTIVATION));
