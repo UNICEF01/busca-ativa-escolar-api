@@ -36,20 +36,16 @@ class AlertsController extends BaseController
 
         //join children_case to filter.
         if (!empty(request()->get('group_id'))  && request()->get('group_id') !== "") {
-            $query = DB::table(DB::raw('children c'))
-                ->select('c.*')
-                ->join(DB::raw('children_cases cc'), 'c.id', '=', 'cc.child_id')
-                ->whereNull('c.deleted_at')
+            $query =  Child::select('children.*')
+                ->join(DB::raw('children_cases cc'), 'children.id', '=', 'cc.child_id')
                 ->whereNull('cc.deleted_at')
-                ->where('c.tenant_id', '=', $this->currentUser()->tenant_id)
+                ->where('cc.tenant_id', '=', $this->currentUser()->tenant_id)
                 ->where('group_id', '=', request('group_id'));
         } else {
-            $query = DB::table(DB::raw('children c'))
-                ->select('c.*')
-                ->join(DB::raw('children_cases cc'), 'c.id', '=', 'cc.child_id')
-                ->whereNull('c.deleted_at')
+            $query =  Child::select('children.*')
+                ->join(DB::raw('children_cases cc'), 'children.id', '=', 'cc.child_id')
                 ->whereNull('cc.deleted_at')
-                ->where('c.tenant_id', '=', $this->currentUser()->tenant_id)
+                ->where('cc.tenant_id', '=', $this->currentUser()->tenant_id)
                 ->where('group_id', '=', $this->currentUser()->group_id);
         }
 
