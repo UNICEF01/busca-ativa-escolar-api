@@ -66,6 +66,8 @@ class AlertsController extends BaseController
 
         $stdRequest = null;
 
+        $query->where($where);
+
         //make a filter by json filter (olnly fields from Children)
         if (!empty(request()->get('sort'))) {
             $stdRequest = json_decode(request('sort'));
