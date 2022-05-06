@@ -52,7 +52,7 @@ class TenantScope implements Scope
 			$builder->where(function ($b) use ($currentUser, $model) {
 
 				return $b->where("{$model->getTable()}.tenant_id", $currentUser->tenant_id)
-					->orWhere('tenant_id', 'global');
+					->orWhere("{$model->getTable()}.tenant_id", 'global');
 			});
 
 			return;
