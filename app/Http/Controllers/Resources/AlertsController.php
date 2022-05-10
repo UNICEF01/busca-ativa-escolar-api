@@ -17,6 +17,8 @@ namespace BuscaAtivaEscolar\Http\Controllers\Resources;
 use Auth;
 use BuscaAtivaEscolar\Child;
 use BuscaAtivaEscolar\CaseSteps\Alerta;
+use BuscaAtivaEscolar\Group;
+use BuscaAtivaEscolar\User;
 use DB;
 use BuscaAtivaEscolar\Http\Controllers\BaseController;
 use BuscaAtivaEscolar\Serializers\SimpleArraySerializer;
@@ -25,6 +27,8 @@ use BuscaAtivaEscolar\Transformers\PendingAlertTransformer;
 use Illuminate\Database\Query\Builder;
 use League\Fractal\Pagination\IlluminatePaginatorAdapter;
 use BuscaAtivaEscolar\ChildCase;
+use Illuminate\Http\Request;
+use function React\Promise\map;
 
 class AlertsController extends BaseController
 {
@@ -219,4 +223,23 @@ class AlertsController extends BaseController
             return $this->api_exception($ex);
         }
     }
+
+    public function changeGroups(Request $request){
+
+        if ($request->has('newObject') AND $request->has('alerts')) {
+            try {
+                $newGroup = Group::where('id', $request->input('newObject')['id'])->get()->first();
+                $alertsArray = array_map( function ($alert) {
+                    return $alert['id'];
+                }, $request->input('alerts') );
+                ChildCase::whereIn('child_id', $alertsArray)->update([
+                    'group_id' => $newGroup->id
+                ]);
+                return response()->json(['status' => 'ok']);
+            } catch (\Exception $ex) {
+                return $this->api_exception($ex);
+            }
+        }
+    }
+
 }

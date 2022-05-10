@@ -51,6 +51,8 @@ Route::group(['prefix' => 'v1', 'middleware' => 'api'], function () {
 		Route::post('/alerts/{child}/accept', 'Resources\AlertsController@accept')->middleware('can:alerts.pending');
 		Route::post('/alerts/{child}/reject', 'Resources\AlertsController@reject')->middleware('can:alerts.pending');
 
+        Route::post('/alerts/change_groups', 'Resources\AlertsController@changeGroups');
+
 		// Child Cases
 		Route::group(['middleware' => 'can:cases.view'], function () {
 			Route::post('/cases/{case}/cancel', 'Resources\CasesController@cancel');
