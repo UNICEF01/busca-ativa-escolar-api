@@ -142,7 +142,7 @@ class Group extends Model
 	{
 		return self::create([
 			'tenant_id' => $tenant->id,
-			'name' => 'Secretaria Municipal de Educação',
+			'name' => 'BAE',
 			'is_primary' => true
 		]);
 	}
