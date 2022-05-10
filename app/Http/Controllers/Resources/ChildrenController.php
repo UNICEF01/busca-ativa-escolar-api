@@ -56,8 +56,9 @@ class ChildrenController extends BaseController
 		$params = $this->filterAsciiFields(request()->all(), ['name', 'cause_name', 'assigned_user_name', 'location_full', 'step_name', 'city_name']);
 
 		// Scope the query within the tenant
-		if (Auth::user()->isRestrictedToTenant())
-			$params['tenant_id'] = Auth::user()->tenant_id;
+		if (Auth::user()->isRestrictedToTenant()) {
+            $params['tenant_id'] = Auth::user()->tenant_id;
+        }
 
 		// Scope the query to state agents
 		if (Auth::user()->isRestrictedToUF())
@@ -91,11 +92,6 @@ class ChildrenController extends BaseController
 			$query->filterByOneOf(['assigned_user_id' => ['type' => 'term', 'search' => Auth::user()->id]]);
 		}
 
-		// Scope the query within the tenant
-		if (Auth::user()->isRestrictedToTenant()) {
-			$query->getGroups(['group_id' => $this->currentUser()->group_id]);
-		}
-
 		if (array_key_exists("case_not_info", $params) == 1) {
 			if ($params["case_not_info"][0] == 'yes')
 				$query->getNonInformedCases(1, array());
@@ -118,7 +114,7 @@ class ChildrenController extends BaseController
 		$attempted = $query->getAttemptedQuery();
 		$query = $query->getQuery();
 
-		$results = $search->search(new Child(), $query, 2000);
+		$results = $search->search(new Child(), $query, 100, 0);
 
 		return fractal()
 			->item($results)
