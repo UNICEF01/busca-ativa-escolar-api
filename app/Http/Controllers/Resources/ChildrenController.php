@@ -66,7 +66,10 @@ class ChildrenController extends BaseController
 		if (isset($params['uf'])) $params['uf'] = Str::lower($params['uf']);
 		if (isset($params['assigned_uf'])) $params['assigned_uf'] = Str::lower($params['assigned_uf']);
 
+        if (isset($params['case_cause_ids'])) $params['case_cause_ids'] = array_map( function ($value) {return intval($value); }, $params['case_cause_ids'] );
+
 		$query = ElasticSearchQuery::withParameters($params)
+            ->filterByTerms('case_cause_ids', false)
 			->filterByTerm('tenant_id', false)
 			->filterByTerm('uf', false)
 			->filterByTerm('assigned_uf', false)
@@ -87,24 +90,13 @@ class ChildrenController extends BaseController
 			$query->filterByOneOf(['assigned_user_id' => ['type' => 'term', 'search' => Auth::user()->id]]);
 		}
 
-		if (array_key_exists("case_not_info", $params) == 1) {
-			if ($params["case_not_info"][0] == 'yes')
-				$query->getNonInformedCases(1, array());
-			else {
-				if (array_key_exists("case_cause_ids", $params)) {
-					$query->getNonInformedCases(0, $params);
-				}
-			}
-		}
-
-
 		return $query;
 	}
 
 	public function search(Search $search)
 	{
-		$from = request()->input('from');
-		$size = request()->input('size');
+        $from = request()->input('from');
+        $size = request()->input('size');
 
 		$query = $this->prepareSearchQuery();
 		$attempted = $query->getAttemptedQuery();
