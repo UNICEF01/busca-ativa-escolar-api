@@ -110,7 +110,7 @@ class ChildrenController extends BaseController
 		$attempted = $query->getAttemptedQuery();
 		$query = $query->getQuery();
 
-		$results = $search->search(new Child(), $query, $size, $from);
+		$results = $search->search(new Child(), $query, $size, $from-1 ); //need to use -1 (value of front is always 1 or more and eastic needs to start at 0)
 
 		return fractal()
 			->item($results)
