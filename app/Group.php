@@ -190,4 +190,19 @@ class Group extends Model
 			->pluck('group_id')
 			->toArray();
 	}
+
+    public function getArrayOfParentsId(){
+        $parentIds = [];
+        if($this->parent != null){
+            array_push($parentIds, $this->parent->id);
+            if($this->parent->parent != null){
+                array_push($parentIds, $this->parent->parent->id);
+                if($this->parent->parent->parent != null){
+                    array_push($parentIds, $this->parent->parent->parent->id);
+                }
+            }
+        }
+        return $parentIds;
+    }
+
 }

@@ -15,7 +15,9 @@
 namespace BuscaAtivaEscolar\Http\Controllers\Resources;
 
 
+use BuscaAtivaEscolar\Child;
 use BuscaAtivaEscolar\ChildCase;
+use BuscaAtivaEscolar\Group;
 use BuscaAtivaEscolar\Http\Controllers\BaseController;
 use BuscaAtivaEscolar\Serializers\SimpleArraySerializer;
 use BuscaAtivaEscolar\Transformers\CaseTransformer;
@@ -130,15 +132,46 @@ class CasesController extends BaseController
         }
     }
 
-    public function changeGroup(Request $request)
+    public function changeGroups(Request $request)
     {
-        try {
-            $data = $request->only(['children', 'group']);
-            $service = new GroupService;
-            $service->changeGroupx($data, $this->currentUser()->tenant_id);
-            return response()->json(['status' => 'ok']);
-        } catch (\Exception $ex) {
-            return response()->json(['status' => 'error', 'result' => $ex->getMessage()]);
+        if ($request->has('newObject') and $request->has('cases')) {
+            try {
+                $newGroup = Group::where('id', $request->input('newObject')['id'])->get()->first();
+                $casesArray = array_map(function ($case) {
+                    return $case['id'];
+                }, $request->input('cases'));
+                foreach ( ChildCase::whereIn('child_id', $casesArray)->get() as $case){
+                   $currentStep = $case->currentStep;
+
+                   $assignedUser = $currentStep->assignedUser;
+
+                   if( $assignedUser != null ){
+                       if(!$assignedUser->isRestrictedToUF()){
+
+                           $groupUser = $currentStep->assignedUser->group;
+                           $arrayOfParentsIdOfNewGroup = $newGroup->getArrayOfParentsId();
+                           if( $newGroup->id != $groupUser->id && !in_array($groupUser->id, $arrayOfParentsIdOfNewGroup) ){
+                               $currentStep->detachUser();
+                           }
+
+                           $case->group_id = $newGroup->id;
+                           $case->save();
+                           $case->child->save(); //reindex
+
+                       }
+                   } else {
+
+                       $case->group_id = $newGroup->id;
+                       $case->save();
+                       $case->child->save(); //reindex
+
+                   }
+
+                }
+                return response()->json(['status' => 'ok']);
+            } catch (\Exception $ex) {
+                return $this->api_exception($ex);
+            }
         }
     }
 }

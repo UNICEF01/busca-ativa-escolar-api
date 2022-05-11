@@ -284,7 +284,6 @@ class GroupsController extends BaseController
         $group->children()->update(['parent_id' => $groupToReceive->id]);
 
         foreach ($groupToReceive->cases as $case) {
-            $case->save();
             $case->child->save(); //reindex
         }
         $group->delete();
