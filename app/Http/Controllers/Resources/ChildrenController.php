@@ -66,7 +66,10 @@ class ChildrenController extends BaseController
 		if (isset($params['uf'])) $params['uf'] = Str::lower($params['uf']);
 		if (isset($params['assigned_uf'])) $params['assigned_uf'] = Str::lower($params['assigned_uf']);
 
+        if (isset($params['case_cause_ids'])) $params['case_cause_ids'] = array_map( function ($value) {return intval($value); }, $params['case_cause_ids'] );
+
 		$query = ElasticSearchQuery::withParameters($params)
+            ->filterByTerms('case_cause_ids', false)
 			->filterByTerm('tenant_id', false)
 			->filterByTerm('uf', false)
 			->filterByTerm('assigned_uf', false)
@@ -80,8 +83,7 @@ class ChildrenController extends BaseController
 			->filterByTerm('step_slug', false)
 			->filterByTerms('gender', $params['gender_null'] ?? false)
 			->filterByTerms('place_kind', $params['place_kind_null'] ?? false)
-			->filterByRange('age', $params['age_null'] ?? false)
-            ->filterByTerms('case_cause_ids', $params['case_cause_ids'] ?? false);
+			->filterByRange('age', $params['age_null'] ?? false);
 
 		// Scope query within user, when relevant
 		if (Auth::user()->type === User::TYPE_TECNICO_VERIFICADOR) {
@@ -97,7 +99,7 @@ class ChildrenController extends BaseController
 		$attempted = $query->getAttemptedQuery();
 		$query = $query->getQuery();
 
-		$results = $search->search(new Child(), $query, 2000);
+		$results = $search->search(new Child(), $query, 100);
 
 		return fractal()
 			->item($results)
