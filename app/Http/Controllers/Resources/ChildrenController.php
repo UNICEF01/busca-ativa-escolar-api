@@ -95,11 +95,14 @@ class ChildrenController extends BaseController
 
 	public function search(Search $search)
 	{
+        $from = request()->input('from');
+        $size = request()->input('size');
+
 		$query = $this->prepareSearchQuery();
 		$attempted = $query->getAttemptedQuery();
 		$query = $query->getQuery();
 
-		$results = $search->search(new Child(), $query, 100);
+		$results = $search->search(new Child(), $query, $size, $from);
 
 		return fractal()
 			->item($results)
