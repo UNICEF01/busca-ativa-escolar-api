@@ -18,7 +18,6 @@ use Auth;
 use BuscaAtivaEscolar\Child;
 use BuscaAtivaEscolar\CaseSteps\Alerta;
 use BuscaAtivaEscolar\Group;
-use BuscaAtivaEscolar\User;
 use DB;
 use BuscaAtivaEscolar\Http\Controllers\BaseController;
 use BuscaAtivaEscolar\Serializers\SimpleArraySerializer;
@@ -28,7 +27,6 @@ use Illuminate\Database\Query\Builder;
 use League\Fractal\Pagination\IlluminatePaginatorAdapter;
 use BuscaAtivaEscolar\ChildCase;
 use Illuminate\Http\Request;
-use function React\Promise\map;
 
 class AlertsController extends BaseController
 {
@@ -62,7 +60,7 @@ class AlertsController extends BaseController
 
         //filter to name
         if (!empty(request()->get('name')))
-            array_push($where, ['name', 'LIKE', request('name') . '%']);
+            array_push($where, ['children.name', 'LIKE', request('name') . '%']);
 
         $stdRequest = null;
 
@@ -71,32 +69,13 @@ class AlertsController extends BaseController
         //make a filter by json filter (olnly fields from Children)
         if (!empty(request()->get('sort'))) {
             $stdRequest = json_decode(request('sort'));
-            if (property_exists($stdRequest, 'name')) {
+            if (property_exists($stdRequest, 'name'))
                 $query->orderBy('name', $stdRequest->name);
-            }
-            if (property_exists($stdRequest, 'risk_level')) {
+            if (property_exists($stdRequest, 'risk_level'))
                 $query->orderBy('risk_level', $stdRequest->risk_level);
-            }
-            if (property_exists($stdRequest, 'created_at')) {
+            if (property_exists($stdRequest, 'created_at'))
                 $query->orderBy('created_at', $stdRequest->created_at);
-            }
-            if (property_exists($stdRequest, 'agent')) {
-                $query->orderBy('name', $stdRequest->agent);
-            }
-            if (property_exists($stdRequest, 'neighborhood')) {
-                $query->orderBy('place_neighborhood', $stdRequest->neighborhood);
-            }
-            if (property_exists($stdRequest, 'city_name')) {
-                $query->orderBy('place_city_name', $stdRequest->city_name);
-            }
-            if (property_exists($stdRequest, 'alert_cause_id')) {
-                $query->orderBy('alert_cause_id', $stdRequest->alert_cause_id);
-            }
-            if (property_exists($stdRequest, 'group_id')) {
-                $query->orderBy('group_id', $stdRequest->group_id);
-            }
         }
-
         if (!empty(request()->get('submitter_name')) || property_exists($stdRequest, 'agent')) {
             $query->whereHas('submitter', function ($sq) use ($stdRequest) {
                 if (!empty(request()->get('submitter_name'))) {
