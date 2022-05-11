@@ -209,29 +209,25 @@ class AlertsController extends BaseController
         try {
 
             $dados = request()->all();
-            if (gettype($dados['id']) == 'array') {
-                for ($i = 0; $i < count($dados['id']); ++$i) {
-                    ChildCase::where('child_id', $dados['id'][$i])->update(['group_id' => $dados['data'][1]]);
-                }
-            } else if (gettype($dados['data']) == 'array') {
+            if (gettype($dados['data']) == 'array')
                 ChildCase::where('child_id', $dados['id'])->update(['group_id' => $dados['data'][1]]);
-            } else {
+            else
                 Alerta::where('child_id', $dados['id'])->update([$dados['type'] => $dados['data']]);
-            }
             return response()->json(['status' => 'ok']);
         } catch (\Exception $ex) {
             return $this->api_exception($ex);
         }
     }
 
-    public function changeGroups(Request $request){
+    public function changeGroups(Request $request)
+    {
 
-        if ($request->has('newObject') AND $request->has('alerts')) {
+        if ($request->has('newObject') and $request->has('alerts')) {
             try {
                 $newGroup = Group::where('id', $request->input('newObject')['id'])->get()->first();
-                $alertsArray = array_map( function ($alert) {
+                $alertsArray = array_map(function ($alert) {
                     return $alert['id'];
-                }, $request->input('alerts') );
+                }, $request->input('alerts'));
                 ChildCase::whereIn('child_id', $alertsArray)->update([
                     'group_id' => $newGroup->id
                 ]);
@@ -241,5 +237,4 @@ class AlertsController extends BaseController
             }
         }
     }
-
 }
