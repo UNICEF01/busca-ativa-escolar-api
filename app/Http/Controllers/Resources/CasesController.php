@@ -145,25 +145,29 @@ class CasesController extends BaseController
 
                    $assignedUser = $currentStep->assignedUser;
 
-                   if( $assignedUser != null ){
-                       if(!$assignedUser->isRestrictedToUF()){
+                   if($case->case_status == ChildCase::STATUS_IN_PROGRESS){
 
-                           $groupUser = $currentStep->assignedUser->group;
-                           $arrayOfParentsIdOfNewGroup = $newGroup->getArrayOfParentsId();
-                           if( $newGroup->id != $groupUser->id && !in_array($groupUser->id, $arrayOfParentsIdOfNewGroup) ){
-                               $currentStep->detachUser();
+                       if( $assignedUser != null ){
+                           if(!$assignedUser->isRestrictedToUF()){
+
+                               $groupUser = $currentStep->assignedUser->group;
+                               $arrayOfParentsIdOfNewGroup = $newGroup->getArrayOfParentsId();
+                               if( $newGroup->id != $groupUser->id && !in_array($groupUser->id, $arrayOfParentsIdOfNewGroup) ){
+                                   $currentStep->detachUser();
+                               }
+
+                               $case->group_id = $newGroup->id;
+                               $case->save();
+                               $case->child->save(); //reindex
+
                            }
+                       } else {
 
                            $case->group_id = $newGroup->id;
                            $case->save();
                            $case->child->save(); //reindex
 
                        }
-                   } else {
-
-                       $case->group_id = $newGroup->id;
-                       $case->save();
-                       $case->child->save(); //reindex
 
                    }
 
