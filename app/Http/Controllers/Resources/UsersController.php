@@ -20,8 +20,10 @@ use BuscaAtivaEscolar\CaseSteps\GestaoDoCaso;
 use BuscaAtivaEscolar\CaseSteps\Observacao;
 use BuscaAtivaEscolar\CaseSteps\Pesquisa;
 use BuscaAtivaEscolar\CaseSteps\Rematricula;
+use BuscaAtivaEscolar\ChildCase;
 use BuscaAtivaEscolar\Exports\UsersExport;
 use BuscaAtivaEscolar\ExportUsersJob;
+use BuscaAtivaEscolar\Group;
 use BuscaAtivaEscolar\Http\Controllers\BaseController;
 use BuscaAtivaEscolar\Mail\UserRegisterNotification;
 use BuscaAtivaEscolar\Serializers\SimpleArraySerializer;
@@ -33,6 +35,7 @@ use League\Fractal\Pagination\IlluminatePaginatorAdapter;
 use Mail;
 use Maatwebsite\Excel\Excel as ExcelB;
 use BuscaAtivaEscolar\LGPD\Interfaces\ILgpd;
+use BuscaAtivaEscolar\Groups\GroupService;
 
 class UsersController extends BaseController
 {
@@ -56,9 +59,9 @@ class UsersController extends BaseController
         }
 
         // If user is global user, they can filter by UF
-        if ( $this->currentUser()->isGlobal() && !empty(request()->get('uf'))) {
+        if ($this->currentUser()->isGlobal() && !empty(request()->get('uf'))) {
             $query->where('uf', request('uf'));
-        } else if ($this->currentUser()->isRestrictedToUF() ) { // Else, check if they're bound to a UF
+        } else if ($this->currentUser()->isRestrictedToUF()) { // Else, check if they're bound to a UF
             $query->where('uf', $this->currentUser()->uf);
             if (in_array($this->currentUser()->type, User::$TYPES_VISITANTES_UFS)) {
                 $query->whereIn('type', User::$UF_VISITANTES_SCOPED_TYPES);
@@ -67,8 +70,8 @@ class UsersController extends BaseController
             }
         }
 
-        if($this->currentUser()->isRestrictedToTenant()){
-            if (!empty(request()->get('group_id'))){
+        if ($this->currentUser()->isRestrictedToTenant()) {
+            if (!empty(request()->get('group_id'))) {
                 $query->where('group_id', request('group_id'));
             } else {
                 $query->where('group_id', $this->currentUser()->group_id);
@@ -226,6 +229,26 @@ class UsersController extends BaseController
             if (isset($input['password'])) {
                 $input['password'] = password_hash($input['password'], PASSWORD_DEFAULT);
             }
+            if ($user->tenant_id && in_array($user->type, User::$TENANT_SCOPED_TYPES)) {
+                $checkPrimary =  Group::where('id', $input['group_id'])->pluck('parent_id')->toArray();
+                if (is_null($checkPrimary[0]));
+                else {
+                    $groups = new GroupService;
+                    $checkFather = $groups->getGroup($user->group_id, $user->tenant_id);
+                    $getChildren = $groups->groups($user->tenant_id, $input['group_id']);
+                    if ($groups->binarySearch($checkFather, $input['group_name']));
+                    else {
+                        foreach (ChildCase::whereRaw("current_step_id IN (select id from case_steps_analise_tecnica csa where csa.assigned_user_id= '{$user->id}')")->orWhereRaw("current_step_id IN (select id from case_steps_gestao_do_caso csag where csag.assigned_user_id= '{$user->id}')")->orWhereRaw("current_step_id IN (select id from case_steps_observacao csao where csao.assigned_user_id= '{$user->id}')")->orWhereRaw("current_step_id IN (select id from case_steps_pesquisa csap where csap.assigned_user_id= '{$user->id}')")->orWhereRaw("current_step_id IN (select id from case_steps_rematricula csar where csar.assigned_user_id= '{$user->id}')")->get() as $case) {
+                            $currentStep = $case->currentStep;
+                            if (!$groups->binarySearch($getChildren, $case->group_id))
+                                $currentStep->detachUser();
+                            $case->save();
+                            $case->child->save(); //reindex
+                        }
+                    }
+                }
+            }
+
 
             $user->fill($input);
 
