@@ -262,7 +262,8 @@ class UsersController extends BaseController
                         foreach (ChildCase::whereIn('current_step_id', $ids)->get() as $case) {
                             $currentStep = $case->currentStep;
                             $currentStep->detachUser();
-                            $case->push(); //reindex
+                            $case->save();
+                            $case->child->save(); //reindex
                         };
                     }
                 }
