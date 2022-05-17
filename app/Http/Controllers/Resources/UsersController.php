@@ -235,16 +235,35 @@ class UsersController extends BaseController
                 else {
                     $groups = new GroupService;
                     $checkFather = $groups->getGroup($user->group_id, $user->tenant_id);
-                    $getChildren = $groups->groups($user->tenant_id, $input['group_id']);
                     if ($groups->binarySearch($checkFather, $input['group_name']));
                     else {
-                        foreach (ChildCase::whereRaw("current_step_id IN (select id from case_steps_analise_tecnica csa where csa.assigned_user_id= '{$user->id}')")->orWhereRaw("current_step_id IN (select id from case_steps_gestao_do_caso csag where csag.assigned_user_id= '{$user->id}')")->orWhereRaw("current_step_id IN (select id from case_steps_observacao csao where csao.assigned_user_id= '{$user->id}')")->orWhereRaw("current_step_id IN (select id from case_steps_pesquisa csap where csap.assigned_user_id= '{$user->id}')")->orWhereRaw("current_step_id IN (select id from case_steps_rematricula csar where csar.assigned_user_id= '{$user->id}')")->get() as $case) {
-                            $currentStep = $case->currentStep;
-                            if (!$groups->binarySearch($getChildren, $case->group_id))
-                                $currentStep->detachUser();
-                            $case->save();
-                            $case->child->save(); //reindex
+                        $getChildren = $groups->groups($user->tenant_id, $input['group_id']);
+                        $ids = [];
+                        foreach (ChildCase::join('case_steps_observacao', 'children_cases.current_step_id', '=', 'case_steps_observacao.id')->where('case_status', 'in_progress')->where('case_steps_observacao.assigned_user_id', $user->id)->get() as $caseObs) {
+                            if (!$groups->binarySearch($getChildren, $caseObs->group_id))
+                                array_push($ids, $caseObs->id);
                         }
+                        foreach (ChildCase::join('case_steps_analise_tecnica', 'children_cases.current_step_id', '=', 'case_steps_analise_tecnica.id')->where('case_status', 'in_progress')->where('case_steps_analise_tecnica.assigned_user_id', $user->id)->get() as $caseObs) {
+                            if (!$groups->binarySearch($getChildren, $caseObs->group_id))
+                                array_push($ids, $caseObs->id);
+                        }
+                        foreach (ChildCase::join('case_steps_gestao_do_caso', 'children_cases.current_step_id', '=', 'case_steps_gestao_do_caso.id')->where('case_status', 'in_progress')->where('case_steps_gestao_do_caso.assigned_user_id', $user->id)->get() as $caseObs) {
+                            if (!$groups->binarySearch($getChildren, $caseObs->group_id))
+                                array_push($ids, $caseObs->id);
+                        }
+                        foreach (ChildCase::join('case_steps_pesquisa', 'children_cases.current_step_id', '=', 'case_steps_pesquisa.id')->where('case_status', 'in_progress')->where('case_steps_pesquisa.assigned_user_id', $user->id)->get() as $caseObs) {
+                            if (!$groups->binarySearch($getChildren, $caseObs->group_id))
+                                array_push($ids, $caseObs->id);
+                        }
+                        foreach (ChildCase::join('case_steps_rematricula', 'children_cases.current_step_id', '=', 'case_steps_rematricula.id')->where('case_status', 'in_progress')->where('case_steps_rematricula.assigned_user_id', $user->id)->get() as $caseObs) {
+                            if (!$groups->binarySearch($getChildren, $caseObs->group_id))
+                                array_push($ids, $caseObs->id);
+                        }
+                        foreach (ChildCase::whereIn('current_step_id', $ids)->get() as $case) {
+                            $currentStep = $case->currentStep;
+                            $currentStep->detachUser();
+                            $case->push(); //reindex
+                        };
                     }
                 }
             }
@@ -311,9 +330,6 @@ class UsersController extends BaseController
             }
 
             // Cache initial password so we can send it as cleartext through e-mail later
-            /*$initialPassword = $input['password'];
-            
-            $input['password'] = password_hash($input['password'], PASSWORD_DEFAULT);*/
             $length = 10;
             $input['password'] = password_hash(substr(str_shuffle(str_repeat($x = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$&', ceil($length / strlen($x)))), 1, $length), PASSWORD_DEFAULT);
 
@@ -340,11 +356,6 @@ class UsersController extends BaseController
                 $user->save();
             }
 
-            //            if ($user->tenant) {
-            //                Mail::to($user->email)->send(new UserRegistered($user->tenant, $user, $initialPassword));
-            //            } else if ($isUFUser) {
-            //                Mail::to($user->email)->send(new StateUserRegistered($user->uf, $user, $initialPassword));
-            //            }
             Mail::to($user->email)
                 ->send(new UserRegisterNotification($user, UserRegisterNotification::TYPE_REGISTER_INITIAL));
 
