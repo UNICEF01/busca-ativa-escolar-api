@@ -163,36 +163,32 @@ class GroupService
     public function binarySearch(array $arr, string $target): bool
     {
         $l = 0;
-        $r = count($arr);
-        if ($r > 1) {
-            while ($l <= $r) {
-                $m = $l + (int)(($r - $l) / 2);
+        $r = count($arr) - 1;
+        if ($r == 1)  return strcmp($target, $arr[0]) == 0;
+        while ($l <= $r) {
+            $m = $l + (int)(($r - $l) / 2);
 
-                $res = strcmp($target, $arr[$m]);
+            $res = strcmp($target, $arr[$m]);
 
-                if ($res == 0)
-                    return true;
-                if ($res > 0)
-                    $l = $m + 1;
-                else
-                    $r = $m - 1;
-            }
-            return false;
+            if ($res == 0)
+                return true;
+            if ($res > 0)
+                $l = $m + 1;
+            else
+                $r = $m - 1;
         }
-        return strcmp($target, $arr[0]) == 0;
+
+        return false;
     }
 
-    public function getGroup(string $userGroupId, string $tenant): array
+    public function getGroup(string $groupId, string $tenant): array
     {
-        $data = DB::table('groups')->select('name as grupo', DB::raw("( select name from `groups` g where id = (select parent_id  from `groups` where id = '{$userGroupId}' and tenant_id = '{$tenant}')) as pai"), DB::raw("(select name from `groups` where id = (select parent_id from `groups` g where id = (select parent_id  from `groups` where id = '{$userGroupId}' and tenant_id = '{$tenant}'))) as avo"), DB::raw("(select name from `groups` where id = ( (select parent_id from `groups` where id = (select parent_id from `groups` g where id = (select parent_id  from `groups` where id = '{$userGroupId}' and tenant_id = '{$tenant}'))))) as bisavo"))->where([['id', $userGroupId], ['tenant_id', $tenant]])->get()->toArray();
+        $data = DB::table('groups')->select('name as grupo', DB::raw("( select name from `groups` g where id = (select parent_id  from `groups` where id = '{$groupId}' and tenant_id = '{$tenant}')) as pai"), DB::raw("(select name from `groups` where id = (select parent_id from `groups` g where id = (select parent_id  from `groups` where id = '{$groupId}' and tenant_id = '{$tenant}'))) as avo"), DB::raw("(select name from `groups` where id = ( (select parent_id from `groups` where id = (select parent_id from `groups` g where id = (select parent_id  from `groups` where id = '{$groupId}' and tenant_id = '{$tenant}'))))) as bisavo"))->where([['id', $groupId], ['tenant_id', $tenant]])->get()->toArray();
         $dados = [];
-        array_push($dados, $data[0]->grupo);
-        if ($data[0]->pai)
-            array_push($dados, $data[0]->pai);
-        if ($data[0]->avo)
-            array_push($dados, $data[0]->avo);
-        if ($data[0]->bisavo)
-            array_push($dados, $data[0]->bisavo);
+        array_push($dados, $data[0]->grupo ?? '');
+        array_push($dados, $data[0]->pai ?? '');
+        array_push($dados, $data[0]->avo ?? '');
+        array_push($dados, $data[0]->bisavo ?? '');
         sort($dados);
         return $dados;
     }
