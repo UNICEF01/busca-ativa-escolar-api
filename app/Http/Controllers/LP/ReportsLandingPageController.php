@@ -115,7 +115,57 @@ class ReportsLandingPageController extends BaseController
                     DB::raw("select tenants.uf,sum(case when `alert_status` = 'accepted' and `child_status` in ('out_of_school', 'in_observation') then 1 else 0 end) as '_in_progress',sum(case when `child_status` in ('in_school', 'in_observation') then 1 else 0 end) as '_enrollment',sum(case when `child_status` = 'in_school' then 1 else 0 end) as '_in_school',sum(case when `child_status` = 'in_observation' then 1 else 0 end) as '_in_observation',sum(case when `child_status` = 'out_of_school' and `alert_status` = 'accepted' then 1 else 0 end) as '_out_of_school',sum(case when `child_status` = 'cancelled' and `alert_status` = 'accepted' then 1 else 0 end) as '_cancelled',sum(case when `child_status` = 'transferred' then 1 else 0 end) as '_transferred',sum(case when `child_status` = 'interrupted' then 1 else 0 end) as '_interrupted' from children inner join tenants on children.tenant_id  = tenants.id where children.deleted_at is null and tenants.id = '{$tenantId}'"),
                 );
 
-                return [
+		    if($alerts && !$cases)
+			    return [
+                    'alerts' => [
+                        '_total' => $alerts[0]->accepted + $alerts[0]->pending + $alerts[0]->rejected,
+                        '_approved' => $alerts[0]->accepted,
+                        '_pending' => $alerts[0]->pending,
+                        '_rejected' => $alerts[0]->rejected,
+                    ],
+                    'cases' => [
+                        '_total' => 0,
+                        '_in_progress' => 0,
+                        '_enrollment' => 0,
+                        '_in_school' => 0,
+                        '_in_observation' => 0,
+                        '_out_of_school' => 0,
+                        '_cancelled' => 0,
+                        '_transferred' => 0,
+                        '_interrupted' => 0,
+                    ],
+                    'causes_cases' => $causes,
+                    'data_city' => $data_city
+                ];
+		    if(!$alerts && $cases)
+			    return [
+                    'alerts' => [
+                        '_total' => 0,
+                        '_approved' => 0,
+                        '_pending' => 0,
+                        '_rejected' => 0
+                    ],
+                    'cases' => [
+                        '_total' => $cases[0]->_in_school +
+                            $cases[0]->_in_observation +
+                            $cases[0]->_out_of_school +
+                            $cases[0]->_cancelled +
+                            $cases[0]->_transferred +
+                            $cases[0]->_interrupted,
+                        '_in_progress' => $cases[0]->_in_progress,
+                        '_enrollment' => $cases[0]->_enrollment,
+                        '_in_school' => $cases[0]->_in_school,
+                        '_in_observation' => $cases[0]->_in_observation,
+                        '_out_of_school' => $cases[0]->_out_of_school,
+                        '_cancelled' => $cases[0]->_cancelled,
+                        '_transferred' => $cases[0]->_transferred,
+                        '_interrupted' => $cases[0]->_interrupted,
+                    ],
+                    'causes_cases' => $causes,
+                    'data_city' => $data_city
+                ];
+		    if($alerts && $cases)
+			    return [
                     'alerts' => [
                         '_total' => $alerts[0]->accepted + $alerts[0]->pending + $alerts[0]->rejected,
                         '_approved' => $alerts[0]->accepted,
@@ -141,6 +191,7 @@ class ReportsLandingPageController extends BaseController
                     'causes_cases' => $causes,
                     'data_city' => $data_city
                 ];
+                
             });
             return response()->json(['status' => 'ok', '_data' => $stats]);
         } catch (\Exception $ex) {
