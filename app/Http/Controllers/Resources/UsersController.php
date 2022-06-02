@@ -36,6 +36,7 @@ use Mail;
 use Maatwebsite\Excel\Excel as ExcelB;
 use BuscaAtivaEscolar\LGPD\Interfaces\ILgpd;
 use BuscaAtivaEscolar\Groups\GroupService;
+use Illuminate\Database\Eloquent\Builder;
 
 class UsersController extends BaseController
 {
@@ -238,38 +239,36 @@ class UsersController extends BaseController
                     if ($groups->binarySearch($checkFather, $input['group_name']));
                     else {
                         $getChildren = $groups->groups($user->tenant_id, $input['group_id']);
-                        $ids = [];
-                        foreach (ChildCase::join('case_steps_observacao', 'children_cases.current_step_id', '=', 'case_steps_observacao.id')->where('case_status', 'in_progress')->where('case_steps_observacao.assigned_user_id', $user->id)->get() as $caseObs) {
-                            if (!$groups->binarySearch($getChildren, $caseObs->group_id))
-                                array_push($ids, $caseObs->id);
+                        $client = \Elasticsearch\ClientBuilder::create()->setHosts(['localhost:9200'])->build();
+                        $updateRequest = [
+                            'index' => 'children',
+                            'body' => [
+                                'query' => [
+                                    'bool' => [
+                                        'filter' => [
+                                            'terms' => [
+                                                '_id' => [],
+                                            ],
+                                        ],
+                                    ],
+                                ],
+                                'script' => [
+                                    'inline' => "ctx._source.assigned_user_id = null; ctx._source.assigned_user_name = null; ctx._source.assigned_group_name = null"
+                                ]
+                            ]
+                        ];
+                        foreach (ChildCase::whereHas('currentStep', function (Builder $query) use ($user) {
+                            $query->where('assigned_user_id', '=', $user->id);
+                        })->get() as $case) {
+                            if (!$groups->binarySearch($getChildren, $case->group_id)) {
+                                $case->currentStep->detachUser();
+                                $updateRequest['body']['query']['bool']['filter']['terms']['_id'][] = $case->child->id;
+                            }
                         }
-                        foreach (ChildCase::join('case_steps_analise_tecnica', 'children_cases.current_step_id', '=', 'case_steps_analise_tecnica.id')->where('case_status', 'in_progress')->where('case_steps_analise_tecnica.assigned_user_id', $user->id)->get() as $caseObs) {
-                            if (!$groups->binarySearch($getChildren, $caseObs->group_id))
-                                array_push($ids, $caseObs->id);
-                        }
-                        foreach (ChildCase::join('case_steps_gestao_do_caso', 'children_cases.current_step_id', '=', 'case_steps_gestao_do_caso.id')->where('case_status', 'in_progress')->where('case_steps_gestao_do_caso.assigned_user_id', $user->id)->get() as $caseObs) {
-                            if (!$groups->binarySearch($getChildren, $caseObs->group_id))
-                                array_push($ids, $caseObs->id);
-                        }
-                        foreach (ChildCase::join('case_steps_pesquisa', 'children_cases.current_step_id', '=', 'case_steps_pesquisa.id')->where('case_status', 'in_progress')->where('case_steps_pesquisa.assigned_user_id', $user->id)->get() as $caseObs) {
-                            if (!$groups->binarySearch($getChildren, $caseObs->group_id))
-                                array_push($ids, $caseObs->id);
-                        }
-                        foreach (ChildCase::join('case_steps_rematricula', 'children_cases.current_step_id', '=', 'case_steps_rematricula.id')->where('case_status', 'in_progress')->where('case_steps_rematricula.assigned_user_id', $user->id)->get() as $caseObs) {
-                            if (!$groups->binarySearch($getChildren, $caseObs->group_id))
-                                array_push($ids, $caseObs->id);
-                        }
-                        foreach (ChildCase::whereIn('current_step_id', $ids)->get() as $case) {
-                            $currentStep = $case->currentStep;
-                            $currentStep->detachUser();
-                            $case->save();
-                            $case->child->save(); //reindex
-                        };
+                        $client->updateByQuery($updateRequest);
                     }
                 }
             }
-
-
             $user->fill($input);
 
             // Block setting a tenant-scope user without a tenant ID set

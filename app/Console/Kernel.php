@@ -56,7 +56,9 @@ class Kernel extends ConsoleKernel
         Commands\SendEmailsActualizeFrequency::class,
         Commands\SendEmailToTenantsWithTerms::class,
         Commands\ForceImportEducacensoFile::class,
-        Commands\SendEmailLgpd::class
+        Commands\SendEmailLgpd::class,
+        Commands\ReindexChildrenTenant::class,
+        //Commands\CreateGroupsAndUsersTest::class -> Only tests
     ];
 
     /**

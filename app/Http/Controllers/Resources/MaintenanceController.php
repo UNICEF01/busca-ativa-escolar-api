@@ -1,4 +1,5 @@
 <?php
+
 /**
  * busca-ativa-escolar-api
  * StepsController.php
@@ -14,59 +15,55 @@
 namespace BuscaAtivaEscolar\Http\Controllers\Resources;
 
 
-use BuscaAtivaEscolar\CaseSteps\CaseStep;
 use BuscaAtivaEscolar\Http\Controllers\BaseController;
 use BuscaAtivaEscolar\Scopes\TenantScope;
 use BuscaAtivaEscolar\User;
-use DB;
+use Illuminate\Database\Eloquent\Builder;
+use BuscaAtivaEscolar\ChildCase;
 
 
 class MaintenanceController extends BaseController
 {
 
-    public function assignForAdminUser($userId, UsersController $usersController)
+    public function assignForAdminUser($userId)
     {
+
         try {
-            $currentUser = $this->currentUser();
-            $listCases = $this->getCasebyPhases($userId);
-
-            foreach ($listCases as $child) {
-                $step = CaseStep::fetch($child->current_step_type, $child->current_step_id);
-                $step->assignToUser($currentUser);
-            }
-
             $user = User::withoutGlobalScope(TenantScope::class)->findOrFail($userId);
-            $usersController->destroy($user);
-
-            return response()->json(['status' => 'ok', 'user' => $currentUser]);
-
+            if ($user->tenant_id && in_array($user->type, User::$TENANT_SCOPED_TYPES)) {
+                $client = \Elasticsearch\ClientBuilder::create()->setHosts(['localhost:9200'])->build();
+                $updateRequest = [
+                    'conflicts' => 'proceed',
+                    'index' => 'children',
+                    'body' => [
+                        'query' => [
+                            'bool' => [
+                                'filter' => [
+                                    'terms' => [
+                                        '_id' => [],
+                                    ],
+                                ],
+                            ],
+                        ],
+                        'script' => [
+                            'inline' => "ctx._source.assigned_user_id = null; ctx._source.assigned_user_name = null; ctx._source.assigned_group_name = null"
+                        ]
+                    ]
+                ];
+                foreach (ChildCase::whereHas('currentStep', function (Builder $query) use ($user) {
+                    $query->where('assigned_user_id', '=', $user->id);
+                })->get() as $case) {
+                    $case->currentStep->detachUser();
+                    $updateRequest['body']['query']['bool']['filter']['terms']['_id'][] = $case->child->id;
+                }
+                $client->updateByQuery($updateRequest);
+            }
+            $user->lgpd = 0;
+            $user->save();
+            $user->delete();
+            return response()->json(['status' => 'ok', 'user' => $user]);
         } catch (\Exception $ex) {
             return $this->api_exception($ex);
         }
     }
-
-    private
-    function getCasebyPhases($userId)
-    {
-        $result = DB::table('children AS c')
-            ->select('c.*')
-            ->join('case_steps_pesquisa AS pesquisa', 'c.id', '=', 'pesquisa.child_id')
-            ->join('case_steps_analise_tecnica AS analise', 'c.id', '=', 'analise.child_id')
-            ->join('case_steps_gestao_do_caso AS gestao', 'c.id', '=', 'gestao.child_id')
-            ->join('case_steps_rematricula AS rematricula', 'c.id', '=', 'rematricula.child_id')
-            ->join('case_steps_observacao AS observacao', 'c.id', '=', 'observacao.child_id')
-            ->where('current_step_type', '<>', 'BuscaAtivaEscolar\CaseSteps\Alerta')
-            ->where('c.child_status', '<>', 'in_school')
-            ->where('c.child_status', '<>', 'cancelled')
-            ->where('observacao.assigned_user_id', '=', $userId)
-            ->orWhere('pesquisa.assigned_user_id', '=', $userId)
-            ->orWhere('analise.assigned_user_id', '=', $userId)
-            ->orWhere('gestao.assigned_user_id', '=', $userId)
-            ->orWhere('rematricula.assigned_user_id', '=', $userId)
-            ->orWhere('observacao.assigned_user_id', '=', $userId)
-            ->groupBy('c.id')
-            ->get();
-        return $result;
-    }
-
 }
