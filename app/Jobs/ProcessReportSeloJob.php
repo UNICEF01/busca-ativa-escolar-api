@@ -128,7 +128,7 @@ class ProcessReportSeloJob implements ShouldQueue
                         ['is_completed', '=', true],
                     ])->count();
 
-                $rematriculas_canceladas = Rematricula::whereHas('cases', function ($query) {
+                $rematriculas_com_canceladas = Rematricula::whereHas('cases', function ($query) {
                     $query->where(['case_status' => 'in_progress'])
                         ->orWhere(['cancel_reason' => 'city_transfer'])
                         ->orWhere(['cancel_reason' => 'death'])
@@ -261,9 +261,9 @@ class ProcessReportSeloJob implements ShouldQueue
 
                         'CeA na Escola' => $obs1 + $obs2 + $obs3 + $obs4 + $concluidos,
 
-                        '(Re)matrículas canceladas' => $rematriculas_canceladas,
+                        'Concluídos com cancelados' => $rematriculas_com_canceladas,
 
-                        '% Atingimento da Meta' => $city->goal->goal > 0 ? ((($obs1 + $obs2 + $obs3 + $obs4 + $concluidos + $rematriculas_canceladas)-($city->goal->accumulated_ciclo1)) * 100) / $city->goal->goal : 0,
+                        '% Atingimento da Meta' => $city->goal->goal > 0 ? (($rematriculas_com_canceladas - $city->goal->accumulated_ciclo1) * 100) / $city->goal->goal : 0,
 
                         'ID-CIDADE' => $city->id,
 
@@ -301,7 +301,7 @@ class ProcessReportSeloJob implements ShouldQueue
                         'Cancelados' => '',
                         'Concluídos' => '',
                         'CeA na Escola' => '',
-                        '(Re)matrículas canceladas' => '',
+                        'Concluídos com cancelados' => '',
                         '% Atingimento da Meta' => '',
                         'Criados antes do dia 31 OUT 2021 - Cancelados depois do dia 31 OUT 2021' => '',
                         'Criados depois do dia 31 OUT 2021 - Cancelados depois do dia 31 OUT 2021' => ''
