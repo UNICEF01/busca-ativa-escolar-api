@@ -261,7 +261,7 @@ class ProcessReportSeloJob implements ShouldQueue
 
                         'CeA na Escola' => $obs1 + $obs2 + $obs3 + $obs4 + $concluidos,
 
-                        'Concluídos com cancelados' => $rematriculas_com_canceladas,
+                        'CeA na escola com cancelados' => $rematriculas_com_canceladas,
 
                         '% Atingimento da Meta' => $city->goal->goal > 0 ? (($rematriculas_com_canceladas - $city->goal->accumulated_ciclo1) * 100) / $city->goal->goal : 0,
 
@@ -301,7 +301,7 @@ class ProcessReportSeloJob implements ShouldQueue
                         'Cancelados' => '',
                         'Concluídos' => '',
                         'CeA na Escola' => '',
-                        'Concluídos com cancelados' => '',
+                        'CeA na escola com cancelados' => '',
                         '% Atingimento da Meta' => '',
                         'Criados antes do dia 31 OUT 2021 - Cancelados depois do dia 31 OUT 2021' => '',
                         'Criados depois do dia 31 OUT 2021 - Cancelados depois do dia 31 OUT 2021' => ''
