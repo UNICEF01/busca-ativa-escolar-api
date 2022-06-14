@@ -162,7 +162,8 @@ class ReportsLandingPageController extends BaseController
                         '_out_of_school' => 0,
                         '_cancelled' => 0,
                         '_transferred' => 0,
-                        '_interrupted' => 0
+                        '_interrupted' => 0,
+                        '_enrollment_with_cancelled' => 0
                     ];
                 $data['causes_cases'] = $causes;
                 $data['data_city'] = $data_city;
