@@ -115,7 +115,7 @@ class ReportsLandingPageController extends BaseController
                 );
 
                 $cases = DB::select(
-                    DB::raw("select tenants.uf,sum(case when `alert_status` = 'accepted' and `child_status` in ('out_of_school', 'in_observation') then 1 else 0 end) as '_in_progress',sum(case when `child_status` in ('in_school', 'in_observation') then 1 else 0 end) as '_enrollment',sum(case when `child_status` = 'in_school' then 1 else 0 end) as '_in_school',sum(case when `child_status` = 'in_observation' then 1 else 0 end) as '_in_observation',sum(case when `child_status` = 'out_of_school' and `alert_status` = 'accepted' then 1 else 0 end) as '_out_of_school',sum(case when `child_status` = 'cancelled' and `alert_status` = 'accepted' then 1 else 0 end) as '_cancelled',sum(case when `child_status` = 'transferred' then 1 else 0 end) as '_transferred',sum(case when `child_status` = 'interrupted' then 1 else 0 end) as '_interrupted' from children inner join tenants on children.tenant_id  = tenants.id where children.deleted_at is null and tenants.id = '{$tenantId}'"),
+                    DB::raw("select tenants.uf, sum(case when `alert_status` = 'accepted' and `child_status` in ('out_of_school', 'in_observation') then 1 else 0 end) as '_in_progress' ,sum(case when `child_status` in ('in_school', 'in_observation') then 1 else 0 end) as '_enrollment', sum(case when `child_status` = 'in_school' then 1 else 0 end) as '_in_school',sum(case when `child_status` = 'in_observation' then 1 else 0 end) as '_in_observation', sum(case when `child_status` = 'out_of_school' and `alert_status` = 'accepted' then 1 else 0 end) as '_out_of_school', sum(case when `child_status` = 'cancelled' and `alert_status` = 'accepted' then 1 else 0 end) as '_cancelled', sum(case when `child_status` = 'transferred' then 1 else 0 end) as '_transferred', sum(case when `child_status` = 'interrupted' then 1 else 0 end) as '_interrupted', sum(case when case_status = 'in_progress' or cancel_reason = 'city_transfer' or cancel_reason = 'death' or cancel_reason = 'not_found' or case_status in ('completed', 'interrupted', 'transferred') then 1 else 0 end) as '_enrollment_with_cancelled' from children inner join tenants on children.tenant_id = tenants.id join case_steps_rematricula csr on csr.child_id = children.id join children_cases cc on cc.child_id = children.id where children.deleted_at is null and tenants.id = '{$tenantId}' and csr.deleted_at is null and cc.deleted_at is null and is_completed = 1"),
                 );
 
                 $data = [];
@@ -149,7 +149,8 @@ class ReportsLandingPageController extends BaseController
                         '_out_of_school' => $cases[0]->_out_of_school,
                         '_cancelled' => $cases[0]->_cancelled,
                         '_transferred' => $cases[0]->_transferred,
-                        '_interrupted' => $cases[0]->_interrupted
+                        '_interrupted' => $cases[0]->_interrupted,
+                        '_enrollment_with_cancelled' => $cases[0]->_enrollment_with_cancelled
                     ];
                 else
                     $data['cases'] = [
