@@ -40,7 +40,7 @@ class SendEmailSelo extends Command
     public function handle()
     {
         $message = new Seal();
-        $emails = [
+        $emails = ['daranha@unicef.org',
                    'rcorreia@unicef.org', 
                    'mansouza@unicef.org'];
         Mail::to($emails)->send($message);
