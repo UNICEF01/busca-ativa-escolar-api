@@ -39,7 +39,7 @@ class TenantSignupRejected extends Mailable {
 		$this->from(env('MAIL_USERNAME'), 'Busca Ativa Escolar');
 		$this->subject("[Busca Ativa Escolar] Sua adesão foi reprovada!");
 
-		return $this->view('vendor.notifications.email', $message->toArray());
+        return $this->view(['vendor.notifications.email', 'vendor.notifications.email-plain'], $message->toArray());
 
 	}
 

@@ -3,7 +3,7 @@
 if (! empty($greeting)) {
     echo $greeting, "\n\n";
 } else {
-    echo $level == 'error' ? 'Whoops!' : 'Hello!', "\n\n";
+    echo $level == 'error' ? '' : 'Busca Ativa Escolar - ', "\n\n";
 }
 
 if (! empty($introLines)) {
