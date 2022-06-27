@@ -76,6 +76,7 @@ return [
         'groups.manage',
         'update.yourself',
         'update.school',
+        'see.tools'
     ],
 
     BuscaAtivaEscolar\User::TYPE_GESTOR_ESTADUAL => [
@@ -167,6 +168,7 @@ return [
         'groups.manage',
         'school.list',
         'update.yourself',
+        'see.tools'
     ],
 
     BuscaAtivaEscolar\User::TYPE_SUPERVISOR_INSTITUCIONAL => [
@@ -198,6 +200,7 @@ return [
         'update.school',
         'school.list',
         'update.yourself',
+        'see.tools'
     ],
 
     BuscaAtivaEscolar\User::TYPE_SUPERVISOR_ESTADUAL => [
