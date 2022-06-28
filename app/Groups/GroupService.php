@@ -4,6 +4,7 @@ namespace BuscaAtivaEscolar\Groups;
 
 use BuscaAtivaEscolar\Group;
 use DB;
+use BuscaAtivaEscolar\User;
 
 class GroupService
 {
@@ -159,6 +160,84 @@ class GroupService
         sort($groups_index);
         return $groups_index;
     }
+
+
+    public function groupsList(string $email): array{
+
+        $userData = User::select('tenant_id', 'group_id')->where('email', $email)->get()->toArray();
+
+        if(count($userData) == 0)
+            return [];
+            
+        $data = Group::select('id','name', 'parent_id')->where('tenant_id', $userData[0]['tenant_id'])->orderBy('parent_id')
+        ->get()->toArray();
+
+        $grupos = [];
+
+        $size = count($data);
+        $index = $this->search($data, $size, $userData[0]['group_id']);
+        $grupos[0] = ['id' => $data[$index]['id'], 'name' => $data[$index]['name']];
+
+        $max = $this->upper_bound($data, $userData[0]['group_id']);
+        $min  = $this->lower_bound($data, $userData[0]['group_id']);
+
+        $groups_index = [];
+        $indexs = 1;
+        $groups_index[0] = $data[$index]['id'];
+
+        $children = [];
+        $children2 = [];
+
+        $j = 0;
+        $i = 0;
+        while($min < $max){
+            $groups_index[$indexs] = $data[$min]['id'];
+            $max1 = $this->upper_bound($data, $data[$min]['id'], 0, $size - 1);
+            $min1  = $this->lower_bound($data, $data[$min]['id'], 0, $size - 1);
+            if($min1 != $max1)
+                $children[$j++] = ['pai' => $i, 'min' => $min1, 'max' => $max1];
+            $i++;
+            $indexs++;
+            $min++;
+        }
+
+        $j = 0;
+        foreach($children as $child){
+            $i = 0;
+            $min = $child['min'];
+            $max = $child['max'];
+            $pai = $child['pai'];
+            while($min < $max){
+                $groups_index[$indexs] = $data[$min]['id'];
+                $max1 = $this->upper_bound($data, $data[$min]['id'], 0, $size - 1);
+                $min1  = $this->lower_bound($data, $data[$min]['id'], 0, $size - 1);
+                if($min1 != $max1)
+                    $children2[$j++] = ['pai' => $pai, 'pai1' => $i, 'min' => $min1, 'max' => $max1];
+                $i++;
+                $indexs++;
+                $min++;   
+            }
+        }
+        $j = 0;
+        foreach($children2 as $child){
+            $i = 0;
+            $min = $child['min'];
+            $max = $child['max'];
+            $pai = $child['pai'];
+            $pai1 = $child['pai1'];
+            while($min < $max){
+                $groups_index[$indexs] = $data[$min]['id'];
+                $max1 = $this->upper_bound($data, $data[$min]['id'], 0, $size - 1);
+                $min1  = $this->lower_bound($data, $data[$min]['id'], 0, $size - 1);
+                $i++;
+                $indexs++;
+                $min++;
+            }
+            $j++;
+        }
+        return $groups_index;
+    }
+
 
     public function binarySearch(array $arr, string $target): bool
     {
