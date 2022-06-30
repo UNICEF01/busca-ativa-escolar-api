@@ -597,6 +597,13 @@ class Child extends Model implements Searchable, CanBeAggregated, CollectsDailyM
 
             $data['group_id'] = $this->currentCase->group ? $this->currentCase->group->id : null;
             $data['group_name'] = $this->currentCase->group ? $this->currentCase->group->name : null;
+
+            if( $this->currentCase->group ){
+                $group = $this->currentCase->group;
+                $ids = $group->getArrayOfParentsId();
+                array_push($ids, $group->id);
+                $data['tree_id'] = implode(", ", $ids);
+            }
         }
 
         $data['city_name'] = $this->city->name ?? null;
