@@ -121,8 +121,13 @@ class CasesController extends BaseController
     {
 
         if (request()->has('detach_user')) {
-
-            $case->fill(request()->only(['group_id']));
+            $newGroup = Group::where('id', '=', request('group_id'))->get()->first();
+            $ids = $newGroup->getArrayOfParentsId();
+            array_push($ids, $newGroup->id);
+            $case->fill([
+                'group_id' => $newGroup->id,
+                'tree_id' => implode(", ", $ids)
+            ]);
             $case->save();
             if (request('detach_user') && $case->currentStep != null) {
                 $case->currentStep->detachUser();
@@ -136,7 +141,11 @@ class CasesController extends BaseController
     {
         if ($request->has('newObject') and $request->has('cases')) {
             try {
+
                 $newGroup = Group::where('id', $request->input('newObject')['id'])->get()->first();
+                $ids = $newGroup->getArrayOfParentsId();
+                array_push($ids, $newGroup->id);
+
                 $casesArray = array_map(function ($case) {
                     return $case['id'];
                 }, $request->input('cases'));
@@ -157,6 +166,7 @@ class CasesController extends BaseController
                                }
 
                                $case->group_id = $newGroup->id;
+                               $case->tree_id = implode(", ", $ids);
                                $case->save();
                                $case->child->save(); //reindex
 
@@ -164,6 +174,7 @@ class CasesController extends BaseController
                        } else {
 
                            $case->group_id = $newGroup->id;
+                           $case->tree_id = implode(", ", $ids);
                            $case->save();
                            $case->child->save(); //reindex
 
