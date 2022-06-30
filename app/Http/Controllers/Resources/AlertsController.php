@@ -48,7 +48,7 @@ class AlertsController extends BaseController
                 ->join(DB::raw('children_cases cc'), 'children.id', '=', 'cc.child_id')
                 ->whereNull('cc.deleted_at')
                 ->where('cc.tenant_id', '=', $this->currentUser()->tenant_id)
-                ->where('group_id', '=', $this->currentUser()->group_id);
+                ->where('tree_id', 'Like', '%'.$this->currentUser()->group_id.'%');
         }
 
         $where = [];
