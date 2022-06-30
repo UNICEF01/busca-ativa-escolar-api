@@ -815,6 +815,11 @@
 		},
 		"guardian_phone": {
 			"type": "string"
+		},
+		"tree_id": {
+			"analyzer": "folding",
+			"store": true,
+			"type": "string"
 		}
 	}
 }
