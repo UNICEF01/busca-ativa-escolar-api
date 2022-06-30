@@ -143,6 +143,8 @@ class ChildCase extends Model
         'linked_steps',
 
         'group_id',
+
+        'tree_id'
     ];
 
     protected $casts = [
