@@ -44,24 +44,11 @@ class AlertsController extends BaseController
                 ->where('cc.tenant_id', '=', $this->currentUser()->tenant_id)
                 ->where('group_id', '=', request('group_id'));
         } else {
-
-           $arrayId = [$this->currentUser()->group_id];
-           foreach ($this->currentUser()->group->children as $group){
-               array_push($arrayId, $group->id);
-               foreach ($group->children as $group2){
-                   array_push($arrayId, $group2->id);
-                   foreach ($group2->children as $group3){
-                       array_push($arrayId, $group3->id);
-                   }
-               }
-           }
-
             $query =  Child::select('children.*')
                 ->join(DB::raw('children_cases cc'), 'children.id', '=', 'cc.child_id')
                 ->whereNull('cc.deleted_at')
                 ->where('cc.tenant_id', '=', $this->currentUser()->tenant_id)
-                ->whereIn('group_id', $arrayId);
-
+                ->where('group_id', '=', $this->currentUser()->group_id);
         }
 
         $where = [];
@@ -210,10 +197,27 @@ class AlertsController extends BaseController
     {
         try
         {
-
             $dados = request()->all();
-            if (gettype($dados['data']) == 'array') ChildCase::where('child_id', $dados['id'])->update(['group_id' => $dados['data'][1]]);
-            else Alerta::where('child_id', $dados['id'])->update([$dados['type'] => $dados['data']]);
+            if (gettype($dados['data']) == 'array') {
+
+                $newGroup = Group::where('id', $dados['data'][1])
+                    ->get()
+                    ->first();
+                $ids = $newGroup->getArrayOfParentsId();
+                array_push($ids, $newGroup->id);
+
+                ChildCase::where('child_id', $dados['id'])->update(
+                    [
+                        'group_id' => $newGroup->id,
+                        'tree_id' => implode(", ", $ids)
+                    ]
+                );
+
+            } else {
+
+                Alerta::where('child_id', $dados['id'])->update([$dados['type'] => $dados['data']]);
+
+            }
             return response()->json(['status' => 'ok']);
         }
         catch(\Exception $ex)
@@ -232,14 +236,22 @@ class AlertsController extends BaseController
                 $newGroup = Group::where('id', $request->input('newObject') ['id'])
                     ->get()
                     ->first();
-                $alertsArray = array_map(function ($alert)
-                {
+
+                $ids = $newGroup->getArrayOfParentsId();
+                array_push($ids, $newGroup->id);
+
+                $alertsArray = array_map(function ($alert){
                     return $alert['id'];
-                }
-                , $request->input('alerts'));
-                ChildCase::whereIn('child_id', $alertsArray)->update(['group_id' => $newGroup->id]);
-                return response()
-                    ->json(['status' => 'ok']);
+                }, $request->input('alerts') );
+
+                ChildCase::whereIn('child_id', $alertsArray)->update(
+                    [
+                        'group_id' => $newGroup->id,
+                        'tree_id' => implode(", ", $ids)
+                    ]
+                );
+
+                return response()->json(['status' => 'ok']);
             }
             catch(\Exception $ex)
             {
