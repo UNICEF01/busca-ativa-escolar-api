@@ -58,7 +58,7 @@ class Kernel extends ConsoleKernel
         Commands\ForceImportEducacensoFile::class,
         Commands\SendEmailLgpd::class,
         Commands\ReindexChildrenTenant::class,
-        //Commands\CreateGroupsAndUsersTest::class -> Only tests
+        Commands\CreateAlertsAcceptedsBuTenant::class
     ];
 
     /**
