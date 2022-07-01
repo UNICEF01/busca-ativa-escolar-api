@@ -40,6 +40,7 @@ class CreateAlertsAcceptedsBuTenant extends Command
      */
     public function handle()
     {
+        /*
         $tenantId = $this->ask("Informe o ID do tenant:");
         $coordinatorId = $this->ask("Informe o ID do coordenador:");
         $tenant = Tenant::where('id', $tenantId)->get()->first();
@@ -47,7 +48,7 @@ class CreateAlertsAcceptedsBuTenant extends Command
         $groups = Group::where('tenant_id', '=', $tenant->id)->get()->all();
 
         foreach($groups as $group) {
-            for ($i = 1; $i <= 300; $i++) {
+            for ($i = 1; $i <= 20; $i++) {
                 $data = [
                     'name' => 'Caso teste ' . $time,
                     'alert_cause_id' => 170,
@@ -60,9 +61,7 @@ class CreateAlertsAcceptedsBuTenant extends Command
                 Child::spawnFromAlertData($tenant, $coordinatorId, $data);
             }
         }
+        */
 
-        foreach ( Child::where([ ['tenant_id', '=', $tenantId ], ['alert_status', '=', Child::ALERT_STATUS_PENDING ] ])->get() as $child ){
-            $child->acceptAlert([]);
-        }
     }
 }
