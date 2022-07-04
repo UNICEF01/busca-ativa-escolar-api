@@ -72,13 +72,10 @@ class UsersController extends BaseController
         }
 
         if ($this->currentUser()->isRestrictedToTenant()) {
-            if (!empty(request()->get('group_id'))) {
-                $query->where('group_id', request('group_id'));
-            } else {
-                $query->where('group_id', $this->currentUser()->group_id);
-            }
+            if (!empty(request()->get('group_id')) && request()->get('tree') == 0) $query->where('group_id', request('group_id'));
+            if (!empty(request()->get('group_id')) && request()->get('tree') == 1) $query->where('tree_id', 'Like', '%'.request('group_id').'%');
+            if(empty(request()->get('group_id')) && request()->get('tree') == 1)  $query->where('tree_id', 'Like', '%'.$this->currentUser()->group_id.'%');
         }
-
         //filter for visitantes nacionais e estaduais
         if (!empty(request()->get('type'))) {
             if (request('type') == User::TYPE_VISITANTE_NACIONAL) {

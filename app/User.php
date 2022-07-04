@@ -258,6 +258,7 @@ class User extends Authenticatable implements JWTSubject
 		'attempt',
 		'attempted_at',
 		'suspended_by',
+		'tree_id'
 	];
 
 	protected $hidden = [
