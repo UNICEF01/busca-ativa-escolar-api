@@ -98,7 +98,7 @@ class ChildrenController extends BaseController
 		}
     
 		$query->getGroups($params);
- 
+
 		return $query;
 	}
 

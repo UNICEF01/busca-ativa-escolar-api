@@ -288,9 +288,10 @@ class ElasticSearchQuery
 	}
 
 	public function getGroups(array $params)
-	{
-		//$this->query['bool']['must'][0]['match']['group_id'] = $params['group_id'];
-		$this->query['bool']['must'][0]['match_phrase']['tree_id'] = $params['group_id'];
-		return $this->query;
+	{	
+		$i = count($this->query['bool']['must']);
+		if($params['tree'] == 1)
+			return $this->query['bool']['must'][$i++]['match_phrase']['tree_id'] = $params['group_id'];
+		return $this->query['bool']['must'][$i++]['match']['group_id'] = $params['group_id'];
 	}
 }
