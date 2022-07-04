@@ -37,6 +37,7 @@ use Maatwebsite\Excel\Excel as ExcelB;
 use BuscaAtivaEscolar\LGPD\Interfaces\ILgpd;
 use BuscaAtivaEscolar\Groups\GroupService;
 use Illuminate\Database\Eloquent\Builder;
+use DB;
 
 class UsersController extends BaseController
 {
@@ -266,6 +267,16 @@ class UsersController extends BaseController
                     }
                 }
             }
+            $data = DB::table(DB::raw('`groups` g'))
+            ->select(DB::raw
+            ("concat( COALESCE(g1.id,''),',', COALESCE(g2.id,''),',', COALESCE(g3.id,''),',', COALESCE(g.id,'')) as tree")
+            )
+            ->leftJoin(DB::raw('`groups` g3'),'g.parent_id','=','g3.id')
+            ->leftJoin(DB::raw('`groups` g2'),'g3.parent_id','=','g2.id')
+            ->leftJoin(DB::raw('`groups` g1'),'g2.parent_id','=','g1.id')
+            ->where('g.id','=',$input['group_id'])
+            ->get()->toArray();
+            $input['tree_id'] =  $data[0]->tree;
             $user->fill($input);
 
             // Block setting a tenant-scope user without a tenant ID set
