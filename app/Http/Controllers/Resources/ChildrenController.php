@@ -71,7 +71,6 @@ class ChildrenController extends BaseController
 			->filterByTerm('uf', false)
 			->filterByTerm('assigned_uf', false)
 			->addTextFields(['name', 'cause_name', 'step_name', 'assigned_user_name', 'city_name'], 'match')
-			->addTextFields(['tree_id'], 'match_phrase')
 			->searchTextInColumns('location_full', ['place_address^3', 'place_cep^2', 'place_city^2', 'place_uf', 'place_neighborhood', 'place_reference'])
 			->searchTextInColumns('city_name_full', ['place_uf', 'place_city_name'])
 			->filterByTerms('alert_status', false)
@@ -97,8 +96,9 @@ class ChildrenController extends BaseController
 				}
 			}
 		}
-
-
+    
+		$query->getGroups($params);
+ 
 		return $query;
 	}
 
