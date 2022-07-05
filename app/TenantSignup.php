@@ -174,17 +174,6 @@ class TenantSignup extends Model
 		return self::generateURLToken($this);
 	}
 
-	/*public function renderStatus() {
-		if(!$this->judged_by) return 'pending';
-		if($this->is_approved === false) return 'rejected';
-		if($this->is_provisioned !== true || !$this->tenant) return 'pending_initial_setup';
-		//if(!$this->tenant->is_setup) return 'pending_tenant_setup';
-		if($this->tenant->deleted_at) return 'deleted';
-		if( $this->tenant->last_active_at->diffInDays(Carbon::now()) >= 30 ) return 'inactive';
-
-		return 'active';
-	}*/
-
 	public function renderStatus($validate)
 	{
 		if ($validate === 'a') {
@@ -203,38 +192,6 @@ class TenantSignup extends Model
 			return 'null';
 		}
 	}
-
-	/*public function toExportArray() {
-
-	    return [
-			'ID Adesão' => $this->id,
-            'Região' => $this->city ? $this->city->getRegion()->name : null,
-            'UF' => $this->city->uf ?? null,
-            'Município' => $this->city->name ?? null,
-			'Status (Considerando últimos 30 dias)' => trans('signups.status.' . $this->renderStatus()),
-			'Último acesso' => $this->tenant ? $this->tenant->last_active_at->format('d/m/Y') : null,
-            'Adesão - Gestor - Nome' => $this->data['admin']['name'] ?? null,
-            'Adesão - Gestor - E-mail' => $this->data['admin']['email'] ?? null,
-            'Adesão - Gestor - Telefone' => $this->data['admin']['phone'] ?? null,
-            'Adesão - Prefeito - Nome' => $this->data['mayor']['name'] ?? null,
-            'Adesão - Prefeito - E-mail' => $this->data['mayor']['email'] ?? null,
-            'Adesão - Prefeito - Telefone' => $this->data['mayor']['phone'] ?? null,
-            'Instância - Gestor Operacional - Nome' => $this->tenant->operationalAdmin->name ?? null,
-            'Instância - Gestor Operacional - E-mail' => $this->tenant->operationalAdmin->email ?? null,
-            'Instância - Gestor Operacional - Telefone' => ($this->tenant && $this->tenant->operationalAdmin) ? $this->tenant->operationalAdmin->getContactPhone() : null,
-            'Instância - Gestor Político - Nome' => $this->tenant->politicalAdmin->name ?? null,
-            'Instância - Gestor Político - E-mail' => $this->tenant->politicalAdmin->email ?? null,
-            'Instância - Gestor Político - Telefone' => ($this->tenant && $this->tenant->politicalAdmin) ? $this->tenant->politicalAdmin->getContactPhone() : null,
-            'Data adesão' => $this->created_at->format('d/m/Y') ?? null,
-            'Data ativação' => $this->tenant ? $this->tenant->created_at->format('d/m/Y') : null,
-            'Data exclusão/ rejeição' => $this->deleted_at ? Carbon::createFromFormat('Y-m-d H:i:s', $this->deleted_at)->format('d/m/Y') : null,
-            'Endereço IP' => $this->ip_addr,
-			'Navegador' => $this->user_agent ? Utils::renderUserAgent($this->user_agent) : null,
-			'Instância - ID' => $this->tenant_id ?? null,
-			'Instância - Nome' => $this->tenant->name ?? null,
-			'Código - IBGE' => $this->tenant->city->ibge_city_id ?? null
-		];
-	}*/
 
 	public function toExportArray()
 	{
