@@ -35,20 +35,26 @@ class AlertsController extends BaseController
     {
 
         /** @var Builder $query */
-
+        
         //join children_case to filter.
         if (!empty(request()->get('group_id'))  && request()->get('group_id') !== "") {
             $query =  Child::select('children.*')
                 ->join(DB::raw('children_cases cc'), 'children.id', '=', 'cc.child_id')
                 ->whereNull('cc.deleted_at')
-                ->where('cc.tenant_id', '=', $this->currentUser()->tenant_id)
-                ->where('group_id', '=', request('group_id'));
+                ->where('cc.tenant_id', '=', $this->currentUser()->tenant_id);
+                if(request('tree') == 1)
+                    $query->where('tree_id', 'Like', '%'.request('group_id').'%');
+                else
+                    $query->where('group_id', '=', request('group_id'));
         } else {
             $query =  Child::select('children.*')
                 ->join(DB::raw('children_cases cc'), 'children.id', '=', 'cc.child_id')
                 ->whereNull('cc.deleted_at')
-                ->where('cc.tenant_id', '=', $this->currentUser()->tenant_id)
-                ->where('tree_id', 'Like', '%'.$this->currentUser()->group_id.'%');
+                ->where('cc.tenant_id', '=', $this->currentUser()->tenant_id);
+                if(request('tree') == 1)
+                    $query->where('tree_id', 'Like', '%'.$this->currentUser()->group_id.'%');
+                else
+                    $query->where('group_id', '=', $this->currentUser()->group_id);
         }
 
         $where = [];
