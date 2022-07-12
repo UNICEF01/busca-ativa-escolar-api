@@ -126,7 +126,7 @@ class CasesController extends BaseController
             array_push($ids, $newGroup->id);
             $case->fill([
                 'group_id' => $newGroup->id,
-                'tree_id' => implode(", ", $ids)
+                'tree_id' => implode(", ", array_reverse($ids))
             ]);
             $case->save();
             if (request('detach_user') && $case->currentStep != null) {
@@ -166,7 +166,7 @@ class CasesController extends BaseController
                                }
 
                                $case->group_id = $newGroup->id;
-                               $case->tree_id = implode(", ", $ids);
+                               $case->tree_id = implode(", ", array_reverse($ids));
                                $case->save();
                                $case->child->save(); //reindex
 
@@ -174,7 +174,7 @@ class CasesController extends BaseController
                        } else {
 
                            $case->group_id = $newGroup->id;
-                           $case->tree_id = implode(", ", $ids);
+                           $case->tree_id = implode(", ", array_reverse($ids));
                            $case->save();
                            $case->child->save(); //reindex
 
