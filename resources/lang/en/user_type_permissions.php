@@ -19,4 +19,6 @@ return [
 	'cases.step.3a_observacao' => 'Casos - 3a Observação',
 	'cases.step.4a_observacao' => 'Casos - 4a Observação',
 	'alert.spawn' => 'Alerta - Criar alerta',
+	'notification_cases.view' => 'Notificação dos Casos - Visualizar',
+	'notification_cases.edit' => 'Notificação dos Casos - Editar',
 ];
