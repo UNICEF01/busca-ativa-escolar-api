@@ -42,19 +42,14 @@ use Illuminate\Support\Str;
 use League\Fractal\Pagination\IlluminatePaginatorAdapter;
 use Maatwebsite\Excel\Excel as ExcelB;
 use BuscaAtivaEscolar\Exports\ChildrenExport;
-use BuscaAtivaEscolar\NotificationsCases\Interfaces\INotifications;
 
 class ChildrenController extends BaseController
 {
 	private $excel;
-	protected $notificationCaseService;
-
-	public function __construct(ExcelB $excel, INotifications $notificationCaseService)
+	public function __construct(ExcelB $excel)
 	{
 		$this->excel = $excel;
-		$this->notificationCaseService = $notificationCaseService;
 	}
-
 	protected function prepareSearchQuery(): ElasticSearchQuery
 	{
 
@@ -275,6 +270,7 @@ class ChildrenController extends BaseController
 
 			$message = request('message', '');
 			$comment = Comment::post($child, Auth::user(), $message);
+
 			return response()->json(['status' => 'ok', 'comment_id' => $comment->id]);
 		} catch (\Exception $ex) {
 			return $this->api_exception($ex);

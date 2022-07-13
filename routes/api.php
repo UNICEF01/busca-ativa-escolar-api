@@ -41,11 +41,6 @@ Route::group(['prefix' => 'v1', 'middleware' => 'api'], function () {
 		Route::post('/children/{child}/attachments', 'Resources\ChildrenController@addAttachment')->middleware('can:cases.view');
 		Route::delete('/children/{child}/attachments/{attachment}', 'Resources\ChildrenController@removeAttachment')->middleware('can:cases.manage');
 
-		//Notifications
-		Route::get('notifications_cases', 'Resources\NotificationCasesController@getList')->middleware('can:notification_cases.view');
-		Route::put('notifications_cases/{notification_case}', 'Resources\NotificationCasesController@update')->middleware('can:notification_cases.edit');
-		Route::post('notifications_cases', 'Resources\NotificationCasesController@store')->middleware('can:cases.view');
-
 
 		// My alerts
 		Route::get('/alerts/mine', 'Resources\AlertsController@get_mine');

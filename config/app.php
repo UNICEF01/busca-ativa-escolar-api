@@ -191,7 +191,6 @@ return [
         BuscaAtivaEscolar\Providers\LgpdServiceProvider::class,
         BuscaAtivaEscolar\Providers\RouteServiceProvider::class,
         BuscaAtivaEscolar\Providers\SearchServiceProvider::class,
-        BuscaAtivaEscolar\Providers\NotificationCasesServiceProvider::class,
 
     ],
 
