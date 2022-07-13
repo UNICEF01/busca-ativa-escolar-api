@@ -168,7 +168,9 @@ return [
         'groups.manage',
         'school.list',
         'update.yourself',
-        'see.tools'
+        'see.tools',
+        'notification_cases.view',
+        'notification_cases.edit',
     ],
 
     BuscaAtivaEscolar\User::TYPE_SUPERVISOR_INSTITUCIONAL => [
@@ -200,7 +202,9 @@ return [
         'update.school',
         'school.list',
         'update.yourself',
-        'see.tools'
+        'see.tools',
+        'notification_cases.view',
+        'notification_cases.edit',
     ],
 
     BuscaAtivaEscolar\User::TYPE_SUPERVISOR_ESTADUAL => [

@@ -306,12 +306,13 @@ class UsersController extends BaseController
                     }
                 }
             }
-            $data = DB::table(DB::raw('`groups` g'))->select(DB::raw("concat( COALESCE(g1.id,''),',', COALESCE(g2.id,''),',', COALESCE(g3.id,''),',', COALESCE(g.id,'')) as tree"))
-                ->leftJoin(DB::raw('`groups` g3') , 'g.parent_id', '=', 'g3.id')
-                ->leftJoin(DB::raw('`groups` g2') , 'g3.parent_id', '=', 'g2.id')
-                ->leftJoin(DB::raw('`groups` g1') , 'g2.parent_id', '=', 'g1.id')
-                ->where('g.id', '=', $input['group_id'])->get()
-                ->toArray();
+            $data = DB::table(DB::raw('`groups` g'))
+            ->select(DB::raw("case when g3.id is not null then concat(COALESCE(g3.id,''),', ',COALESCE(g2.id,''),', ',COALESCE(g1.id,''),', ',COALESCE(g.id,'')) else case when g3.id is null and g2.id is not null then concat(COALESCE(g2.id,''),', ',COALESCE(g1.id,''),', ',COALESCE(g.id,'')) else case when g2.id is null and g1.id is not null then concat(COALESCE(g1.id,''),', ',COALESCE(g.id,'')) else case when g3.id is null and g2.id is null and g1.id is null then g.id end end end end as tree"))
+            ->leftJoin(DB::raw('`groups` g1'),'g.parent_id','=','g1.id')
+            ->leftJoin(DB::raw('`groups` g2'),'g1.parent_id','=','g2.id')
+            ->leftJoin(DB::raw('`groups` g3'),'g2.parent_id','=','g3.id')
+            ->where('g.id', $input['group_id'])
+            ->get();
             $input['tree_id'] = $data[0]->tree;
             $user->fill($input);
 
@@ -352,12 +353,14 @@ class UsersController extends BaseController
             if (Auth::user()
                 ->isRestrictedToTenant())
             {
-                $data = DB::table(DB::raw('`groups` g'))->select(DB::raw("concat( COALESCE(g1.id,''),',', COALESCE(g2.id,''),',', COALESCE(g3.id,''),',', COALESCE(g.id,'')) as tree"))
-                    ->leftJoin(DB::raw('`groups` g3') , 'g.parent_id', '=', 'g3.id')
-                    ->leftJoin(DB::raw('`groups` g2') , 'g3.parent_id', '=', 'g2.id')
-                    ->leftJoin(DB::raw('`groups` g1') , 'g2.parent_id', '=', 'g1.id')
-                    ->where('g.id', '=', $input['group_id'])->get()
-                    ->toArray();
+                echo 'teste';
+                $data = DB::table(DB::raw('`groups` g'))
+                ->select(DB::raw("case when g3.id is not null then concat(COALESCE(g3.id,''),', ',COALESCE(g2.id,''),', ',COALESCE(g1.id,''),', ',COALESCE(g.id,'')) else case when g3.id is null and g2.id is not null then concat(COALESCE(g2.id,''),', ',COALESCE(g1.id,''),', ',COALESCE(g.id,'')) else case when g2.id is null and g1.id is not null then concat(COALESCE(g1.id,''),', ',COALESCE(g.id,'')) else case when g3.id is null and g2.id is null and g1.id is null then g.id end end end end as tree"))
+                ->leftJoin(DB::raw('`groups` g1'),'g.parent_id','=','g1.id')
+                ->leftJoin(DB::raw('`groups` g2'),'g1.parent_id','=','g2.id')
+                ->leftJoin(DB::raw('`groups` g3'),'g2.parent_id','=','g3.id')
+                ->where('g.id',$input['group_id'])
+                ->get()->toArray();
                 $input['tenant_id'] = Auth::user()->tenant_id;
                 $input['tree_id'] = $data[0]->tree;
             }
