@@ -3,7 +3,7 @@
 namespace BuscaAtivaEscolar\Http\Controllers\Resources;
 
 use BuscaAtivaEscolar\Http\Controllers\BaseController;
-use BuscaAtivaEscolar\NotificationsCases\Interfaces\INotifications;
+use BuscaAtivaEscolar\NotificationCases\Interfaces\INotifications;
 use Exception;
 use Illuminate\Http\Request;
 

@@ -1,10 +1,10 @@
 <?php
 
-namespace BuscaAtivaEscolar\NotificationsCases\Services;
+namespace BuscaAtivaEscolar\NotificationCases\Services;
 
 use BuscaAtivaEscolar\ChildCase;
-use BuscaAtivaEscolar\NotificationsCases\Interfaces\INotifications;
-use BuscaAtivaEscolar\NotificationsCases\Repositories\NotificationCasesRepository;
+use BuscaAtivaEscolar\NotificationCases\Interfaces\INotifications;
+use BuscaAtivaEscolar\NotificationCases\Repositories\NotificationCasesRepository;
 use InvalidArgumentException;
 use Validator;
 use DB;
@@ -84,7 +84,6 @@ class NotificationCasesService implements INotifications
         $group = ChildCase::select('tree_id')->where('id', $id)->get();
         $tree = explode(",",$group[0]->tree_id);
         $treeId = (count($tree) == 2 || count($tree) == 1 ? ltrim($tree[0]) : $group[0]->tree_id == 3) ? ltrim($tree[1]) : ltrim($tree[2]);
-        print_r($treeId);
         $data = DB::table('users')
         ->select('tree_id',DB::raw('count(distinct tree_id) - count(distinct case when `type` = \'coordenador_operacional\' or `type` = \'supervisor_institucional\' then tree_id end) as total'))
         ->where('tree_id','LIKE','%'.$treeId.'%')

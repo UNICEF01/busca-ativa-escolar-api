@@ -1,6 +1,6 @@
 <?php
 
-namespace BuscaAtivaEscolar\NotificationsCases\Interfaces;
+namespace BuscaAtivaEscolar\NotificationCases\Interfaces;
 
 interface INotifications
 {

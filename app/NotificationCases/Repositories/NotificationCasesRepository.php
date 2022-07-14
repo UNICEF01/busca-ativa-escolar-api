@@ -1,6 +1,6 @@
 <?php
 
-namespace BuscaAtivaEscolar\NotificationsCases\Repositories;
+namespace BuscaAtivaEscolar\NotificationCases\Repositories;
 
 
 use BuscaAtivaEscolar\NotificationCases;
