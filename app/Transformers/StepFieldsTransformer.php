@@ -17,6 +17,7 @@ namespace BuscaAtivaEscolar\Transformers;
 use BuscaAtivaEscolar\CaseSteps\CaseStep;
 use BuscaAtivaEscolar\School;
 use League\Fractal\TransformerAbstract;
+use PhpParser\Node\Expr\Cast\Int_;
 
 class StepFieldsTransformer extends TransformerAbstract {
 
@@ -70,6 +71,26 @@ class StepFieldsTransformer extends TransformerAbstract {
 		if(isset($step->reinsertion_date_original)) {
 			$data['reinsertion_date_original'] = $step->reinsertion_date_original;
 		}
+
+        if(isset($data['school_last_age'])){
+            $data['school_last_age'] = intval($data['school_last_age']);
+        }
+
+        if(isset($data['school_last_age'])){
+            $data['school_last_age'] = intval($data['school_last_age']);
+        }
+
+        if(isset($data['school_last_year'])){
+            $data['school_last_year'] = intval($data['school_last_year']);
+        }
+
+        if(isset($data['work_is_paid'])){
+            $data['work_is_paid'] = intval($data['work_is_paid']);
+        }
+
+        if(isset($data['work_weekly_hours'])){
+            $data['work_weekly_hours'] = intval($data['work_weekly_hours']);
+        }
 
 		return $data;
 	}
