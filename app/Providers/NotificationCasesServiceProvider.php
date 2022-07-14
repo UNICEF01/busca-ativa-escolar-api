@@ -2,8 +2,8 @@
 
 namespace BuscaAtivaEscolar\Providers;
 
-use BuscaAtivaEscolar\NotificationsCases\Interfaces\INotifications;
-use BuscaAtivaEscolar\NotificationsCases\Services\NotificationCasesService;
+use BuscaAtivaEscolar\NotificationCases\Interfaces\INotifications;
+use BuscaAtivaEscolar\NotificationCases\Services\NotificationCasesService;
 use Illuminate\Support\ServiceProvider;
 
 
