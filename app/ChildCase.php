@@ -709,7 +709,8 @@ class ChildCase extends Model
         /* @var $coordinators Collection */
         $coordinators = User::where([
                 'tenant_id' => $tenant_recipient_id,
-                'type' => User::TYPE_GESTOR_OPERACIONAL
+                'type' => User::TYPE_GESTOR_OPERACIONAL,
+                'group_id' => $tenant_recipient->primary_group_id
             ]
         )->get();
 
@@ -717,7 +718,6 @@ class ChildCase extends Model
         $requesterUser->type = User::TYPE_GESTOR_OPERACIONAL;
 
         if (is_array($coordinators) && (sizeof($coordinators) <= 0)) {
-//        if ( $coordinators->count() <= 0 ) {
             return response()->json(
                 [
                     'result' => 'Solicitação realizada com sucesso, porém não existem coordendores ativos no município',
