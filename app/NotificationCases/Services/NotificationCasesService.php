@@ -26,6 +26,7 @@ class NotificationCasesService implements INotifications
         $validator = Validator::make($attributes,[
             'tenant_id' => 'required',
             'user_id' => 'required',
+            'comment_id' => 'required',
             'children_case_id' => 'required',
             'notification' => 'required',
         ]);
@@ -83,7 +84,8 @@ class NotificationCasesService implements INotifications
     {  
         $group = ChildCase::select('tree_id')->where('id', $id)->get();
         $tree = explode(",",$group[0]->tree_id);
-        $treeId = (count($tree) == 2 || count($tree) == 1 ? ltrim($tree[0]) : $group[0]->tree_id == 3) ? ltrim($tree[1]) : ltrim($tree[2]);
+        if(count($tree) == 2 || count($tree)) return ltrim($tree[0]);
+        $treeId = count($tree) == 3 ? ltrim($tree[1]) : ltrim($tree[2]);
         $data = DB::table('users')
         ->select('tree_id',DB::raw('count(distinct tree_id) - count(distinct case when `type` = \'coordenador_operacional\' or `type` = \'supervisor_institucional\' then tree_id end) as total'))
         ->where('tree_id','LIKE','%'.$treeId.'%')
@@ -98,5 +100,10 @@ class NotificationCasesService implements INotifications
     public function findAllNotificationDataByUser(string $treeId): ?object
     {
         return $this->noticationsCaseRepository->findAll($treeId);
+    }
+
+    public function checkComment(string $id)
+    {
+        return $this->noticationsCaseRepository->getComment($id);
     }
 }

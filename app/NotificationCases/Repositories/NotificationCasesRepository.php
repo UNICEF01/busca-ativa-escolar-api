@@ -22,6 +22,7 @@ class NotificationCasesRepository extends BaseRepository
     $dataNotification = new $this->model;
     $dataNotification->tenant_id = $attributes['tenant_id'];
     $dataNotification->user_id = $attributes['user_id'];
+    $dataNotification->comment_id = $attributes['comment_id'];
     $dataNotification->children_case_id = $attributes['children_case_id'];
     $dataNotification->notification = $attributes['notification'];
     $dataNotification->case_tree_id = $attributes['case_tree_id'];
@@ -33,7 +34,12 @@ class NotificationCasesRepository extends BaseRepository
 
   public function find(string $id): ?Model
   {
-    return $this->model->where('id', $id)->get();
+    return $this->model->where('id', $id)->first();
+  }
+
+  public function getComment(string $id): ?Model
+  {
+    return $this->model->where('comment_id', $id)->first();
   }
 
   public function delete(string $id): bool

@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property User $user_id
  * @property ChildCase  $children_case_id
  * @property ChildCase  $case_tree_id
+ * comment_id
  * @property string $notification
  * @property \Carbon\Carbon $created_at
  * @property \Carbon\Carbon $updated_at
@@ -31,6 +32,7 @@ class NotificationCases extends Model
         'id',
         'tenant_id',
         'user_id',
+        'comment_id',
         'children_case_id',
         'notification',
         'case_tree_id',
@@ -56,5 +58,10 @@ class NotificationCases extends Model
     public function case()
 	{
 		return $this->hasOne('BuscaAtivaEscolar\ChildCase', 'id', 'children_case_id');
+	}
+
+    public function comment()
+	{
+		return $this->hasOne('BuscaAtivaEscolar\Comment', 'id', 'comment_id');
 	}
 }

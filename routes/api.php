@@ -43,6 +43,8 @@ Route::group(['prefix' => 'v1', 'middleware' => 'api'], function () {
 
 		//Notifications
 		Route::get('notifications_cases', 'Resources\NotificationCasesController@getList')->middleware('can:notification_cases.view');
+		Route::post('notifications_cases/comment', 
+		'Resources\NotificationCasesController@checkCommentary')->middleware('can:notification_cases.view');
 		Route::put('notifications_cases/{notification_case}', 'Resources\NotificationCasesController@update')->middleware('can:notification_cases.edit');
 		Route::post('notifications_cases', 'Resources\NotificationCasesController@store')->middleware('can:cases.view');
 
