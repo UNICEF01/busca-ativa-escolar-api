@@ -353,7 +353,6 @@ class UsersController extends BaseController
             if (Auth::user()
                 ->isRestrictedToTenant())
             {
-                echo 'teste';
                 $data = DB::table(DB::raw('`groups` g'))
                 ->select(DB::raw("case when g3.id is not null then concat(COALESCE(g3.id,''),', ',COALESCE(g2.id,''),', ',COALESCE(g1.id,''),', ',COALESCE(g.id,'')) else case when g3.id is null and g2.id is not null then concat(COALESCE(g2.id,''),', ',COALESCE(g1.id,''),', ',COALESCE(g.id,'')) else case when g2.id is null and g1.id is not null then concat(COALESCE(g1.id,''),', ',COALESCE(g.id,'')) else case when g3.id is null and g2.id is null and g1.id is null then g.id end end end end as tree"))
                 ->leftJoin(DB::raw('`groups` g1'),'g.parent_id','=','g1.id')
