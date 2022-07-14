@@ -602,7 +602,7 @@ class Child extends Model implements Searchable, CanBeAggregated, CollectsDailyM
                 $group = $this->currentCase->group;
                 $ids = $group->getArrayOfParentsId();
                 array_push($ids, $group->id);
-                $data['tree_id'] = implode(", ", $ids);
+                $data['tree_id'] = implode(", ", array_reverse($ids));
             }
         }
 
