@@ -83,7 +83,6 @@ class NotificationCasesService implements INotifications
     {  
         $group = ChildCase::select('tree_id')->where('id', $id)->get();
         $tree = explode(",",$group[0]->tree_id);
-        print_r(count($tree));
         $treeId = (count($tree) == 2 || count($tree) == 1 ? ltrim($tree[0]) : $group[0]->tree_id == 3) ? ltrim($tree[1]) : ltrim($tree[2]);
         print_r($treeId);
         $data = DB::table('users')
