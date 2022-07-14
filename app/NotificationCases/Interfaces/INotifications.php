@@ -10,4 +10,5 @@ interface INotifications
   public function deleteNotificationData(string $id): bool;
   public function resolveNotificationData(string $id): bool;
   public function getTrees(string $id): string;
+  public function checkComment(string $id);
 }

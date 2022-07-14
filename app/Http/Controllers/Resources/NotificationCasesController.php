@@ -21,6 +21,7 @@ class NotificationCasesController extends BaseController
         $data = $request->only([
             'tenant_id',
             'user_id',
+            'comment_id',
             'children_case_id',
             'notification',
         ]);
@@ -58,13 +59,33 @@ class NotificationCasesController extends BaseController
     public function getList(Request $request)
     {
         $data = $request->only([
-            'users_tree_id' => 'required',
+            'users_tree_id'
         ]);
 
         $result = ['status' => 200];
 
         try{
             $result['data'] = $this->notificationCaseService->findAllNotificationDataByUser($data['users_tree_id']);
+        } catch(Exception $e){
+            $result = [
+                'status' => 500,
+                'error' => $e->getMessage()
+            ];
+        }
+        
+        return response()->json($result, $result['status']);
+    }
+
+    public function checkCommentary(Request $request)
+    {
+        $data = $request->only([
+            'comment_id'
+        ]);
+
+        $result = ['status' => 200];
+
+        try{
+            $result['data'] = $this->notificationCaseService->checkComment($data['comment_id']);
         } catch(Exception $e){
             $result = [
                 'status' => 500,

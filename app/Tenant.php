@@ -351,9 +351,9 @@ class Tenant extends Model
 		$operationalAdmin->lgpd = 0;
 
 		$politicalAdmin->group_id = $primaryGroup->id;
-		$politicalAdmin->tree_id =  ",,," . $primaryGroup->id;
+		$politicalAdmin->tree_id =  $primaryGroup->id;
 		$operationalAdmin->group_id = $primaryGroup->id;
-		$operationalAdmin->tree_id =  ",,," . $primaryGroup->id;
+		$operationalAdmin->tree_id =  $primaryGroup->id;
 
 		$politicalAdmin->save();
 		$operationalAdmin->save();
@@ -423,7 +423,7 @@ class Tenant extends Model
 		$politicalAdminData['uf'] = $tenant->uf;
 		$politicalAdminData['tenant_id'] = $tenant->id;
 		$politicalAdminData['group_id'] = $tenant->primary_group_id;
-		$politicalAdminData['tree_id'] = ",,,".$tenant->primary_group_id;
+		$politicalAdminData['tree_id'] = $tenant->primary_group_id;
 
 		$politicalAdmin = new User();
 		$politicalAdmin->fill($politicalAdminData);
@@ -444,7 +444,7 @@ class Tenant extends Model
 			$operationalAdminData['tenant_id'] = $tenant->id;
 			$operationalAdminData['uf'] = $tenant->uf;
 			$operationalAdminData['group_id'] = $tenant->primary_group_id;
-			$operationalAdminData['tree_id'] = ",,,".$tenant->primary_group_id;
+			$operationalAdminData['tree_id'] = $tenant->primary_group_id;
 
 			$operationalAdmin = new User();
 			$operationalAdmin->fill($operationalAdminData);
