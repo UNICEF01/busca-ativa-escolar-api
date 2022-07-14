@@ -215,7 +215,7 @@ class AlertsController extends BaseController
                 ChildCase::where('child_id', $dados['id'])->update(
                     [
                         'group_id' => $newGroup->id,
-                        'tree_id' => implode(", ", $ids)
+                        'tree_id' => implode(", ", array_reverse($ids))
                     ]
                 );
 
@@ -253,7 +253,7 @@ class AlertsController extends BaseController
                 ChildCase::whereIn('child_id', $alertsArray)->update(
                     [
                         'group_id' => $newGroup->id,
-                        'tree_id' => implode(", ", $ids)
+                        'tree_id' => implode(", ", array_reverse($ids))
                     ]
                 );
 
