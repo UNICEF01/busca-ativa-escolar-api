@@ -46,7 +46,7 @@ class UserRegisterNotification extends Mailable
             $headers->addTextHeader('message-id', $this->user->id);
         });
 
-        return $this->view('vendor.notifications.email', $message->toArray());
+        return $this->view(['vendor.notifications.email', 'vendor.notifications.email-plain'], $message->toArray());
     }
 
     protected function getUrlConfirmRegister(){

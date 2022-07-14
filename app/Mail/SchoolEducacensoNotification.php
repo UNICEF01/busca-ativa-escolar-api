@@ -41,7 +41,7 @@ class SchoolEducacensoNotification extends Mailable
             $headers->addTextHeader('message-id', $this->job_id);
         });
 
-        return $this->view('vendor.notifications.email', $message->toArray());
+        return $this->view(['vendor.notifications.email', 'vendor.notifications.email-plain'], $message->toArray());
     }
 
     private function getUrlToken (){

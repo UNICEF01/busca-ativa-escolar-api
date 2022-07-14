@@ -31,6 +31,7 @@ class Lgpd extends Mailable
       $headers->addTextHeader('message-id', '123456');
     });
 
-    return $this->view('vendor.notifications.email', $message->toArray());
+    
+return $this->view(['vendor.notifications.email', 'vendor.notifications.email-plain'], $message->toArray());
   }
 }

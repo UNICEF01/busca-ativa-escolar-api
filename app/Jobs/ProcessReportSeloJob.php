@@ -106,7 +106,6 @@ class ProcessReportSeloJob implements ShouldQueue
                         ]
                     )->count();
 
-                //Searching for cases cancelleds during or after rematricula
                 $createdBefore1NovAndCancelledAfter1Nov = Rematricula::whereHas('cases', function ($query) {
                     $query->whereIn('case_status', [ChildCase::STATUS_CANCELLED, ChildCase::STATUS_INTERRUPTED, ChildCase::STATUS_TRANSFERRED])
                         ->where([
@@ -128,6 +127,23 @@ class ProcessReportSeloJob implements ShouldQueue
                         ['tenant_id' , '=', $tenant->id],
                         ['is_completed', '=', true],
                     ])->count();
+
+                $rematriculas_com_canceladas = Rematricula::whereHas('cases', function ($query) {
+                    $query->where(['case_status' => 'in_progress'])
+                        ->orWhere(['cancel_reason' => 'city_transfer'])
+                        ->orWhere(['cancel_reason' => 'death'])
+                        ->orWhere(['cancel_reason' => 'not_found'])
+                        ->orWhere(['case_status' => 'completed'])
+                        ->orWhere(['case_status' => 'interrupted'])
+                        ->orWhere(['case_status' => 'transferred']);
+                })->where(
+                    [
+                        'tenant_id' => $tenant->id,
+                        'is_completed' => true
+                    ]
+                )
+                ->orderBy('completed_at', 'asc')
+                ->count();
 
                 array_push(
                     $cities,
@@ -244,7 +260,10 @@ class ProcessReportSeloJob implements ShouldQueue
                         'Concluídos' => $concluidos,
 
                         'CeA na Escola' => $obs1 + $obs2 + $obs3 + $obs4 + $concluidos,
-                        '% Atingimento da Meta' => $city->goal->goal > 0 ? ((($obs1 + $obs2 + $obs3 + $obs4 + $concluidos)-($city->goal->accumulated_ciclo1)) * 100) / $city->goal->goal : 0,
+
+                        'CeA na escola com cancelados' => $rematriculas_com_canceladas,
+
+                        '% Atingimento da Meta' => $city->goal->goal > 0 ? (($rematriculas_com_canceladas - $city->goal->accumulated_ciclo1) * 100) / $city->goal->goal : 0,
 
                         'ID-CIDADE' => $city->id,
 
@@ -282,7 +301,10 @@ class ProcessReportSeloJob implements ShouldQueue
                         'Cancelados' => '',
                         'Concluídos' => '',
                         'CeA na Escola' => '',
+                        'CeA na escola com cancelados' => '',
                         '% Atingimento da Meta' => '',
+                        'Criados antes do dia 31 OUT 2021 - Cancelados depois do dia 31 OUT 2021' => '',
+                        'Criados depois do dia 31 OUT 2021 - Cancelados depois do dia 31 OUT 2021' => ''
                     ]
                 );
             }
