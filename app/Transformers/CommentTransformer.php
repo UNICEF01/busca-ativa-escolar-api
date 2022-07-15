@@ -15,7 +15,9 @@ namespace BuscaAtivaEscolar\Transformers;
 
 
 use BuscaAtivaEscolar\Comment;
+use BuscaAtivaEscolar\NotificationCases;
 use League\Fractal\TransformerAbstract;
+use Carbon\Carbon;
 
 class CommentTransformer extends TransformerAbstract {
 
@@ -30,6 +32,9 @@ class CommentTransformer extends TransformerAbstract {
 	];
 
 	public function transform(Comment $comment) {
+		$commentIdInNotificationCasesTable = NotificationCases::select('comment_id')->where('comment_id', $comment->id)->first();
+		//2022-04-18 15:33:11
+		$comparativeDate = Carbon::createFromFormat('Y-m-d H:i:s', '2022-07-14 14:00:00');
 		return [
             'id' => $comment->id,
 		    'tenant_id' => $comment->tenant_id,
@@ -39,6 +44,8 @@ class CommentTransformer extends TransformerAbstract {
 			'message' => $comment->message,
 			'metadata' => $comment->metadata,
 			'created_at' => $comment->created_at ? $comment->created_at->toIso8601String() : null,
+			'dateLower' => $comment->created_at ? $comment->created_at->gt($comparativeDate): null,
+			'notification' => $commentIdInNotificationCasesTable,
 		];
 	}
 

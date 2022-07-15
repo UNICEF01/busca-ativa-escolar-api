@@ -76,23 +76,4 @@ class NotificationCasesController extends BaseController
         return response()->json($result, $result['status']);
     }
 
-    public function checkCommentary(Request $request)
-    {
-        $data = $request->only([
-            'comment_id'
-        ]);
-
-        $result = ['status' => 200];
-
-        try{
-            $result['data'] = $this->notificationCaseService->checkComment($data['comment_id']);
-        } catch(Exception $e){
-            $result = [
-                'status' => 500,
-                'error' => $e->getMessage()
-            ];
-        }
-        
-        return response()->json($result, $result['status']);
-    }
 }
