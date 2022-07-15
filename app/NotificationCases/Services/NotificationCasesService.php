@@ -70,7 +70,7 @@ class NotificationCasesService implements INotifications
         $checkUserPermission = $this->noticationsCaseRepository->find($id);
         if(\Auth::user()->tree_id != $checkUserPermission->users_tree_id)
             return false;
-            
+
         DB::beginTransaction();
 
         try{
@@ -95,15 +95,16 @@ class NotificationCasesService implements INotifications
         return $data[0]['tree_id'];
     }
 
-    public function findAllNotificationDataByUser(string $treeId): ?object
+    public function findAllNotificationDataByUser(): ?object
     {
-        $notificationData = $this->noticationsCaseRepository->findAll($treeId);
+        $notificationData = $this->noticationsCaseRepository->findAll(\Auth::user()->tree_id)->where('solved', 0);
         $result = [];
         $i = 0;
         foreach ($notificationData as $notification) {
             $user = User::select('id', 'name')->where('id', $notification->user_id)->get()->toArray();
             $link = ChildCase::select('child_id')->where('id', $notification->children_case_id)->get()->toArray();
             $result[$i]['id'] = $notification->id;
+            $result[$i]['notification'] = $notification->notification;
             $result[$i]['user_id'] = $user[0]['id']; 
             $result[$i]['user_name'] = $user[0]['name']; 
             $result[$i]['link'] = $link[0]['child_id']; 

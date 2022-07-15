@@ -59,19 +59,13 @@ class NotificationCasesController extends BaseController
         return response()->json($result, $result['status']);
     }
 
-    public function getList(Request $request)
+    public function getList()
     {
-        $data = $request->only([
-            'users_tree_id'
-        ]);
-
-        if(\Auth::user()->tree_id != $data['users_tree_id'])
-            return response()->json(['error' => 'Not allowed to see these notifications'], 403);
-         
+        
         $result = ['status' => 200];
 
         try{
-            $result['data'] = $this->notificationCaseService->findAllNotificationDataByUser($data['users_tree_id']);
+            $result['data'] = $this->notificationCaseService->findAllNotificationDataByUser();
         } catch(Exception $e){
             $result = [
                 'status' => 500,
