@@ -42,10 +42,13 @@ class NotificationCasesController extends BaseController
 
     public function update($id)
     {
+
         $result = ['status' => 200];
 
         try{
             $result['data'] = $this->notificationCaseService->resolveNotificationData($id);
+            if(!$result['data'])
+                return response()->json(['error' => 'Not allowed to solve this notification'], 403);
         } catch(Exception $e){
             $result = [
                 'status' => 500,
@@ -62,6 +65,9 @@ class NotificationCasesController extends BaseController
             'users_tree_id'
         ]);
 
+        if(\Auth::user()->tree_id != $data['users_tree_id'])
+            return response()->json(['error' => 'Not allowed to see these notifications'], 403);
+         
         $result = ['status' => 200];
 
         try{

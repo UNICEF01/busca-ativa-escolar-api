@@ -54,6 +54,6 @@ class NotificationCasesRepository extends BaseRepository
 
   public function update(array $attributes, string $id): bool
   {
-    return $this->model->find($id)->update('solved', 1);
+    return $this->model->find($id)->update(['solved' => 1]);
   }
 }

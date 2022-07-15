@@ -67,6 +67,10 @@ class NotificationCasesService implements INotifications
 
     public function resolveNotificationData(string $id): bool
     {
+        $checkUserPermission = $this->noticationsCaseRepository->find($id);
+        if(\Auth::user()->tree_id != $checkUserPermission->users_tree_id)
+            return false;
+            
         DB::beginTransaction();
 
         try{
