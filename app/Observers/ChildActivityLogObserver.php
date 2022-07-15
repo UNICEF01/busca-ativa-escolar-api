@@ -27,7 +27,7 @@ class ChildActivityLogObserver {
 		$group = $case->group;
         $ids = $group->getArrayOfParentsId();
         array_push($ids, $group->id);
-        $case->tree_id = implode(", ", $ids);
+        $case->tree_id = implode(", ", array_reverse($ids));
         $case->save();
 	}
 
