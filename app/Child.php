@@ -595,7 +595,7 @@ class Child extends Model implements Searchable, CanBeAggregated, CollectsDailyM
 
             if( $this->currentCase->group ){
                 $groups = new GroupService;
-                $data['tree_id'] = $groups->getTree($this->currentCase->group);
+                $data['tree_id'] = $groups->getTree($this->currentCase->group->id);
             }
         }
 

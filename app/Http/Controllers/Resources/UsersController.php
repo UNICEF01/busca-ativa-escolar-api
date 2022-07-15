@@ -36,7 +36,6 @@ use Maatwebsite\Excel\Excel as ExcelB;
 use BuscaAtivaEscolar\LGPD\Interfaces\ILgpd;
 use BuscaAtivaEscolar\Groups\GroupService;
 use Illuminate\Database\Eloquent\Builder;
-use DB;
 
 class UsersController extends BaseController
 {

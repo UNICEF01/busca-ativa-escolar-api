@@ -119,7 +119,6 @@ class CasesController extends BaseController
 
     public function update(ChildCase $case)
     {
-
         if (request()->has('detach_user')) {
             $groups = new GroupService;
             $case->fill([
