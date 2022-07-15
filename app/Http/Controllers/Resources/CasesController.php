@@ -121,12 +121,10 @@ class CasesController extends BaseController
     {
 
         if (request()->has('detach_user')) {
-            $newGroup = Group::where('id', '=', request('group_id'))->get()->first();
-            $ids = $newGroup->getArrayOfParentsId();
-            array_push($ids, $newGroup->id);
+            $groups = new GroupService;
             $case->fill([
-                'group_id' => $newGroup->id,
-                'tree_id' => implode(", ", array_reverse($ids))
+                'group_id' => request('group_id'),
+                'tree_id' => $groups->getTree(request('group_id'))
             ]);
             $case->save();
             if (request('detach_user') && $case->currentStep != null) {
@@ -153,7 +151,7 @@ class CasesController extends BaseController
                    $currentStep = $case->currentStep;
 
                    $assignedUser = $currentStep->assignedUser;
-
+                   $groups = new GroupService;
                    if($case->case_status == ChildCase::STATUS_IN_PROGRESS){
 
                        if( $assignedUser != null ){
@@ -166,7 +164,7 @@ class CasesController extends BaseController
                                }
 
                                $case->group_id = $newGroup->id;
-                               $case->tree_id = implode(", ", array_reverse($ids));
+                               $case->tree_id = $groups->getTree($newGroup->id);
                                $case->save();
                                $case->child->save(); //reindex
 
@@ -174,7 +172,7 @@ class CasesController extends BaseController
                        } else {
 
                            $case->group_id = $newGroup->id;
-                           $case->tree_id = implode(", ", array_reverse($ids));
+                           $case->tree_id = $groups->getTree($newGroup->id);
                            $case->save();
                            $case->child->save(); //reindex
 

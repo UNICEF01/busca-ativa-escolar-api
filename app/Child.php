@@ -15,7 +15,6 @@
 namespace BuscaAtivaEscolar;
 
 use BuscaAtivaEscolar\CaseSteps\Alerta;
-use BuscaAtivaEscolar\AlertCase;
 use BuscaAtivaEscolar\CaseSteps\CaseStep;
 use BuscaAtivaEscolar\Data\AlertCause;
 use BuscaAtivaEscolar\Data\CaseCause;
@@ -29,21 +28,17 @@ use BuscaAtivaEscolar\Reports\Interfaces\CanBeAggregated;
 use BuscaAtivaEscolar\Reports\Interfaces\CollectsDailyMetrics;
 use BuscaAtivaEscolar\Reports\Traits\AggregatedBySearchDocument;
 use BuscaAtivaEscolar\Scopes\TenantScope;
-use BuscaAtivaEscolar\Search\Search;
-use BuscaAtivaEscolar\Settings\TenantSettings;
 use BuscaAtivaEscolar\Traits\Data\IndexedByUUID;
 use BuscaAtivaEscolar\Traits\Data\Sortable;
 use BuscaAtivaEscolar\Traits\Data\TenantScopedModel;
 use BuscaAtivaEscolar\Search\Interfaces\Searchable;
 use Carbon\Carbon;
 use Geocoder\Geocoder;
-use Geocoder\Model\Address;
-use Geocoder\Provider\LocaleTrait;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Arr;
-use Log;
+use BuscaAtivaEscolar\Groups\GroupService;
 
 use BuscaAtivaEscolar\Traits\LocationHereTrait;
 
@@ -599,10 +594,8 @@ class Child extends Model implements Searchable, CanBeAggregated, CollectsDailyM
             $data['group_name'] = $this->currentCase->group ? $this->currentCase->group->name : null;
 
             if( $this->currentCase->group ){
-                $group = $this->currentCase->group;
-                $ids = $group->getArrayOfParentsId();
-                array_push($ids, $group->id);
-                $data['tree_id'] = implode(", ", array_reverse($ids));
+                $groups = new GroupService;
+                $data['tree_id'] = $groups->getTree($this->currentCase->group);
             }
         }
 

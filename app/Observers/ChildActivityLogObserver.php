@@ -16,6 +16,7 @@ namespace BuscaAtivaEscolar\Observers;
 
 use BuscaAtivaEscolar\ActivityLog;
 use BuscaAtivaEscolar\Child;
+use BuscaAtivaEscolar\Groups\GroupService;
 
 class ChildActivityLogObserver {
 
@@ -24,10 +25,8 @@ class ChildActivityLogObserver {
 	}
 	public function updated(Child $child) {
         $case = $child->cases()->get()[0];
-		$group = $case->group;
-        $ids = $group->getArrayOfParentsId();
-        array_push($ids, $group->id);
-        $case->tree_id = implode(", ", array_reverse($ids));
+		$groups = new GroupService;
+        $case->tree_id = $groups->getTree($case->group);
         $case->save();
 	}
 

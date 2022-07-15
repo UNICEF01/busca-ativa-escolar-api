@@ -26,7 +26,7 @@ use Illuminate\Database\Query\Builder;
 use League\Fractal\Pagination\IlluminatePaginatorAdapter;
 use BuscaAtivaEscolar\ChildCase;
 use Illuminate\Http\Request;
-use function Clue\StreamFilter\fun;
+use BuscaAtivaEscolar\Groups\GroupService;
 
 class AlertsController extends BaseController
 {
@@ -205,17 +205,11 @@ class AlertsController extends BaseController
         {
             $dados = request()->all();
             if (gettype($dados['data']) == 'array') {
-
-                $newGroup = Group::where('id', $dados['data'][1])
-                    ->get()
-                    ->first();
-                $ids = $newGroup->getArrayOfParentsId();
-                array_push($ids, $newGroup->id);
-
+                $groups = new GroupService;
                 ChildCase::where('child_id', $dados['id'])->update(
                     [
-                        'group_id' => $newGroup->id,
-                        'tree_id' => implode(", ", array_reverse($ids))
+                        'group_id' => $dados['data'][1],
+                        'tree_id' => $groups->getTree($dados['data'][1])
                     ]
                 );
 
@@ -239,21 +233,14 @@ class AlertsController extends BaseController
         {
             try
             {
-                $newGroup = Group::where('id', $request->input('newObject') ['id'])
-                    ->get()
-                    ->first();
-
-                $ids = $newGroup->getArrayOfParentsId();
-                array_push($ids, $newGroup->id);
-
                 $alertsArray = array_map(function ($alert){
                     return $alert['id'];
                 }, $request->input('alerts') );
-
+                $groups = new GroupService;
                 ChildCase::whereIn('child_id', $alertsArray)->update(
                     [
-                        'group_id' => $newGroup->id,
-                        'tree_id' => implode(", ", array_reverse($ids))
+                        'group_id' => $request->input('newObject') ['id'],
+                        'tree_id' => $groups->getTree($request->input('newObject') ['id'])
                     ]
                 );
 
