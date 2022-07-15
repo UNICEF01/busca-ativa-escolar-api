@@ -10,6 +10,8 @@ use Validator;
 use DB;
 use Exception;
 use Log;
+use BuscaAtivaEscolar\User;
+use Carbon\Carbon;
 
 class NotificationCasesService implements INotifications
 {
@@ -83,23 +85,28 @@ class NotificationCasesService implements INotifications
     public function getTrees(string $id): string
     {  
         $group = ChildCase::select('tree_id')->where('id', $id)->get();
-        $tree = explode(",",$group[0]->tree_id);
-        if(count($tree) == 2 || count($tree) == 1) return ltrim($tree[0]);
-        $treeId = count($tree) == 3 ? ltrim($tree[1]) : ltrim($tree[2]);
-        $data = DB::table('users')
-        ->select('tree_id',DB::raw('count(distinct tree_id) - count(distinct case when `type` = \'coordenador_operacional\' or `type` = \'supervisor_institucional\' then tree_id end) as total'))
-        ->where('tree_id','LIKE','%'.$treeId.'%')
-        ->groupBy('tree_id')
-        ->havingRaw('total = ?',[0])
-        ->orderByRaw('LENGTH(tree_id) DESC')
-        ->limit(1)
-        ->get()->toArray();
-        return $data[0]->tree_id;
+        $tree = explode(", ",$group[0]->tree_id);
+        if(count($tree) == 2 || count($tree) == 1) return $tree[0];
+        $data = User::select('tree_id')->where('group_id', $tree[2])->where('type', 'coordenador_operacional')->orWhere('type', 'supervisor_institucional')->distinct()->get()->toArray();
+        return $data[0]['tree_id'];
     }
 
     public function findAllNotificationDataByUser(string $treeId): ?object
     {
-        return $this->noticationsCaseRepository->findAll($treeId);
+        $notificationData = $this->noticationsCaseRepository->findAll($treeId);
+        $result = [];
+        $i = 0;
+        foreach ($notificationData as $notification) {
+            $user = User::select('id', 'name')->where('id', $notification->user_id)->get()->toArray();
+            $link = ChildCase::select('child_id')->where('id', $notification->children_case_id)->get()->toArray();
+            $result[$i]['id'] = $notification->id;
+            $result[$i]['user_id'] = $user[0]['id']; 
+            $result[$i]['user_name'] = $user[0]['name']; 
+            $result[$i]['link'] = $link[0]['child_id']; 
+            $result[$i]['create_date'] = $notification->created_at->format('d/m/Y');
+            $i++;
+        }
+        return (object) $result;
     }
 
     public function checkComment(string $id)

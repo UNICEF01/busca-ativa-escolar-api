@@ -47,7 +47,7 @@ class NotificationCasesRepository extends BaseRepository
     return $this->model->find($id)->delete();
   }
 
-  public function findAll(string $tree_id): ?Model
+  public function findAll(string $tree_id): ?object
   {
     return $this->model->where('users_tree_id', $tree_id)->get();
   }
