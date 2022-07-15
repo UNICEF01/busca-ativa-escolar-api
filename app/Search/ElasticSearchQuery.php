@@ -290,8 +290,10 @@ class ElasticSearchQuery
 	public function getGroups(array $params)
 	{	
 		$i = count($this->query['bool']['must']);
-		if($params['tree'] == 1)
+		if(array_key_exists('tree', $params) && $params['tree'] == 1)
 			return $this->query['bool']['must'][$i++]['match_phrase']['tree_id'] = $params['group_id'];
-		return $this->query['bool']['must'][$i++]['match']['group_id'] = $params['group_id'];
+		if(array_key_exists('group_id', $params) || array_key_exists('tree', $params) && $params['tree'] == 0)
+			return $this->query['bool']['must'][$i++]['match']['group_id'] = $params['group_id'];
+		return $this->query['bool']['must'][$i++]['match_phrase']['tree_id'] = \Auth::user()->group_id;
 	}
 }
