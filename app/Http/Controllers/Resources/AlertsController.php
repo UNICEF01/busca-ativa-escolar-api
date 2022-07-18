@@ -26,7 +26,6 @@ use Illuminate\Database\Query\Builder;
 use League\Fractal\Pagination\IlluminatePaginatorAdapter;
 use BuscaAtivaEscolar\ChildCase;
 use Illuminate\Http\Request;
-use BuscaAtivaEscolar\Groups\GroupService;
 
 class AlertsController extends BaseController
 {
@@ -205,11 +204,10 @@ class AlertsController extends BaseController
         {
             $dados = request()->all();
             if (gettype($dados['data']) == 'array') {
-                $groups = new GroupService;
                 ChildCase::where('child_id', $dados['id'])->update(
                     [
                         'group_id' => $dados['data'][1],
-                        'tree_id' => $groups->getTree($dados['data'][1])
+                        'tree_id' => implode(', ', Group::where('id', $dados['data'][1])->get()->first()->getArrayOfParentsId())
                     ]
                 );
 
@@ -236,11 +234,10 @@ class AlertsController extends BaseController
                 $alertsArray = array_map(function ($alert){
                     return $alert['id'];
                 }, $request->input('alerts') );
-                $groups = new GroupService;
                 ChildCase::whereIn('child_id', $alertsArray)->update(
                     [
                         'group_id' => $request->input('newObject') ['id'],
-                        'tree_id' => $groups->getTree($request->input('newObject') ['id'])
+                        'tree_id' => implode(', ', Group::where('id', $request->input('newObject') ['id'])->get()->first()->getArrayOfParentsId())
                     ]
                 );
 

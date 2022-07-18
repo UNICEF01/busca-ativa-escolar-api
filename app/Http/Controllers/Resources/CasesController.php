@@ -120,10 +120,9 @@ class CasesController extends BaseController
     public function update(ChildCase $case)
     {
         if (request()->has('detach_user')) {
-            $groups = new GroupService;
             $case->fill([
                 'group_id' => request('group_id'),
-                'tree_id' => $groups->getTree(request('group_id'))
+                'tree_id' => implode(', ', Group::where('id', request('group_id'))->get()->first()->getArrayOfParentsId())
             ]);
             $case->save();
             if (request('detach_user') && $case->currentStep != null) {
@@ -138,40 +137,30 @@ class CasesController extends BaseController
     {
         if ($request->has('newObject') and $request->has('cases')) {
             try {
-
-                $newGroup = Group::where('id', $request->input('newObject')['id'])->get()->first();
-                $ids = $newGroup->getArrayOfParentsId();
-                array_push($ids, $newGroup->id);
+                $treeIds = implode(', ', Group::where('id', $request->input('newObject')['id'])->get()->first()->getArrayOfParentsId());
 
                 $casesArray = array_map(function ($case) {
                     return $case['id'];
                 }, $request->input('cases'));
+
                 foreach ( ChildCase::whereIn('child_id', $casesArray)->get() as $case){
                    $currentStep = $case->currentStep;
-
                    $assignedUser = $currentStep->assignedUser;
-                   $groups = new GroupService;
                    if($case->case_status == ChildCase::STATUS_IN_PROGRESS){
-
                        if( $assignedUser != null ){
                            if(!$assignedUser->isRestrictedToUF()){
-
-                               $groupUser = $currentStep->assignedUser->group;
-                               $arrayOfParentsIdOfNewGroup = $newGroup->getArrayOfParentsId();
-                               if( $newGroup->id != $groupUser->id && !in_array($groupUser->id, $arrayOfParentsIdOfNewGroup) ){
+                               if($request->input('newObject')['id'] != $currentStep->assignedUser->group->id && 
+                               strpos($treeIds, $currentStep->assignedUser->group->id) === false)
                                    $currentStep->detachUser();
-                               }
-
-                               $case->group_id = $newGroup->id;
-                               $case->tree_id = $groups->getTree($newGroup->id);
-                               $case->save();
-                               $case->child->save(); //reindex
-
+                               
+                                $case->group_id = $request->input('newObject')['id'];
+                                $case->tree_id = $treeIds;
+                                $case->save();
+                                $case->child->save(); //reindex
                            }
                        } else {
-
-                           $case->group_id = $newGroup->id;
-                           $case->tree_id = $groups->getTree($newGroup->id);
+                           $case->group_id = $request->input('newObject')['id'];
+                           $case->tree_id = $treeIds;
                            $case->save();
                            $case->child->save(); //reindex
 

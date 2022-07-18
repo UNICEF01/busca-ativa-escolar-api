@@ -20,8 +20,6 @@ use BuscaAtivaEscolar\Group;
 use BuscaAtivaEscolar\Http\Controllers\BaseController;
 use BuscaAtivaEscolar\Serializers\SimpleArraySerializer;
 use BuscaAtivaEscolar\Transformers\GroupTransformer;
-use BuscaAtivaEscolar\Groups\GroupService;
-use Illuminate\Http\Request;
 
 class GroupsController extends BaseController
 {
@@ -105,13 +103,6 @@ class GroupsController extends BaseController
         });
 
         return response()->json(['data' => $groups]);
-    }
-
-    public function getGroupByUser(Request $request)
-    {
-        $data = $request->only(['name', 'tenant']);
-        $groups = new GroupService;
-        return response()->json(['data' => $groups->getGroup($data['name'], $data['tenant'])]);
     }
 
     public function findPrimaryByTenant()

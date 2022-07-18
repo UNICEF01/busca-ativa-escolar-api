@@ -192,17 +192,13 @@ class Group extends Model
 	}
 
     public function getArrayOfParentsId(){
-        $parentIds = [];
-        if($this->parent != null){
-            array_push($parentIds, $this->parent->id);
-            if($this->parent->parent != null){
-                array_push($parentIds, $this->parent->parent->id);
-                if($this->parent->parent->parent != null){
-                    array_push($parentIds, $this->parent->parent->parent->id);
-                }
-            }
-        }
-        return $parentIds;
+		if($this->parent['parent']['parent'])
+			return [$this->parent->parent->parent['id'], $this->parent->parent['id'], $this->parent['id'], $this->id];
+		if($this->parent['parent']) 
+			return [$this->parent->parent['id'], $this->parent['id'], $this->id];
+        if($this->parent)
+			return [$this->parent['id'], $this->id];
+        return [$this->id];
     }
 
 }

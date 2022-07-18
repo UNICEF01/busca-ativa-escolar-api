@@ -38,7 +38,6 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Arr;
-use BuscaAtivaEscolar\Groups\GroupService;
 
 use BuscaAtivaEscolar\Traits\LocationHereTrait;
 
@@ -594,8 +593,7 @@ class Child extends Model implements Searchable, CanBeAggregated, CollectsDailyM
             $data['group_name'] = $this->currentCase->group ? $this->currentCase->group->name : null;
 
             if( $this->currentCase->group ){
-                $groups = new GroupService;
-                $data['tree_id'] = $groups->getTree($this->currentCase->group->id);
+                $data['tree_id'] = implode(', ', Group::where('id', $this->currentCase->group->id)->get()->first()->getArrayOfParentsId());
             }
         }
 

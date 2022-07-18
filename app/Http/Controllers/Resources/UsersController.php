@@ -345,9 +345,8 @@ class UsersController extends BaseController
             if (Auth::user()
                 ->isRestrictedToTenant())
             {
-                $groups = new GroupService;
                 $input['tenant_id'] = Auth::user()->tenant_id;
-                $input['tree_id'] =  $groups->getTree($input['group_id']);
+                $input['tree_id'] =  implode(', ', Group::where('id', $input['group_id'])->get()->first()->getArrayOfParentsId());
             }
 
             // UF-bound users can only manage users within their UF
