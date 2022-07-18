@@ -305,7 +305,7 @@ class UsersController extends BaseController
                     }
                 }
             }
-            $input['tree_id'] = $groups->getTree($input['group_id']);
+            $input['tree_id'] = implode(', ', Group::where('id', $input['group_id'])->get()->first()->getArrayOfParentsId());
             $user->fill($input);
 
             // Block setting a tenant-scope user without a tenant ID set
