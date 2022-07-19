@@ -122,7 +122,7 @@ class CasesController extends BaseController
         if (request()->has('detach_user')) {
             $case->fill([
                 'group_id' => request('group_id'),
-                'tree_id' => implode(', ', Group::where('id', request('group_id'))->get()->first()->getArrayOfParentsId())
+                'tree_id' => implode(', ', Group::where('id', request('group_id'))->get()->first()->getTree())
             ]);
             $case->save();
             if (request('detach_user') && $case->currentStep != null) {
@@ -137,7 +137,7 @@ class CasesController extends BaseController
     {
         if ($request->has('newObject') and $request->has('cases')) {
             try {
-                $treeIds = implode(', ', Group::where('id', $request->input('newObject')['id'])->get()->first()->getArrayOfParentsId());
+                $treeIds = implode(', ', Group::where('id', $request->input('newObject')['id'])->get()->first()->getTree());
 
                 $casesArray = array_map(function ($case) {
                     return $case['id'];

@@ -207,7 +207,7 @@ class AlertsController extends BaseController
                 ChildCase::where('child_id', $dados['id'])->update(
                     [
                         'group_id' => $dados['data'][1],
-                        'tree_id' => implode(', ', Group::where('id', $dados['data'][1])->get()->first()->getArrayOfParentsId())
+                        'tree_id' => implode(', ', Group::where('id', $dados['data'][1])->get()->first()->getTree())
                     ]
                 );
 
@@ -237,7 +237,7 @@ class AlertsController extends BaseController
                 ChildCase::whereIn('child_id', $alertsArray)->update(
                     [
                         'group_id' => $request->input('newObject') ['id'],
-                        'tree_id' => implode(', ', Group::where('id', $request->input('newObject') ['id'])->get()->first()->getArrayOfParentsId())
+                        'tree_id' => implode(', ', Group::where('id', $request->input('newObject') ['id'])->get()->first()->getTree())
                     ]
                 );
 

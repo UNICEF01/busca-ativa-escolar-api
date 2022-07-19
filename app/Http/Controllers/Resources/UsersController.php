@@ -305,7 +305,7 @@ class UsersController extends BaseController
                     }
                 }
             }
-            $input['tree_id'] = implode(', ', Group::where('id', $input['group_id'])->get()->first()->getArrayOfParentsId());
+            $input['tree_id'] = implode(', ', Group::where('id', $input['group_id'])->get()->first()->getTree());
             $user->fill($input);
 
             // Block setting a tenant-scope user without a tenant ID set
@@ -346,7 +346,7 @@ class UsersController extends BaseController
                 ->isRestrictedToTenant())
             {
                 $input['tenant_id'] = Auth::user()->tenant_id;
-                $input['tree_id'] =  implode(', ', Group::where('id', $input['group_id'])->get()->first()->getArrayOfParentsId());
+                $input['tree_id'] =  implode(', ', Group::where('id', $input['group_id'])->get()->first()->getTree());
             }
 
             // UF-bound users can only manage users within their UF
