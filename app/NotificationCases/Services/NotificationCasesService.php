@@ -91,13 +91,19 @@ class NotificationCasesService implements INotifications
         $group = ChildCase::select('tree_id')->where('id', $id)->get();
         $tree = explode(", ",$group[0]->tree_id);
         if(count($tree) == 2 || count($tree) == 1) return $tree[0];
-        $data = User::select('tree_id')->where('group_id', $tree[2])->where('type', 'coordenador_operacional')->orWhere('type', 'supervisor_institucional')->distinct()->get()->toArray();
-        return $data[0]['tree_id'];
+        for($i = 2; $i >= 0; --$i){
+            $data = User::select('tree_id')->where('group_id', $tree[$i])->where(function ($query) {
+                $query->where('type', 'coordenador_operacional')
+                      ->orWhere('type', 'supervisor_institucional');
+            })->distinct()->first();
+            if($data)
+                return $data->tree_id;
+        }
     }
 
     public function findAllNotificationDataByUser(): ?object
     {
-        $notificationData = $this->noticationsCaseRepository->findAll(\Auth::user()->tree_id)->where('solved', 0);
+        $notificationData = $this->noticationsCaseRepository->findAll(\Auth::user()->tree_id)->where('solved', 0)->where('user_id', '<>', \Auth::user()->id);
         $result = [];
         $i = 0;
         foreach ($notificationData as $notification) {
