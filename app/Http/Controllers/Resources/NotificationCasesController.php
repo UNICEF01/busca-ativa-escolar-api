@@ -8,6 +8,7 @@ use BuscaAtivaEscolar\NotificationCases\Interfaces\INotifications;
 use Exception;
 use Illuminate\Http\Request;
 use Auth;
+use function Symfony\Component\Translation\t;
 
 class NotificationCasesController extends BaseController
 {
@@ -56,7 +57,7 @@ class NotificationCasesController extends BaseController
 
             if($result['data']){
                 $notification = $this->notificationCaseService->findNotificationData($data['id']);
-                Comment::post($notification->case->child, Auth::user(), $data['annotation']);
+                Comment::post($notification->case->child, Auth::user(), $data['annotation'], true);
             } else {
                 return response()->json(['error' => 'Not allowed to solve this notification'], 403);
             }

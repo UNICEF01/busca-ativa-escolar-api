@@ -46,6 +46,7 @@ class CommentTransformer extends TransformerAbstract {
 			'created_at' => $comment->created_at ? $comment->created_at->toIso8601String() : null,
 			'dateLower' => $comment->created_at ? $comment->created_at->gt($comparativeDate): null,
 			'notification' => $commentIdInNotificationCasesTable,
+            'is_from_notification_solved' => $comment->is_from_notification_solved ? true : false
 		];
 	}
 

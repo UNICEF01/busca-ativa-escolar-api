@@ -40,6 +40,7 @@ class Comment extends Model {
 
 		'message',
 		'metadata',
+        'is_from_notification_solved'
 	];
 
 	protected $casts = [
@@ -92,13 +93,14 @@ class Comment extends Model {
 	 * @param string $message The message body
 	 * @return Comment
 	 */
-	public static function post(Model $content, User $user, string $message) {
+	public static function post(Model $content, User $user, string $message, bool $isFromNotification = null) {
 		$comment = new Comment();
 		$comment->tenant_id = $content->tenant_id ?? null;
 		$comment->content_type = get_class($content);
 		$comment->content_id = $content->id;
 		$comment->author_id = $user->id;
 		$comment->message = $message;
+        $comment->is_from_notification_solved = $isFromNotification;
 		$comment->save();
 
 		return $comment;
