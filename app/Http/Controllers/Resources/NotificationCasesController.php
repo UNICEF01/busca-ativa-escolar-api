@@ -8,7 +8,7 @@ use BuscaAtivaEscolar\NotificationCases\Interfaces\INotifications;
 use Exception;
 use Illuminate\Http\Request;
 use Auth;
-use function Symfony\Component\Translation\t;
+
 
 class NotificationCasesController extends BaseController
 {

@@ -11,7 +11,6 @@ use DB;
 use Exception;
 use Log;
 use BuscaAtivaEscolar\User;
-use Carbon\Carbon;
 
 class NotificationCasesService implements INotifications
 {
@@ -88,11 +87,12 @@ class NotificationCasesService implements INotifications
 
     public function getTrees(string $id): string
     {  
-        $group = ChildCase::select('tree_id')->where('id', $id)->get();
-        $tree = explode(", ",$group[0]->tree_id);
-        if(count($tree) == 2 || count($tree) == 1) return $tree[0];
-        for($i = 2; $i >= 0; --$i){
-            $data = User::select('tree_id')->where('group_id', $tree[$i])->where(function ($query) {
+        if(strlen(\Auth::user()->tree_id) < 75)
+            return substr(\Auth::user()->tree_id, 0, 36);
+        $position = strlen(\Auth::user()->tree_id) == 150 ? 76 : 38;
+        for(;$position >= 0; $position = $position - 38){
+            $tree = substr(\Auth::user()->tree_id, $position, 36);
+            $data = User::select('tree_id')->where('group_id', $tree)->where(function ($query) {
                 $query->where('type', 'coordenador_operacional')
                       ->orWhere('type', 'supervisor_institucional');
             })->distinct()->first();
