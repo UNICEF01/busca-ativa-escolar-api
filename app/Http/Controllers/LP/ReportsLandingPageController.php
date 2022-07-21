@@ -18,6 +18,7 @@ use Carbon\Carbon;
 use Cache;
 use BuscaAtivaEscolar\Cache\CacheService;
 use DB;
+use Matrix\Exception;
 
 class ReportsLandingPageController extends BaseController
 {
@@ -193,4 +194,69 @@ class ReportsLandingPageController extends BaseController
             return $this->api_exception($ex);
         }
     }
+
+    public function report_by_dates(){
+
+        $ibge_id = request('ibge_id');
+        $initial_date = request('initial_date');
+        $final_date = request('final_date');
+
+        if (!$ibge_id || !$initial_date || !$final_date)
+            return $this->api_failure('invalid_request');
+
+        try {
+            Carbon::parse($initial_date);
+            Carbon::parse($final_date);
+        } catch(\Exception $e) {
+            return $this->api_failure('invalid_date');
+        }
+
+        $city = City::where('ibge_city_id', '=', $ibge_id)->get()->first();
+
+        if(!$city)
+            return $this->api_failure('invalid_city_id');
+
+        $tenant = Tenant::where('city_id', '=', $city->id)->get()->first();
+
+        if(!$tenant)
+            return $this->api_failure('there_is_no_adhesion');
+
+        $goal = $tenant->city->goal ? $tenant->city->goal->goal : null;
+
+        $daily_justified = DB::table('daily_metrics_consolidated')
+            ->select(DB::raw("DATE_FORMAT(date, '%Y-%m-%d') as date, sum(justified_cancelled) as value"))
+            ->where('tenant_id', '=', $tenant->id)
+            ->where('date', $initial_date)
+            ->where('date', $final_date)
+            ->groupBy('date');
+
+        $daily_justified_final = $daily_justified->get()->toArray();
+
+        $daily_justified_final = array_map(function ($e) {
+            $e->tipo = "Cancelamento após (re)matrícula";
+            return $e;
+        }, $daily_justified_final);
+
+        $daily_enrollment = DB::table('daily_metrics_consolidated')
+            ->select(DB::raw("DATE_FORMAT(date, '%Y-%m-%d') as date, sum(in_observation)+sum(in_school) as value"))
+            ->where('tenant_id', '=', $tenant->id)
+            ->where('date', $initial_date)
+            ->where('date', $final_date)
+            ->groupBy('date');
+        $daily_enrollment_final = $daily_enrollment->get()->toArray();
+
+        $daily_enrollment_final = array_map(function ($e) {
+            $e->tipo = "(Re)matrícula";
+            return $e;
+        }, $daily_enrollment_final);
+
+        return response()->json(
+            [
+                'goal' => $goal,
+                'data' => array_merge($daily_enrollment_final, $daily_justified_final)
+            ]
+        );
+
+    }
+
 }

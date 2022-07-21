@@ -258,6 +258,7 @@ Route::group(['prefix' => 'v1', 'middleware' => 'api'], function () {
 	Route::get('/lp/report/city', 'LP\ReportsLandingPageController@report_city');
 	Route::get('/lp/report/list/cities', 'LP\ReportsLandingPageController@list_cities');
 	Route::get('/lp/report/reach', 'LP\ReportsLandingPageController@reach');
+    Route::get('/lp/report/by_dates/city', 'LP\ReportsLandingPageController@report_by_dates');
 
 	//Open data to landing page pnad
 	Route::get('/pnad/report', 'LP\ReportsPnadController@pnad');
