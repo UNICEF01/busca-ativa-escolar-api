@@ -223,11 +223,12 @@ class ReportsLandingPageController extends BaseController
 
         $goal = $tenant->city->goal ? $tenant->city->goal->goal : null;
 
+        //first_date
+
         $daily_justified = DB::table('daily_metrics_consolidated')
             ->select(DB::raw("DATE_FORMAT(date, '%Y-%m-%d') as date, sum(justified_cancelled) as value"))
             ->where('tenant_id', '=', $tenant->id)
-            ->where('date', $initial_date)
-            ->where('date', $final_date)
+            ->where('date', '=', $initial_date)
             ->groupBy('date');
 
         $daily_justified_final = $daily_justified->get()->toArray();
@@ -240,8 +241,7 @@ class ReportsLandingPageController extends BaseController
         $daily_enrollment = DB::table('daily_metrics_consolidated')
             ->select(DB::raw("DATE_FORMAT(date, '%Y-%m-%d') as date, sum(in_observation)+sum(in_school) as value"))
             ->where('tenant_id', '=', $tenant->id)
-            ->where('date', $initial_date)
-            ->where('date', $final_date)
+            ->where('date', '=', $initial_date)
             ->groupBy('date');
         $daily_enrollment_final = $daily_enrollment->get()->toArray();
 
@@ -250,10 +250,41 @@ class ReportsLandingPageController extends BaseController
             return $e;
         }, $daily_enrollment_final);
 
+        //----
+
+        //last_date
+        $daily_justified2 = DB::table('daily_metrics_consolidated')
+            ->select(DB::raw("DATE_FORMAT(date, '%Y-%m-%d') as date, sum(justified_cancelled) as value"))
+            ->where('tenant_id', '=', $tenant->id)
+            ->where('date', '=', $final_date)
+            ->groupBy('date');
+
+        $daily_justified_final2 = $daily_justified2->get()->toArray();
+
+        $daily_justified_final2 = array_map(function ($e) {
+            $e->tipo = "Cancelamento após (re)matrícula";
+            return $e;
+        }, $daily_justified_final2);
+
+        $daily_enrollment2 = DB::table('daily_metrics_consolidated')
+            ->select(DB::raw("DATE_FORMAT(date, '%Y-%m-%d') as date, sum(in_observation)+sum(in_school) as value"))
+            ->where('tenant_id', '=', $tenant->id)
+            ->where('date', '=', $final_date)
+            ->groupBy('date');
+        $daily_enrollment_final2 = $daily_enrollment2->get()->toArray();
+
+        $daily_enrollment_final2 = array_map(function ($e) {
+            $e->tipo = "(Re)matrícula";
+            return $e;
+        }, $daily_enrollment_final2);
+
         return response()->json(
             [
                 'goal' => $goal,
-                'data' => array_merge($daily_enrollment_final, $daily_justified_final)
+                'data' => [
+                    'first_date' => array_merge($daily_enrollment_final, $daily_justified_final),
+                    'last_date' => array_merge($daily_enrollment_final2, $daily_justified_final2)
+                ]
             ]
         );
 
