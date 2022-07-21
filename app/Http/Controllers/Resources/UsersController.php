@@ -100,7 +100,7 @@ class UsersController extends BaseController
                 ->get('tree') == 1) $query->where('tree_id', 'Like', '%' . $this->currentUser()->group_id . '%');
             if (empty(request()
                 ->get('group_id')) && request()
-                ->get('tree') == 0) $query->where('group_id', request('group_id'));
+                ->get('tree') == 0) $query->where('group_id', \Auth::user()->group_id);
         }
         //filter for visitantes nacionais e estaduais
         if (!empty(request()
