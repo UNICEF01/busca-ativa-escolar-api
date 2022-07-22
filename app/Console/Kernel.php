@@ -24,6 +24,7 @@ class Kernel extends ConsoleKernel
         Commands\SpawnChildAlert::class,
         Commands\InspectChild::class,
         Commands\ReindexAllChildren::class,
+        Commands\ReindexChildrenTenant::class,
         Commands\ReindexAllCities::class,
         Commands\ReindexAllSchools::class,
         Commands\SnapshotDailyMetrics::class,
