@@ -70,15 +70,13 @@ class CitiesController extends BaseController  {
 
 		$tenant = Tenant::where('city_id', request('id'))->first();
 
-		if($tenant) {
+		if($tenant) 
 			return response()->json(['is_available' => false, 'stage' => 'tenant']);
-		}
 
 		$ongoingSignup = TenantSignup::where('city_id',  request('id'))->first();
 
-		if($ongoingSignup) {
+		if($ongoingSignup) 
 			return response()->json(['is_available' => false, 'stage' => 'sign_up']);
-		}
 
 		return response()->json(['is_available' => true]);
 

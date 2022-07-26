@@ -48,11 +48,11 @@ class ClasseController extends BaseController
     {
         $classes = Classe::find($id);
 
-        if (!$classes) {
+        if (!$classes) 
             return response()->json([
                 'message' => 'Registro não encontradod',
             ], 404);
-        }
+        
 
         $classes->fill($request->all());
         $classes->save();
