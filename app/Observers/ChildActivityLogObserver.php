@@ -25,7 +25,7 @@ class ChildActivityLogObserver {
 	}
 	public function updated(Child $child) {
         $case = $child->cases()->get()[0];
-        $case->tree_id = implode(', ', Group::where('id', $case->group)->get()->first()->getTree());
+        $case->tree_id = implode(', ',Group::where('id', $case->group->id)->get()->first()->getTree());
         $case->save();
 	}
 
