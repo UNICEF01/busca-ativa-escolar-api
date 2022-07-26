@@ -41,7 +41,7 @@ class AlertsController extends BaseController
                 ->join(DB::raw('children_cases cc'), 'children.id', '=', 'cc.child_id')
                 ->whereNull('cc.deleted_at')
                 ->where('cc.tenant_id', '=', $this->currentUser()->tenant_id);
-                if(request('tree') == 1)
+                if(request('tree') === 1)
                     $query->where('tree_id', 'Like', '%'.request('group_id').'%');
                 else
                     $query->where('group_id', '=', request('group_id'));
@@ -50,7 +50,7 @@ class AlertsController extends BaseController
                 ->join(DB::raw('children_cases cc'), 'children.id', '=', 'cc.child_id')
                 ->whereNull('cc.deleted_at')
                 ->where('cc.tenant_id', '=', $this->currentUser()->tenant_id);
-                if(request('tree') == 1)
+                if(request('tree') === 1)
                     $query->where('tree_id', 'Like', '%'.$this->currentUser()->group_id.'%');
                 else
                     $query->where('group_id', '=', $this->currentUser()->group_id);
@@ -83,45 +83,39 @@ class AlertsController extends BaseController
         }
         if (!empty(request()->get('submitter_name')) || property_exists($stdRequest, 'agent')) {
             $query->whereHas('submitter', function ($sq) use ($stdRequest) {
-                if (!empty(request()->get('submitter_name'))) {
+                if (!empty(request()->get('submitter_name'))) 
                     $sq->where('name', 'LIKE', '%' . request('submitter_name') . '%');
-                }
-                if (property_exists($stdRequest, 'agent')) {
+                if (property_exists($stdRequest, 'agent')) 
                     $sq->orderBy('name', $stdRequest->agent);
-                }
+                
             });
         }
 
         if (!empty(request()->get('neighborhood')) || property_exists($stdRequest, 'neighborhood')) {
             $query->whereHas('alert', function ($sq) use ($stdRequest) {
-                if (!empty(request()->get('neighborhood'))) {
+                if (!empty(request()->get('neighborhood'))) 
                     $sq->where('place_neighborhood', 'like', '%' . request('neighborhood') . '%');
-                }
-                if (property_exists($stdRequest, 'neighborhood')) {
+                if (property_exists($stdRequest, 'neighborhood')) 
                     $sq->orderBy('place_neighborhood', $stdRequest->neighborhood);
-                }
+                
             });
         }
 
         if (!empty(request()->get('city_name')) || property_exists($stdRequest, 'city_name')) {
             $query->whereHas('alert', function ($sq) use ($stdRequest) {
-                if (!empty(request()->get('city_name'))) {
+                if (!empty(request()->get('city_name'))) 
                     $sq->where('place_city_name', 'like', '%' . request('city_name') . '%');
-                }
-                if (property_exists($stdRequest, 'city_name')) {
+                if (property_exists($stdRequest, 'city_name')) 
                     $sq->orderBy('place_city_name', $stdRequest->city_name);
-                }
             });
         }
 
         if (!empty(request()->get('alert_cause_id'))  && request()->get('alert_cause_id') !== "" || property_exists($stdRequest, 'alert_cause_id')) {
             $query->whereHas('alert', function ($sq) use ($stdRequest) {
-                if (!empty(request()->get('alert_cause_id'))) {
+                if (!empty(request()->get('alert_cause_id'))) 
                     $sq->where('alert_cause_id', request('alert_cause_id'));
-                }
-                if (property_exists($stdRequest, 'alert_cause_id')) {
-                    $sq->orderBy('alert_cause_id', $stdRequest->alert_cause_id);
-                }
+                if (property_exists($stdRequest, 'alert_cause_id')) 
+                    $sq->orderBy('alert_cause_id', $stdRequest->alert_cause_id);          
             });
         }
 
@@ -147,16 +141,11 @@ class AlertsController extends BaseController
         {
 
             if ($child->alert_status != 'pending')
-            {
-                return response()
-                    ->json(['status' => 'failed', 'reason' => 'not_pending']);
-            }
+                return response()->json(['status' => 'failed', 'reason' => 'not_pending']);
 
-            $child->acceptAlert(request()
-                ->all());
+            $child->acceptAlert(request()->all());
 
-            return response()
-                ->json(['status' => 'ok']);
+            return response()->json(['status' => 'ok']);
         }
         catch(\Exception $ex)
         {
@@ -169,15 +158,12 @@ class AlertsController extends BaseController
         try
         {
             if ($child->alert_status != 'pending')
-            {
-                return response()
-                    ->json(['status' => 'failed', 'reason' => 'not_pending']);
-            }
+                return response()->json(['status' => 'failed', 'reason' => 'not_pending']);
+            
 
             $child->rejectAlert();
 
-            return response()
-                ->json(['status' => 'ok']);
+            return response()->json(['status' => 'ok']);
         }
         catch(\Exception $ex)
         {
@@ -188,8 +174,7 @@ class AlertsController extends BaseController
     public function get_mine()
     {
         $myAlerts = Child::with('alert')->orderBy('created_at', 'DESC')
-            ->where('alert_submitter_id', Auth::id())
-            ->get();
+            ->where('alert_submitter_id', Auth::id())->get();
 
         return fractal()
             ->collection($myAlerts)->transformWith(new AgentAlertTransformer())
@@ -203,19 +188,16 @@ class AlertsController extends BaseController
         try
         {
             $dados = request()->all();
-            if (gettype($dados['data']) == 'array') {
+            if (gettype($dados['data']) == 'array') 
                 ChildCase::where('child_id', $dados['id'])->update(
                     [
                         'group_id' => $dados['data'][1],
                         'tree_id' => implode(', ', Group::where('id', $dados['data'][1])->get()->first()->getTree())
                     ]
                 );
-
-            } else {
-
+            else 
                 Alerta::where('child_id', $dados['id'])->update([$dados['type'] => $dados['data']]);
 
-            }
             return response()->json(['status' => 'ok']);
         }
         catch(\Exception $ex)

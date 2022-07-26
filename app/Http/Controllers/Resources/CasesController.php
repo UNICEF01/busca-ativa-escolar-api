@@ -15,7 +15,6 @@
 namespace BuscaAtivaEscolar\Http\Controllers\Resources;
 
 
-use BuscaAtivaEscolar\Child;
 use BuscaAtivaEscolar\ChildCase;
 use BuscaAtivaEscolar\Group;
 use BuscaAtivaEscolar\Http\Controllers\BaseController;
@@ -23,7 +22,6 @@ use BuscaAtivaEscolar\Serializers\SimpleArraySerializer;
 use BuscaAtivaEscolar\Transformers\CaseTransformer;
 use BuscaAtivaEscolar\User;
 use Illuminate\Http\Request;
-use BuscaAtivaEscolar\Groups\GroupService;
 
 class CasesController extends BaseController
 {
