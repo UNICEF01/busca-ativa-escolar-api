@@ -41,7 +41,7 @@ class AlertsController extends BaseController
                 ->join(DB::raw('children_cases cc'), 'children.id', '=', 'cc.child_id')
                 ->whereNull('cc.deleted_at')
                 ->where('cc.tenant_id', '=', $this->currentUser()->tenant_id);
-                if(request('tree') === 1)
+                if(request('tree') === '1')
                     $query->where('tree_id', 'Like', '%'.request('group_id').'%');
                 else
                     $query->where('group_id', '=', request('group_id'));
@@ -50,7 +50,7 @@ class AlertsController extends BaseController
                 ->join(DB::raw('children_cases cc'), 'children.id', '=', 'cc.child_id')
                 ->whereNull('cc.deleted_at')
                 ->where('cc.tenant_id', '=', $this->currentUser()->tenant_id);
-                if(request('tree') === 1)
+                if(request('tree') === '1')
                     $query->where('tree_id', 'Like', '%'.$this->currentUser()->group_id.'%');
                 else
                     $query->where('group_id', '=', $this->currentUser()->group_id);
