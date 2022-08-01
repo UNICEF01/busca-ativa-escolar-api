@@ -49,7 +49,7 @@ class IdentityController extends BaseController
             'tenant_id' => $user->tenant_id,
             'uf' => $user->uf
         ];
-        if ($user->lgpd === 1 && $user->type  !== 'gestor_nacional') {
+        if ($user->lgpd === 1 && !in_array($user->type, array('gestor_nacional', 'superuser'))) {
             if ($this->lgpdService->checkAccess($attributes) === false)
                 return response()->json(['error' => 'lgpd_validation_fail', 'reason' => 'User/State/Tenant not accepted lgpd'], 500);
         }
