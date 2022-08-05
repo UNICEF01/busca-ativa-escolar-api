@@ -215,4 +215,14 @@ class Group extends Model
         return [$this->id];
     }
 
+	public function getTreeName(){
+		if($this->parent['parent']['parent'])
+			return [$this->parent->parent->parent['name'], $this->parent->parent['name'], $this->parent['name'], $this->id];
+		if($this->parent['parent']) 
+			return [$this->parent->parent['name'], $this->parent['name'], $this->id];
+        if($this->parent)
+			return [$this->parent['name'], $this->id];
+        return [$this->id];
+	}
+
 }

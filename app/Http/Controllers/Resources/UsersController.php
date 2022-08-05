@@ -35,7 +35,6 @@ use League\Fractal\Pagination\IlluminatePaginatorAdapter;
 use Mail;
 use Maatwebsite\Excel\Excel as ExcelB;
 use BuscaAtivaEscolar\LGPD\Interfaces\ILgpd;
-use BuscaAtivaEscolar\Groups\GroupService;
 use Illuminate\Database\Eloquent\Builder;
 
 class UsersController extends BaseController
@@ -257,7 +256,7 @@ class UsersController extends BaseController
                 if(!strpos($user->tree_id, $input['group_id'])){
                     $client = \Elasticsearch\ClientBuilder::create()->setHosts(['localhost:9200'])->build();
                     $updateRequest = ['index' => 'children', 'body' => ['query' => ['bool' => ['filter' => ['terms' => ['_id' => [],],],],], 'script' => ['inline' => "ctx._source.assigned_user_id = null; ctx._source.assigned_user_name = null; ctx._source.assigned_group_name = null"]]];
-                    $groups = implode(', ', Group::where('id', $input['group_id'])->get()->first()->getTree());
+                    $groups = implode(', ', Group::where('id', $input['group_id'])->get()->first()->getTreeName());
                     foreach (ChildCase::whereHas('currentStep', function (Builder $query) use ($user) {
                         $query->where('assigned_user_id', '=', $user->id);
                     })->get() as $case) {
