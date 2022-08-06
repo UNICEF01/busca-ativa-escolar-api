@@ -260,7 +260,7 @@ class UsersController extends BaseController
                     foreach (ChildCase::whereHas('currentStep', function (Builder $query) use ($user) {
                         $query->where('assigned_user_id', '=', $user->id);
                     })->get() as $case) {
-                        if(!strpos($case->tree_id, $groups)){
+                        if(strpos($case->tree_id, $groups) === false){
                             $case->currentStep->detachUser();
                             $updateRequest['body']['query']['bool']['filter']['terms']['_id'][] = $case->child->id;
 
