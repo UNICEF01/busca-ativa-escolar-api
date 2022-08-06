@@ -255,8 +255,8 @@ class UsersController extends BaseController
             if ($user->tenant_id && in_array($user->type, User::$TENANT_SCOPED_TYPES)) {
                 if(!strpos($user->tree_id, $input['group_id'])){
                     $client = \Elasticsearch\ClientBuilder::create()->setHosts(['localhost:9200'])->build();
-                    $updateRequest = ['index' => 'children', 'body' => ['query' => ['bool' => ['filter' => ['terms' => ['_id' => [],],],],], 'script' => ['inline' => "ctx._source.assigned_user_id = null; ctx._source.assigned_user_name = null; ctx._source.assigned_group_name = null"]]];
-                    $updateRequest2 = ['index' => 'children', 'body' => ['query' => ['bool' => ['filter' => ['terms' => ['_id' => [],],],],], 'script' => ['inline' => "ctx._source.assigned_user_id = '{$input['id']}'; ctx._source.assigned_user_name = '{$input['name']}'; ctx._source.assigned_group_name = '{$input['group_name']}'; ctx._source.assigned_group_id = '{$input['group_id']}'"]]];
+                    $updateRequest = ['conflicts' => 'proceed','index' => 'children', 'body' => ['query' => ['bool' => ['filter' => ['terms' => ['_id' => [],],],],], 'script' => ['inline' => "ctx._source.assigned_user_id = null; ctx._source.assigned_user_name = null; ctx._source.assigned_group_name = null"]]];
+                    $updateRequest2 = ['conflicts' => 'proceed','index' => 'children', 'body' => ['query' => ['bool' => ['filter' => ['terms' => ['_id' => [],],],],], 'script' => ['inline' => "ctx._source.assigned_user_id = '{$input['id']}'; ctx._source.assigned_user_name = '{$input['name']}'; ctx._source.assigned_group_name = '{$input['group_name']}'; ctx._source.assigned_group_id = '{$input['group_id']}'"]]];
                     $groups = implode(', ', Group::where('id', $input['group_id'])->get()->first()->getTree());
                     foreach (ChildCase::whereHas('currentStep', function (Builder $query) use ($user) {
                         $query->where('assigned_user_id', '=', $user->id);
