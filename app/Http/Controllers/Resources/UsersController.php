@@ -256,6 +256,7 @@ class UsersController extends BaseController
                 if(!strpos($user->tree_id, $input['group_id'])){
                     $client = \Elasticsearch\ClientBuilder::create()->setHosts(['localhost:9200'])->build();
                     $updateRequest = ['index' => 'children', 'body' => ['query' => ['bool' => ['filter' => ['terms' => ['_id' => [],],],],], 'script' => ['inline' => "ctx._source.assigned_user_id = null; ctx._source.assigned_user_name = null; ctx._source.assigned_group_name = null"]]];
+                    $updateRequest2 = ['index' => 'children', 'body' => ['query' => ['bool' => ['filter' => ['terms' => ['_id' => [],],],],], 'script' => ['inline' => "ctx._source.assigned_user_id = {$input['id']}; ctx._source.assigned_user_name = {$input['name']}; ctx._source.assigned_group_name = {$input['group_name']}; ctx._source.assigned_group_id = {$input['group_id']}"]]];
                     $groups = implode(', ', Group::where('id', $input['group_id'])->get()->first()->getTree());
                     foreach (ChildCase::whereHas('currentStep', function (Builder $query) use ($user) {
                         $query->where('assigned_user_id', '=', $user->id);
@@ -265,13 +266,15 @@ class UsersController extends BaseController
                             $case->currentStep->detachUser();
                         }
                         if(strpos($case->tree_id, $groups) !== false){
+                            $updateRequest2['body']['query']['bool']['filter']['terms']['_id'][] = $case->child->id;
                             $case->assigned_group_id = $input['group_id'];
-                            $case->assigned_group_name = $input['group_name'];
                             $case->save();
                             $case->child->save(); //reindex
+
                         }
                     }
                     $client->updateByQuery($updateRequest);
+                    $client->updateByQuery($updateRequest2);
                 }
             }
             $input['tree_id'] = implode(', ', Group::where('id', $input['group_id'])->get()->first()->getTree());
