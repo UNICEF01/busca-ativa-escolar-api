@@ -19,7 +19,7 @@ class Seal extends Mailable
         ->success()
         ->subject("Busca Ativa Escolar - Relatório Selo")
         ->line("Prezado(a),")
-        ->line("Este é o relatório do SELO exportado hoje às 12h.");
+        ->line("Este é o relatório do SELO exportado hoje às 09h.");
       $this->attach(storage_path("app/attachments/selo.csv"));
       $this->subject("Busca Ativa Escolar - Relatório Selo");
   
