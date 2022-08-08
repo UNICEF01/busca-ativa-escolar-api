@@ -253,11 +253,11 @@ class UsersController extends BaseController
                 $input['password'] = password_hash($input['password'], PASSWORD_DEFAULT);
             }
             if ($user->tenant_id && in_array($user->type, User::$TENANT_SCOPED_TYPES)) {
+                $client = \Elasticsearch\ClientBuilder::create()->setHosts(['localhost:9200'])->build();
+                $updateRequestRemoveUserFromCase = ['conflicts' => 'proceed','index' => 'children', 'body' => ['query' => ['bool' => ['filter' => ['terms' => ['_id' => [],],],],], 'script' => ['inline' => "ctx._source.assigned_user_id = null; ctx._source.assigned_user_name = null; ctx._source.assigned_group_name = null"]]];
+                $updateRequestMantainUserCase = ['conflicts' => 'proceed','index' => 'children', 'body' => ['query' => ['bool' => ['filter' => ['terms' => ['_id' => [],],],],], 'script' => ['inline' => "ctx._source.assigned_user_id = '{$input['id']}'; ctx._source.assigned_user_name = '{$input['name']}'; ctx._source.assigned_group_name = '{$input['group_name']}'; ctx._source.assigned_group_id = '{$input['group_id']}'"]]];
+                $groups = implode(', ', Group::where('id', $input['group_id'])->get()->first()->getTree());
                 if(!strpos($user->tree_id, $input['group_id'])){
-                    $client = \Elasticsearch\ClientBuilder::create()->setHosts(['localhost:9200'])->build();
-                    $updateRequest = ['conflicts' => 'proceed','index' => 'children', 'body' => ['query' => ['bool' => ['filter' => ['terms' => ['_id' => [],],],],], 'script' => ['inline' => "ctx._source.assigned_user_id = null; ctx._source.assigned_user_name = null; ctx._source.assigned_group_name = null"]]];
-                    $updateRequest2 = ['conflicts' => 'proceed','index' => 'children', 'body' => ['query' => ['bool' => ['filter' => ['terms' => ['_id' => [],],],],], 'script' => ['inline' => "ctx._source.assigned_user_id = '{$input['id']}'; ctx._source.assigned_user_name = '{$input['name']}'; ctx._source.assigned_group_name = '{$input['group_name']}'; ctx._source.assigned_group_id = '{$input['group_id']}'"]]];
-                    $groups = implode(', ', Group::where('id', $input['group_id'])->get()->first()->getTree());
                     foreach (ChildCase::whereHas('currentStep', function (Builder $query) use ($user) {
                         $query->where('assigned_user_id', '=', $user->id);
                     })->get() as $case) {
@@ -265,17 +265,16 @@ class UsersController extends BaseController
                             $updateRequest['body']['query']['bool']['filter']['terms']['_id'][] = $case->child->id;
                             $case->currentStep->detachUser();
                         }
-                        if(strpos($case->tree_id, $groups) !== false){
+                        if(strpos($case->tree_id, $groups) !== false && $case->tree_id !== $groups){
                             $updateRequest2['body']['query']['bool']['filter']['terms']['_id'][] = $case->child->id;
                             $case->assigned_group_id = $input['group_id'];
                             $case->save();
                             $case->child->save(); //reindex
-
                         }
-                    }
-                    $client->updateByQuery($updateRequest);
-                    $client->updateByQuery($updateRequest2);
+                    }  
                 }
+                $client->updateByQuery($updateRequestRemoveUserFromCase);
+                $client->updateByQuery($updateRequestMantainUserCase);
             }
             $input['tree_id'] = implode(', ', Group::where('id', $input['group_id'])->get()->first()->getTree());
             $user->fill($input);
@@ -289,7 +288,7 @@ class UsersController extends BaseController
 
             // Refresh user UF (used for filtering) (maybe parent tenant changed?)
             if (!$user->uf && $user->tenant_id) {
-                $user->uf = $us->tenant->uf;
+                $user->uf = $user->tenant->uf;
                 $user->save();
             }
 
