@@ -262,11 +262,11 @@ class UsersController extends BaseController
                         $query->where('assigned_user_id', '=', $user->id);
                     })->get() as $case) {
                         if(strpos($case->tree_id, $groups) === false){
-                            $updateRequest['body']['query']['bool']['filter']['terms']['_id'][] = $case->child->id;
+                            $updateRequestRemoveUserFromCase['body']['query']['bool']['filter']['terms']['_id'][] = $case->child->id;
                             $case->currentStep->detachUser();
                         }
                         if(strpos($case->tree_id, $groups) !== false && $case->tree_id !== $groups){
-                            $updateRequest2['body']['query']['bool']['filter']['terms']['_id'][] = $case->child->id;
+                            $updateRequestMantainUserCase['body']['query']['bool']['filter']['terms']['_id'][] = $case->child->id;
                             $case->assigned_group_id = $input['group_id'];
                             $case->save();
                             $case->child->save(); //reindex
