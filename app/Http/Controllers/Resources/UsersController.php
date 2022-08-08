@@ -35,7 +35,7 @@ use League\Fractal\Pagination\IlluminatePaginatorAdapter;
 use Mail;
 use Maatwebsite\Excel\Excel as ExcelB;
 use BuscaAtivaEscolar\LGPD\Interfaces\ILgpd;
-use Illuminate\Database\Eloquent\Builder;
+use BuscaAtivaEscolar\Groups\GroupService;
 
 class UsersController extends BaseController
 {
@@ -253,28 +253,9 @@ class UsersController extends BaseController
                 $input['password'] = password_hash($input['password'], PASSWORD_DEFAULT);
             }
             if ($user->tenant_id && in_array($user->type, User::$TENANT_SCOPED_TYPES)) {
-                $client = \Elasticsearch\ClientBuilder::create()->setHosts(['localhost:9200'])->build();
-                $updateRequestRemoveUserFromCase = ['conflicts' => 'proceed','index' => 'children', 'body' => ['query' => ['bool' => ['filter' => ['terms' => ['_id' => [],],],],], 'script' => ['inline' => "ctx._source.assigned_user_id = null; ctx._source.assigned_user_name = null; ctx._source.assigned_group_name = null"]]];
-                $updateRequestMantainUserCase = ['conflicts' => 'proceed','index' => 'children', 'body' => ['query' => ['bool' => ['filter' => ['terms' => ['_id' => [],],],],], 'script' => ['inline' => "ctx._source.assigned_user_id = '{$input['id']}'; ctx._source.assigned_user_name = '{$input['name']}'; ctx._source.assigned_group_name = '{$input['group_name']}'; ctx._source.assigned_group_id = '{$input['group_id']}'"]]];
-                $groups = implode(', ', Group::where('id', $input['group_id'])->get()->first()->getTree());
-                if(!strpos($user->tree_id, $input['group_id'])){
-                    foreach (ChildCase::whereHas('currentStep', function (Builder $query) use ($user) {
-                        $query->where('assigned_user_id', '=', $user->id);
-                    })->get() as $case) {
-                        if(strpos($case->tree_id, $groups) === false){
-                            $updateRequestRemoveUserFromCase['body']['query']['bool']['filter']['terms']['_id'][] = $case->child->id;
-                            $case->currentStep->detachUser();
-                        }
-                        if(strpos($case->tree_id, $groups) !== false && $case->tree_id !== $groups){
-                            $updateRequestMantainUserCase['body']['query']['bool']['filter']['terms']['_id'][] = $case->child->id;
-                            $case->assigned_group_id = $input['group_id'];
-                            $case->save();
-                            $case->child->save(); //reindex
-                        }
-                    }  
-                }
-                $client->updateByQuery($updateRequestRemoveUserFromCase);
-                $client->updateByQuery($updateRequestMantainUserCase);
+                $userAssingedCase = new GroupService;
+                $userAssingedCase = $userAssingedCase->changeAssignedUserCaseData(['user_id' => $input['id'], 'name' => $input['name'], 'group_id' => $input['group_id'], 'group_name' => $input['group_name']]);
+
             }
             $input['tree_id'] = implode(', ', Group::where('id', $input['group_id'])->get()->first()->getTree());
             $user->fill($input);
