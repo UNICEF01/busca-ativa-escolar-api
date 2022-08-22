@@ -340,11 +340,15 @@ class Tenant extends Model
 
 		$primaryGroup = Group::createDefaultPrimaryGroup($tenant);
 		$dre = Group::createThree($tenant, 'DRE 1', $primaryGroup->id);
-		$secretaria = Group::createThree($tenant, 'Secretaria Municipal de Educação', $dre->id);
+		$secretariaMunicipalDeEducacao = Group::createThree($tenant, 'Secretaria Municipal de Educação', $dre->id);
+		Group::createThree($tenant, 'Secretaria Municipal de Saúde', $dre->id);
+		Group::createThree($tenant, 'Secretaria Municipal de Assitência Social', $dre->id);
+		Group::createThree($tenant, 'Conselho Tutelar', $dre->id);
+		Group::createThree($tenant, 'CRAS, CREAS e Demais Serviços da Assistência 1', $dre->id);
 		$schools = School::where('city_id', $city->id)->get()->all();
 
 		foreach ($schools as $school) {
-			$school = Group::createThree($tenant, $school->name, $secretaria->id);
+			Group::createThree($tenant, $school->name, $secretariaMunicipalDeEducacao->id);
 		}
 
 		$politicalAdmin->lgpd = 0;

@@ -30,12 +30,10 @@ use BuscaAtivaEscolar\Utils;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Mail;
-use Maatwebsite\Excel\Excel as ExcelB;
 use BuscaAtivaEscolar\Exports\TenantSignupExport;
 use BuscaAtivaEscolar\LGPD\Interfaces\ILgpd;
 use BuscaAtivaEscolar\LGPD\Interfaces\IMail;
 use BuscaAtivaEscolar\Mail\MayorSignupConfirmation;
-use Illuminate\Http\Request;
 
 class TenantSignupController extends BaseController
 {
@@ -45,13 +43,11 @@ class TenantSignupController extends BaseController
 		'image/png'
 	];
 
-	private $excel;
 	protected $lgpdService;
 	protected $lgpdMailService;
 
-	public function __construct(ExcelB $excel, ILgpd $lgpdService, IMail $lgpdMailService)
+	public function __construct(ILgpd $lgpdService, IMail $lgpdMailService)
 	{
-		$this->excel = $excel;
 		$this->lgpdService = $lgpdService;
 		$this->lgpdMailService = $lgpdMailService;
 	}
@@ -237,7 +233,7 @@ class TenantSignupController extends BaseController
 		}
 	}
 
-	public function accept(TenantSignup $signup, City $city, Request $request)
+	public function accept(TenantSignup $signup, City $city)
 	{
 		try {
 			$cityName = $city->findByID($signup->city_id);
@@ -487,7 +483,7 @@ class TenantSignupController extends BaseController
 		}
 	}
 
-	public function checkAccepted(TenantSignup $signup, Request $request)
+	public function checkAccepted(TenantSignup $signup)
 	{
 		$result = ['status' => 200];
 		try {
