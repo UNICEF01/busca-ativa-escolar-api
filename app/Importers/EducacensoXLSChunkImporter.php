@@ -101,7 +101,7 @@ class EducacensoXLSChunkImporter
                 return;
             }
 
-            if($startRow == 0 AND $this->isHeaderEducacenso($records[12]) == false){
+            if($startRow == 3 AND $this->isHeaderEducacenso($records[12]) == false){
                 throw new \Exception("Cabeçalho padrão do Educacenso não localizado");
             }
 
