@@ -102,8 +102,7 @@ class CacheService
 
         while ($l <= $r) {
             $m = $l + (int)(($r - $l) / 2);
-            $string = $arr[$m][0] == '&' ? substr($arr[$m], 1, 2) : substr($arr[$m], 0, 2);
-            $res = strcmp($target, $string);
+            $res = strcmp($target, $arr[$m]);
 
             if ($res == 0)
                 return $m;
@@ -150,48 +149,52 @@ class CacheService
             'SE' => ['026', 'Sergipe'],
             'TO' => ['027', 'Tocantins']
         ];
+        $ufs_keys = array_keys($ufs);
         $cache = Cache::get("map_cache");
-        $cache = explode("-BR", $cache);
-        $states = explode(" uf ", $cache[0]);
-        $country = explode(" ", $cache[1]);
-        $country = explode("&", $country[0]);
-        $k = 0;
+        $cache = explode("&", $cache);
+        $data = [];
         $all_values = [];
-        if ($uf != null and $uf != "null") {
-            $index =  $this->binarySerchString($states, $uf);
-            $state = explode("city", $states[$index]);
-            for ($i = 0; $i < count($state) - 1; ++$i) {
-                array_push($all_values, explode("&", $state[$i])[4]);
-                $data[$k++] = [
-                    "id" => explode("&", $state[$i])[2],
-                    "value" => explode("&", $state[$i])[4],
-                    "name_city" => utf8_encode(explode("&", $state[$i])[3]),
+        if ($uf != null and $uf != "null"){
+            $index = $this->binarySerchString($ufs_keys, $uf);
+            $cache = explode('=', explode(']', $cache[$index])[1]);
+            $j = 0;
+            for ($i = 1; $i < count($cache) - 1; ++$i) {
+                $result = explode("*", $cache[$i]);
+                array_push($all_values, (int)$result[2]);
+                $data[$j++] = [
+                    "id" => $result[0],
+                    "value" => trim($result[2]),
+                    "name_city" => $result[1],
                     "showLabel" => 0,
                 ];
             }
-        } else {
-            $k = 0;
-            $j = 2;
-            for ($i = 1; $i < count($country) - 2 && $j < count($country) - 1; $i += 2, $j += 2) {
-                array_push($all_values, $country[$j]);
-                $name = $country[$i];
-                if ($country[$j] > 0) {
-                    $data[$k++] = [
+        }
+        else{
+            $dataCountry = [];
+            for($i = 0; $i < count($cache) - 1; ++$i){
+                $cacheData = explode(']', $cache[$i]);
+                $value = explode(' ', $cacheData[2]);
+                array_push($dataCountry, [$cacheData[0], $value[1]]);
+            }
+            $j = 0;
+            for($i = 0; $i < count($dataCountry); ++$i){
+                if($dataCountry[$i][1] > 0){
+                    array_push($all_values, $dataCountry[$i][1]);
+                    $name = $dataCountry[$i][0];
+                    $data[$j++] = [
                         "place_uf" => $name,
-                        "value" => $country[$j],
+                        "value" =>$dataCountry[$i][1],
                         "id" => $ufs[$name][0],
                         "displayValue" => $name,
                         "showLabel" => 1,
                         "simple_name" => strtolower($name)
                     ];
-                }
+                }  
             }
         }
-
         usort($data, function ($item1, $item2) {
             return $item2['value'] <=> $item1['value'];
         });
-
         $final_data = [
             'colors' => [
                 [
