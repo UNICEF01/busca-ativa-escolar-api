@@ -162,7 +162,7 @@ class CacheService
                 $result = explode("*", $cache[$i]);
                 array_push($all_values, (int)$result[2]);
                 $data[$j++] = [
-                    "id" => $result[0],
+                    "id" => trim($result[0]),
                     "value" => trim($result[2]),
                     "name_city" => $result[1],
                     "showLabel" => 0,
