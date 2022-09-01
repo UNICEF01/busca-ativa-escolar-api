@@ -351,7 +351,7 @@ class Tenant extends Model
 			Group::createThree($tenant, $school->name, $secretariaMunicipalDeEducacao->id);
 		}
 
-		$politicalAdmin->lgpd = 0;
+		$politicalAdmin->lgpd = 1;
 		$operationalAdmin->lgpd = 0;
 
 		$politicalAdmin->group_id = $primaryGroup->id;
