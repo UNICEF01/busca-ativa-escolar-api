@@ -30,8 +30,6 @@ class LgpdMailService implements IMail
 
 
     for ($i = 0; $i < count($result); $i++) {
-      if ($result[$i]->getEvent() === 'accepted')
-        $accepted = array($result[$i]);
       if ($result[$i]->getEvent() === 'delivered')
         $delivered = array($result[$i]);
       if ($result[$i]->getEvent() === 'opened')
@@ -43,7 +41,6 @@ class LgpdMailService implements IMail
 
     $attributes = [
       'mail' => $mail,
-      'send_date' => Carbon::createFromTimestamp($accepted[0]->getTimestamp())->toDateTimeString(),
       'delivery_date' => (isset($delivered) && !empty($delivered)) ? Carbon::createFromTimestamp($delivered[0]->getTimestamp())->toDateTimeString() : null,
       'open_date' => (isset($opened) && !empty($opened))  ? Carbon::createFromTimestamp($opened[0]->getTimestamp())->toDateTimeString() : null,
       'click_date' => (isset($clicked) && !empty($clicked))  ? Carbon::createFromTimestamp($clicked[0]->getTimestamp())->toDateTimeString() : null,
