@@ -33,7 +33,6 @@ class LgpdMailRepository extends BaseRepository
 
     $dataLgpd = $this->model->where('plataform_id', $id)->first();
     $dataLgpd->mail = $attributes['mail'];
-    $dataLgpd->send_date = $attributes['send_date'];
     $dataLgpd->delivery_date = $attributes['delivery_date'];
     $dataLgpd->open_date = $attributes['open_date'];
     $dataLgpd->click_date = $attributes['click_date'];
