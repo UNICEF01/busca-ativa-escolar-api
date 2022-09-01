@@ -439,7 +439,7 @@ class Tenant extends Model
 			throw new ValidationException('invalid_political_admin_data', $validator);
 		}
 
-		$politicalAdmin->lgpd = 0;
+		$politicalAdmin->lgpd = 1;
 
 		//cria a estrutura do novo coordenador se existir
 		if (sizeof($operationalAdminData) > 0) {
