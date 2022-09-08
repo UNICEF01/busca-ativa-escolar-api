@@ -26,34 +26,36 @@ class GroupService
                 ]
             ]
         ];
-        $user = $input['user_id'];
-        $idsAndTreeIdsOfCases = array_map(function ($data) {
-            return $data['_source'];
-        }, $client->search($params)['hits']['hits']);
+        if(!empty($client->search($params))){
+            $user = $input['user_id'];
+            $idsAndTreeIdsOfCases = array_map(function ($data) {
+                return $data['_source'];
+            }, $client->search($params)['hits']['hits']);
 
-        $groups = implode(', ', Group::where('id', $input['group_id'])->get()->first()->getTree());
-        $idsToRemoveUser = [];
-        $updateRequestRemoveUserFromCase = ['conflicts' => 'proceed','index' => 'children', 'body' => ['query' => ['bool' => ['filter' => ['terms' => ['_id' => [],],],],], 'script' => ['inline' => "ctx._source.assigned_user_id = null; ctx._source.assigned_user_name = null; ctx._source.assigned_group_name = null"]]];
-        $updateRequestMantainUserCase = ['conflicts' => 'proceed','index' => 'children', 'body' => ['query' => ['bool' => ['filter' => ['terms' => ['_id' => [],],],],], 'script' => ['inline' => "ctx._source.assigned_group_name = '{$input['group_name']}'; ctx._source.assigned_group_id = '{$input['group_id']}'"]]];
-        foreach($idsAndTreeIdsOfCases as $data){
+            $groups = implode(', ', Group::where('id', $input['group_id'])->get()->first()->getTree());
+            $idsToRemoveUser = [];
+            $updateRequestRemoveUserFromCase = ['conflicts' => 'proceed','index' => 'children', 'body' => ['query' => ['bool' => ['filter' => ['terms' => ['_id' => [],],],],], 'script' => ['inline' => "ctx._source.assigned_user_id = null; ctx._source.assigned_user_name = null; ctx._source.assigned_group_name = null"]]];
+            $updateRequestMantainUserCase = ['conflicts' => 'proceed','index' => 'children', 'body' => ['query' => ['bool' => ['filter' => ['terms' => ['_id' => [],],],],], 'script' => ['inline' => "ctx._source.assigned_group_name = '{$input['group_name']}'; ctx._source.assigned_group_id = '{$input['group_id']}'"]]];
+            foreach($idsAndTreeIdsOfCases as $data){
                if(strpos($data['tree_id'], $groups) !== false)
                  $updateRequestMantainUserCase['body']['query']['bool']['filter']['terms']['_id'][] = $data['id'];
                else{
                  $updateRequestRemoveUserFromCase['body']['query']['bool']['filter']['terms']['_id'][] = $data['id'];
                  array_push($idsToRemoveUser, $data['id']);
                }
-        }
-        sort($idsToRemoveUser);
-        foreach (ChildCase::whereHas('currentStep', function (Builder $query) use ($user) {
-            $query->where('assigned_user_id', '=', $user);
-        })->get() as $case) {
-            if($this->binarySearch($idsToRemoveUser, $case->child->id)){
-                $case->currentStep->detachUser();
-                $case->save();
             }
+            sort($idsToRemoveUser);
+            foreach (ChildCase::whereHas('currentStep', function (Builder $query) use ($user) {
+                $query->where('assigned_user_id', '=', $user);
+            })->get() as $case) {
+                if($this->binarySearch($idsToRemoveUser, $case->child->id)){
+                    $case->currentStep->detachUser();
+                    $case->save();
+                }
+            }
+            $client->updateByQuery($updateRequestRemoveUserFromCase);
+            $client->updateByQuery($updateRequestMantainUserCase);
         }
-        $client->updateByQuery($updateRequestRemoveUserFromCase);
-        $client->updateByQuery($updateRequestMantainUserCase);
     }
 
     public function binarySearch(array $arr, string $target): bool
