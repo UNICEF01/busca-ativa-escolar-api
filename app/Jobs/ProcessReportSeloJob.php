@@ -166,7 +166,7 @@ class ProcessReportSeloJob implements ShouldQueue
 
                         'Meta de (Re)matrículas acumuladas para a primeira medição (31/03/2023) do Selo edição 21/24' => $city->goal->accumulated_ciclo1+$city->goal->goal,
 
-                        'Total de novas (Re)matrículas realizadas até o momento, válidas para o cumprimento das metas do Selo edição 21/24' => ($obs1 + $obs2 + $obs3 + $obs4 + $concluidos)-($city->goal->accumulated_ciclo1),
+                        'Total de novas (Re)matrículas realizadas até o momento, válidas para o cumprimento das metas do Selo edição 21/24' => $rematriculas_com_canceladas - $city->goal->accumulated_ciclo1,
 
                         'Aprovados' =>
                         DB::table('children')
