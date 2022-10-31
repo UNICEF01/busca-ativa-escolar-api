@@ -149,47 +149,42 @@ class CacheService
             'SE' => ['026', 'Sergipe'],
             'TO' => ['027', 'Tocantins']
         ];
-        $ufs_keys = array_keys($ufs);
-        $cache = Cache::get("map_cache");
-        $cache = explode("&", $cache);
         $data = [];
         $all_values = [];
-        if ($uf != null and $uf != "null"){
-            $index = $this->binarySerchString($ufs_keys, $uf);
-            $cache = explode('=', explode(']', $cache[$index])[1]);
-            $j = 0;
-            for ($i = 1; $i < count($cache) - 1; ++$i) {
-                $result = explode("*", $cache[$i]);
-                array_push($all_values, (int)$result[2]);
+        $j = 0;
+        if ($uf != null and $uf != "null") {
+            $key = "map_" . $uf;
+            $cache = Cache::get($key);
+            $cache = explode("\n", $cache);
+            for ($i = 0; $i < count($cache) - 2; ++$i) {
+                $result = explode("-", $cache[$i]);
+                $name = utf8_encode(trim($result[1]));
+                array_push($all_values, (int)trim($result[2]));
                 $data[$j++] = [
                     "id" => trim($result[0]),
                     "value" => trim($result[2]),
-                    "name_city" => $result[1],
+                    "name_city" => $name,
                     "showLabel" => 0,
                 ];
             }
-        }
-        else{
-            $dataCountry = [];
-            for($i = 0; $i < count($cache) - 1; ++$i){
-                $cacheData = explode(']', $cache[$i]);
-                $value = explode(' ', $cacheData[2]);
-                array_push($dataCountry, [$cacheData[0], $value[1]]);
-            }
-            $j = 0;
-            for($i = 0; $i < count($dataCountry); ++$i){
-                if($dataCountry[$i][1] > 0){
-                    array_push($all_values, $dataCountry[$i][1]);
-                    $name = $dataCountry[$i][0];
+        } else {
+            $cache = Cache::get("map_BR");
+            $cache = explode("\n", $cache);
+            for ($i = 0; $i < count($cache) - 1; ++$i) {
+                $result = explode("-", $cache[$i]);
+                $name = trim($result[0]);
+                if ($result[1] > 0){
+                    array_push($all_values, (int)trim($result[1]));
                     $data[$j++] = [
                         "place_uf" => $name,
-                        "value" =>$dataCountry[$i][1],
-                        "id" => $ufs[$name][0],
+                        "value" => trim($result[1]),
+                        "id" => $ufs[trim($name)][0],
                         "displayValue" => $name,
                         "showLabel" => 1,
                         "simple_name" => strtolower($name)
                     ];
-                }  
+                }
+                
             }
         }
         usort($data, function ($item1, $item2) {
