@@ -314,6 +314,22 @@ abstract class CaseStep extends Model {
 		return trans('case_step.name.' . $this->step_type, ['report_index' => ($this->report_index ?? '')]);
 	}
 
+	public function rename(){
+		if ($this->report_index) {
+			return [$this->report_index.'a_observacao', $this->report_index.'ª Observação'];
+		}
+		else{
+			$step = explode("\\", $this->step_type);
+			return [
+				'Alerta' => ['Alerta', 'alerta'],
+				'Pesquisa' => ['Pesquisa','pesquisa'],
+				'AnaliseTecnica' => ['Análise Técnica', 'analise_tecnica'],
+				'GestaoDoCaso' => ['Gestão do Caso','gestao_do_caso'],
+				'Rematricula' => ['(Re)matrícula', 'rematricula']
+			][$step];
+		}
+	}
+
 	/**
 	 * Gets the slug that identifies this step
 	 * @return string
