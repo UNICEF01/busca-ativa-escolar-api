@@ -326,7 +326,7 @@ abstract class CaseStep extends Model {
 				'AnaliseTecnica' => ['Análise Técnica', 'analise_tecnica'],
 				'GestaoDoCaso' => ['Gestão do Caso','gestao_do_caso'],
 				'Rematricula' => ['(Re)matrícula', 'rematricula']
-			][$step];
+			][$step[2]];
 		}
 	}
 
