@@ -5,7 +5,6 @@ namespace BuscaAtivaEscolar\Http\Controllers\Bar;
 use Auth;
 use BuscaAtivaEscolar\Child;
 use BuscaAtivaEscolar\City;
-use BuscaAtivaEscolar\Goal;
 use BuscaAtivaEscolar\Http\Controllers\BaseController;
 use BuscaAtivaEscolar\CaseSteps\Rematricula;
 use BuscaAtivaEscolar\Tenant;
