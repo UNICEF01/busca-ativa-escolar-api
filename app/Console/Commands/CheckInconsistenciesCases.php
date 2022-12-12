@@ -92,7 +92,7 @@ class CheckInconsistenciesCases extends Command
 
 
         if ($casosComAlertStatusDiferentes->total > 0):
-            $file = fopen("/var/www/inconsistencias/alert_status_diferentes_".date('d_m_Y').".csv",'w'); 
+            $file = fopen("/home/forge/inconsistencias/alert_status_diferentes_".date('d_m_Y').".csv",'w'); 
             $flag = false;
             foreach ($casosComAlertStatusDiferentes->values as $child) {    
                 if (!$flag) {
@@ -106,7 +106,7 @@ class CheckInconsistenciesCases extends Command
         endif;
 
         if ($casosEstruturaDeCasoIncompleta->total > 0):
-            $file = fopen("/var/www/inconsistencias/estrutura_tabelas_incompleta_".date('d_m_Y').".csv",'w'); 
+            $file = fopen("/home/forge/inconsistencias/estrutura_tabelas_incompleta_".date('d_m_Y').".csv",'w'); 
             $flag = false;
             foreach ($casosEstruturaDeCasoIncompleta->values as $child) {    
                 if (!$flag) {
@@ -121,7 +121,7 @@ class CheckInconsistenciesCases extends Command
 
 
         if ($casosCriancasSemInformacaodeStep->total > 0):
-            $file = fopen("/var/www/inconsistencias/current_step_incompleto_".date('d_m_Y').".csv",'w'); 
+            $file = fopen("/home/forge/inconsistencias/current_step_incompleto_".date('d_m_Y').".csv",'w'); 
             $flag = false;
             foreach ($casosCriancasSemInformacaodeStep->values as $child) {    
                 if (!$flag) {
