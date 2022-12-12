@@ -6,8 +6,11 @@ use Cache;
 use BuscaAtivaEscolar\Data\CaseCause;
 use BuscaAtivaEscolar\Tenant;
 use BuscaAtivaEscolar\City;
+use DB;
+use Auth;
+use BuscaAtivaEscolar\Http\Controllers\BaseController;
 
-class CacheService
+class CacheService extends BaseController
 {
 
     public function search(array $arr, int $n, string $target): int
@@ -173,7 +176,7 @@ class CacheService
             for ($i = 0; $i < count($cache) - 1; ++$i) {
                 $result = explode("-", $cache[$i]);
                 $name = trim($result[0]);
-                if ($result[1] > 0){
+                if ($result[1] > 0) {
                     array_push($all_values, (int)trim($result[1]));
                     $data[$j++] = [
                         "place_uf" => $name,
@@ -184,7 +187,6 @@ class CacheService
                         "simple_name" => strtolower($name)
                     ];
                 }
-                
             }
         }
         usort($data, function ($item1, $item2) {
@@ -204,5 +206,77 @@ class CacheService
             'data' => $data
         ];
         return $final_data;
+    }
+
+    public function getGrafico(string $selo, string $uf)
+    {
+        if ($uf == 'null') $uf = null;
+        $name = "grafico" . $this->rename($selo) . "_" . $uf;
+        $cache = Cache::get($name);
+        $cache = explode("--", $cache);
+        $data = ["goal" => $cache[0], "data" => [], "selo" => $selo];
+        $i = 0;
+        $this->gerenateArray($data, $cache, 1, "(Re)matrícula", $i);
+        $this->gerenateArray($data, $cache, 2, "Cancelamento após (re)matrícula", $i);
+        return $data;
+    }
+
+    public function getGraficoTenant(string $selo, string $tenantId)
+    {
+        $daily = DB::table("daily_metrics_consolidated")->select("date", DB::raw("in_school + in_observation as rematricula"), "justified_cancelled")->where("tenant_id", $tenantId  && $tenantId != "null" ? $tenantId : Auth::user()->isRestrictedToTenant())->get()->toArray();
+        $data = ["goal" => "0", "data" => [], "selo" => $selo];
+        $i = 0;
+        $this->generateArrayTenant($daily, $data, $i, "(Re)matrícula", "rematricula");
+        $this->generateArrayTenant($daily, $data, $i, "Cancelamento após (re)matrícula", "justified_cancelled");
+        if (Auth::user()->isRestrictedToTenant()) {
+            $data["goal"] = Auth::user()->tenant->city->goal ?
+                $this->currentUser()->tenant->city->goal->goal + $this->currentUser()->tenant->city->goal->accumulated_ciclo1 : 0;
+        } else {
+            $goals = DB::table("tenants")
+                ->join("cities", function ($join) {
+                    $join->on("tenants.city_id", "=", "cities.id");
+                })
+                ->join("goals", function ($join) {
+                    $join->on("goals.id", "=", "cities.ibge_city_id");
+                })
+                ->select(DB::raw("goal+accumulated_ciclo1  as goals"))
+                ->where("tenants.id", "=", $tenantId)
+                ->get()->toArray();
+            if (count($goals) >= 1) $data["goal"] = $goals[0]->goals;
+        }
+        return response()->json(
+            [
+                'goal' => $data["goal"],
+                'data' => $data["data"],
+                'selo' => $selo
+            ]
+        );
+    }
+
+    private function gerenateArray(array &$data, array $cache, int $index, string $name, int &$curr_index)
+    {
+        for ($j = 1; $j < count($cache) - 2; $j += 3) {
+            $data["data"][$curr_index++] = [
+                "date" => $cache[$j],
+                "value" => $cache[$j + $index],
+                "tipo" => $name
+            ];
+        }
+    }
+
+    private function generateArrayTenant(array $dataRematricula, array &$data, int &$curr_index, string $name, string $index)
+    {
+        for ($i = 0; $i < count($dataRematricula); ++$i) {
+            $data["data"][$curr_index++] = [
+                "date" => $dataRematricula[$i]->date,
+                "value" => $dataRematricula[$i]->$index,
+                "tipo" => $name
+            ];
+        }
+    }
+
+    private function rename(string $name)
+    {
+        return strtolower($name[0]);
     }
 }
