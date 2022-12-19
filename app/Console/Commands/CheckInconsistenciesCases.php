@@ -42,7 +42,7 @@ class CheckInconsistenciesCases extends Command
     {
 
         //Consulta casos com alert_status diferentes nas tabelas Children e Alerta
-        $sqlCasosComAlertStatusDiferentes = "SELECT c.id, c.created_at, c.updated_at, c.educacenso_id, c.alert_submitter_id, c.tenant_id, c.alert_status as child_alert_status, csa.alert_status as alert_alert_status, c.name
+        $sqlCasosComAlertStatusDiferentes = "SELECT c.id, c.created_at, c.deleted_at, c.updated_at, c.educacenso_id, c.alert_submitter_id, c.tenant_id, c.alert_status as child_alert_status, csa.alert_status as alert_alert_status, c.name
                     FROM children c
                     JOIN case_steps_alerta csa ON csa.child_id = c.id
                     where c.alert_status <> csa.alert_status";
@@ -50,7 +50,7 @@ class CheckInconsistenciesCases extends Command
         $casosComAlertStatusDiferentes = $this->queryObject($sqlCasosComAlertStatusDiferentes);
 
         //Consulta crianças sem valor no conjunto de tabelas relacionadas
-        $sqlEstruturaDeCasoIncompleta = "SELECT c.id, c.created_at, c.updated_at, c.educacenso_id, c.alert_submitter_id, c.tenant_id, c.alert_status as child_alert_status, c.name 
+        $sqlEstruturaDeCasoIncompleta = "SELECT c.id, c.created_at, c.deleted_at, c.updated_at, c.educacenso_id, c.alert_submitter_id, c.tenant_id, c.alert_status as child_alert_status, c.name 
                 FROM children c WHERE 
                 c.id NOT IN (SELECT child_id FROM case_steps_alerta) || 
                 c.id NOT IN (SELECT child_id FROM case_steps_analise_tecnica) ||
@@ -64,7 +64,7 @@ class CheckInconsistenciesCases extends Command
 
 
         //Consulta de criancas sem informacoes da etapa corrente - Possui step porem nao tem informacoes necessárias
-        $slqCasosCriancasSemInformacaodeStep = "SELECT c.id, c.created_at, c.updated_at, c.educacenso_id, c.alert_submitter_id, c.tenant_id, c.alert_status as child_alert_status, c.name, c.current_case_id, c.current_step_id, c.current_step_type
+        $slqCasosCriancasSemInformacaodeStep = "SELECT c.id, c.created_at, c.deleted_at, c.updated_at, c.educacenso_id, c.alert_submitter_id, c.tenant_id, c.alert_status as child_alert_status, c.name, c.current_case_id, c.current_step_id, c.current_step_type
                 FROM children c 
                 join case_steps_alerta csa ON csa.child_id = c.id
                 join children_cases cc ON cc.child_id = c.id
