@@ -12,105 +12,115 @@ use BuscaAtivaEscolar\Http\Controllers\BaseController;
 
 class CacheService extends BaseController
 {
-
-    public function search(array $arr, int $n, string $target): int
+    
+    private function getAlert(string $region_or_uf): array
     {
-        if ($arr[$n - 1] == $target)
-            return $n - 1;
-
-        $backup = $arr[$n - 1];
-        $arr[$n - 1] = $target;
-
-        for ($i = 0;; $i++) {
-            if ($arr[$i] == $target) {
-                $arr[$n - 1] = $backup;
-                if ($i < $n - 1)
-                    return $i;
-                return -1;
-            }
-        }
+        $region_or_uf = $region_or_uf == "BR" ? "" : $region_or_uf;
+        $alerts = explode(" ", Cache::get("alerts_" . $region_or_uf));
+        return [
+            "total" => $alerts[0] + $alerts[1] + $alerts[2],
+            "approved" => $alerts[0],
+            "pending" => $alerts[1],
+            "rejected" => $alerts[2]
+        ];
     }
 
-    public function returnData(string $searched, bool $check = false): array
+    private function getUfs(string $region_or_uf): array
     {
-        $reg = ['N', 'NE', 'CO', 'SD', 'S', 'BR'];
-        $searched = $searched == 'BR' ? '' : $searched;
+        $region_or_uf = $region_or_uf == "BR" ? "" : $region_or_uf;
+        $ufs = Cache::get("state_signup_" . $region_or_uf);
+        return [
+            "is_approved" => $ufs,
+            "num_ufs" => $ufs,
+            "num_pending_state_signups" => 0,
+        ];
+    }
+
+    private function getTenantSignup(string $region_or_uf): array
+    {
+        $region_or_uf = $region_or_uf == "BR" ? "" : $region_or_uf;
+        $tenants_signup = explode(" ", Cache::get("tenant_signup_" . $region_or_uf));
+        return [
+            "num_pending_setup" => $tenants_signup[1],
+            "num_pending_signups" => $tenants_signup[2]
+        ];
+    }
+
+    private function getTenantsStatus(string $region_or_uf): array{
+        $region_or_uf = $region_or_uf == "BR" ? "" : $region_or_uf;
+        $tenants = explode(" ", Cache::get("tenants_" . $region_or_uf));
+        return [
+            "num_tenants" => $tenants[0],
+            "active" => $tenants[1],
+            "inactive" => $tenants[2],
+        ];
+    }
+
+    private function getTenants(string $region_or_uf): array{
+        $signups = $this->getTenantSignup($region_or_uf);
+        $tenants = $this->getTenantsStatus($region_or_uf);
+        return [
+            "num_tenants" => $tenants["num_tenants"],
+            "active" => $tenants["active"],
+            "inactive" => $tenants["inactive"],
+            "num_signups" => $tenants["num_tenants"] + $signups["num_pending_setup"],
+            "num_pending_setup" => $signups["num_pending_setup"],
+            "num_pending_signups" => $signups["num_pending_signups"]
+        ];
+    }
+
+    private function getCases(string $region_or_uf): array{
+        $region_or_uf = $region_or_uf == "BR" ? "" : $region_or_uf;
+        $causes = explode(" ", Cache::get("cases_" . $region_or_uf));
+        return [
+            "total" => $causes[2] + $causes[3] + $causes[4] + $causes[5] + $causes[6] + $causes[7],
+            "in_progress" => $causes[0],
+            "enrollment" => $causes[1],
+            "in_school" => $causes[2],
+            "in_observation" => $causes[3],
+            "out_of_school" => $causes[4],
+            "cancelled" => $causes[5],
+            "transferred" => $causes[6],
+            "interrupted" => $causes[7],
+        ];
+    }
+
+    private function getReasonsCauses(string $region_or_uf): array {
+        $region_or_uf = $region_or_uf == "BR" ? "" : $region_or_uf;
         $reason_causes = [];
-        if (!in_array($searched, $reg)) {
-            $tenantIDs = Tenant::getIDsWithinUF($searched);
-            $cityIDs = City::getIDsWithinUF($searched);
-        }
-        $data = [];
-        $ufs = Cache::get("state_signup_" . $searched);
-        $tenants_signup = explode(" ", Cache::get("tenant_signup_" . $searched));
-        $tenants = explode(" ", Cache::get("tenants_" . $searched));
-        $alerts = explode(" ", Cache::get("alerts_" . $searched));
-        $causes = explode(" ", Cache::get("cases_" . $searched));
-        $reasons = explode(" ", Cache::get("reason_cases_" . $searched));
+        $reasons = explode(" ", Cache::get("reason_cases_" . $region_or_uf));
         $i = 0;
-        
-        foreach (CaseCause::getAll() as $case) {
+        foreach (CaseCause::getAll() as $case) 
             array_push($reason_causes, ['id' => $case->id, 'cause' => $case->label, 'qtd' => $reasons[$i++]]);
-        }
-        
+        return $reason_causes;
+    }
+
+    private function getTenantsIds(string $region_or_uf){
+        $reg = ["N", "NE", "CO", "SD", "S", "BR"];
+        if (!in_array($region_or_uf, $reg))
+            return Tenant::getIDsWithinUF($region_or_uf);
+        return "";
+    }
+
+    private function getCityIds(string $region_or_uf){
+        $reg = ["N", "NE", "CO", "SD", "S", "BR"];
+        if (!in_array($region_or_uf, $reg))
+            return  City::getIDsWithinUF($region_or_uf);
+    }
+
+    public function returnData(string $region_or_uf): array
+    {
+        $data = [];
         $data  = [
-            "ufs" => [
-                "is_approved" => "$ufs",
-                "num_ufs" => "$ufs",
-                "num_pending_state_signups" => "0",
-            ],
-            "tenants" => [
-                "num_tenants" => "$tenants[0]",
-                "active" => "$tenants[1]",
-                "inactive" => "$tenants[2]",
-                "num_signups" => '' . ($tenants[0] + $tenants_signup[1]) . '',
-                "num_pending_setup" => "$tenants_signup[1]",
-                "num_pending_signups" => "$tenants_signup[2]"
-            ],
-            "alerts" => [
-                "_total" => '' . $alerts[0] + $alerts[1] + $alerts[2] . '',
-                "_approved" => "$alerts[0]",
-                "_pending" => "$alerts[1]",
-                "_rejected" => "$alerts[2]"
-            ],
-            "cases" => [
-                '_total' => '' . $causes[2] + $causes[3] + $causes[4] + $causes[5] + $causes[6] + $causes[7] . '',
-                '_in_progress' => "$causes[0]",
-                '_enrollment' => "$causes[1]",
-                '_in_school' => "$causes[2]",
-                '_in_observation' => "$causes[3]",
-                '_out_of_school' => "$causes[4]",
-                '_cancelled' => "$causes[5]",
-                '_transferred' => "$causes[6]",
-                '_interrupted' => "$causes[7]",
-            ],
-            'causes_cases' => $reason_causes,
-            'tenant_ids' => $check ? $tenantIDs : '',
-            'city_ids' => $check ? $cityIDs : ''
+            "ufs" => $this->getUfs($region_or_uf),
+            "tenants" => $this->getTenants($region_or_uf),
+            "alerts" => $this->getAlert($region_or_uf),
+            "cases" => $this->getCases($region_or_uf),
+            'causes_cases' => $this->getReasonsCauses($region_or_uf),
+            'tenant_ids' => $this->getTenantsIds($region_or_uf),
+            'city_ids' => $this->getCityIds($region_or_uf)
         ];
         return $data;
-    }
-
-    public function binarySerchString(array $arr, string $target): int
-    {
-        $l = 0;
-        $r = count($arr) - 1;
-
-        while ($l <= $r) {
-            $m = $l + (int)(($r - $l) / 2);
-            $res = strcmp($target, $arr[$m]);
-
-            if ($res == 0)
-                return $m;
-
-            else if ($res > 0)
-                $l = $m + 1;
-
-            else
-                $r = $m - 1;
-        }
-
-        return -1;
     }
 
     public function returnMap($uf)
