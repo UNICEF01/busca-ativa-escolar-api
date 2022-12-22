@@ -35,6 +35,7 @@ use Carbon\Carbon;
 use DB;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Excel as ExcelB;
+use BuscaAtivaEscolar\Cache\CacheService;
 
 class ReportsController extends BaseController
 {
@@ -63,8 +64,10 @@ class ReportsController extends BaseController
 
         //Verifica se a cidade foi informada no filtro. Neste caso remove o filtro de cidade e cria-se um filtro de tenant
         if (isset($filters['place_city'])) {
-
-            $tenant = Tenant::where('city_id', $filters['place_city_id'])->withTrashed()->first();
+            if($filters['place_city_id'] == 'f6408be7-a456-5ab8-98e5-823be9f9db37')
+                $tenant = Tenant::where('city_id', $filters['place_city_id'])->first();
+            else
+                $tenant = Tenant::where('city_id', $filters['place_city_id'])->withTrashed()->first();
 
             if ($tenant != null) {
                 $filters['tenant_id'] = $tenant->id;
@@ -102,11 +105,6 @@ class ReportsController extends BaseController
             ->filterByTerms('risk_level', $filters['risk_level_null'] ?? false)
             ->filterByTerms('gender', $filters['gender_null'] ?? false)
             ->filterByTerms('place_kind', $filters['place_kind_null'] ?? false);
-
-        //->filterByTerms('deadline_status', false)
-        //->filterByTerm('race',$filters['race_null'] ?? false)
-        //->filterByTerm('guardian_schooling',$filters['guardian_schooling_null'] ?? false)
-        //->filterByTerm('parents_income',$filters['parents_income_null'] ?? false)
 
         if ($params['view'] == "time_series") {
             if (!isset($filters['date'])) $filters['date'] = ['lte' => 'now', 'gte' => 'now-2d'];
@@ -425,85 +423,80 @@ class ReportsController extends BaseController
         return response()->download(storage_path('app/attachment/buscaativaescolar_user/' . auth()->user()->id . '/' . basename($filename)));
     }
 
-    public function country_stats()
+    public function report()
     {
-
+        $resqueted = [
+            'country' => request(''),
+            'reg' => request('reg'),
+            'state' => request('uf')
+        ];
         try {
-
-            $stat = Cache::get('report_country');
-            $stat = explode(" ", $stat);
-            $stats =  [
-                "num_ufs" => intval($stat[0]),
-                "num_pending_state_signups" => intval($stat[1]),
-                "num_tenants" => intval($stat[2]),
-                "active" => intval($stat[3]),
-                "inactive" => intval($stat[4]),
-                "num_signups" => intval($stat[5]),
-                "num_pending_setup" => intval($stat[6]),
-                "num_pending_signups" => intval($stat[7]),
-                "num_alerts" => intval($stat[9]),
-                "num_pending_alerts" => intval($stat[10]),
-                "num_rejected_alerts" => intval($stat[11]),
-                "num_total_alerts" => intval($stat[9]) + intval($stat[10]) + intval($stat[11]),
-                "num_cases_in_progress" => intval($stat[13]),
-                "num_children_reinserted" => intval($stat[14]),
-                "num_children_in_school" => intval($stat[15]),
-                "num_children_in_observation" => intval($stat[16]),
-                "num_children_out_of_school" => intval($stat[17]),
-                "num_children_cancelled" => intval($stat[18]),
-                "num_children_transferred" => intval($stat[19]),
-                "num_children_interrupted" => intval($stat[20]),
-
-
-            ];
-
-            return response()->json(['status' => 'ok', 'stats' => $stats]);
+            $typeOfCache = 'country';
+            foreach ($resqueted as $key => $value) {
+                if (!empty($value)) $typeOfCache = $key;
+            }
+            $cache = new CacheService();
+            return response()->json(['status' => 'ok', 'stats' => $cache->returnData($resqueted[$typeOfCache] ? $resqueted[$typeOfCache] : 'BR')]);
         } catch (\Exception $ex) {
             return $this->api_exception($ex);
         }
     }
 
-    public function state_stats()
+    public function pnad()
     {
-
-        $uf = request('uf', $this->currentUser()->uf);
-
-        if (!$uf) {
-            return $this->api_failure('invalid_uf');
+        $resqueted = [
+            'country' => request(''),
+            'capital' => request('capital'),
+            'reg' => request('reg'),
+            'uf' => request('uf')
+        ];
+        $typeOfCache = 'country';
+        foreach ($resqueted as $key => $value) {
+            if (!empty($value)) $typeOfCache = $key;
         }
-
+        $capitais = [
+            2800308, 1501402, 3106200, 1400100, 5300108,
+            5002704, 5103403, 4106902, 4205407, 2304400,
+            5208707, 2507507, 1600303, 2704302, 1302603,
+            2408102, 1721000, 4314902, 1100205, 2611606,
+            1200401, 3304557, 2927408, 2111300, 3550308,
+            2211001, 3205309
+        ];
+        if ($typeOfCache === 'capital' && in_array($resqueted[$typeOfCache], $capitais) == false) {
+            return response()->json(['status' => 'ok', '_data' => null]);
+        }
+        $keyOfCache = "pnad_" . ($typeOfCache === 'country' ? $typeOfCache : $typeOfCache . '_' . $resqueted[$typeOfCache]);
         try {
-            $key = "report_state_" . $uf;
-            $stat = Cache::get($key);
-            $stat = explode(" ", $stat);
-            $tenantIDs = Tenant::getIDsWithinUF($uf);
-            $cityIDs = City::getIDsWithinUF($uf);
-            $stats =  [
-                'num_tenants' => intval($stat[1]),
-                'num_signups' => intval($stat[2]),
-                'num_pending_setup' => intval($stat[3]),
-                'num_alerts' => intval($stat[8]),
-                'num_cases_in_progress' => intval($stat[7]),
-                'num_children_reinserted' => intval($stat[11]),
-                'num_pending_signups' => intval($stat[4]),
-                'num_total_alerts' => intval($stat[8]) + intval($stat[9]) + intval($stat[10]),
-                'num_accepted_alerts' =>  intval($stat[8]),
-                'num_pending_alerts' =>  intval($stat[9]),
-                'num_rejected_alerts' =>  intval($stat[10]),
-                'num_children_in_school' => intval($stat[12]),
-                'num_children_out_of_school' => intval($stat[15]),
-                'num_children_in_observation' => intval($stat[14]),
-                'num_children_cancelled' => intval($stat[16]),
-                'num_children_transferred' => intval($stat[13]),
-                'num_children_interrupted' => intval($stat[17]),
-            ];
 
-            return response()->json(['status' => 'ok', 'stats' => $stats, 'uf' => $uf, 'tenant_ids' => $tenantIDs, 'city_ids' => $cityIDs]);
+            $storeCaches = \Cache::get($keyOfCache);
+            $storeCaches = explode("\n", $storeCaches);
+            $dados = [];
+            $i = 0;
+            foreach ($storeCaches as $storeCache) {
+                $dados[$i++] = explode(" ", $storeCache);
+            }
+            $data = [];
+            for ($i = 0; $i < 10; $i++) {
+                $data[$dados[$i][0]][$dados[$i][1]] = [
+                    "id_localizacao" => $dados[$i][2],
+                    "id_faixa_etaria" => $dados[$i][3],
+                    "value_masc" => $dados[$i][4],
+                    "value_femn" => $dados[$i][5],
+                    "value_ba" => $dados[$i][6],
+                    "value_pni" => $dados[$i][7],
+                    "value_sim" => $dados[$i][8],
+                    "value_nao" => $dados[$i][9],
+                    "value_pb" => $dados[$i][10],
+                    "value_int" => $dados[$i][11],
+                    "value_rc" => $dados[$i][12],
+                    "total" => $dados[$i][13]
+                ];
+            }
+            return response()->json(['status' => 'ok', '_data' => $data]);
         } catch (\Exception $ex) {
             return $this->api_exception($ex);
         }
     }
-
 
     protected function extractDimensionIDs($report, $view)
     {

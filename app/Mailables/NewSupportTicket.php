@@ -46,7 +46,7 @@ class NewSupportTicket extends Mailable {
 		$this->from(env('MAIL_USERNAME'), 'Busca Ativa Escolar');
 		$this->subject("[Busca Ativa Escolar] Nova solicitação de suporte: {$this->ticket->getName()} ({$this->ticket->getCityName()})");
 
-		return $this->view('vendor.notifications.email', $message->toArray());
+        return $this->view(['vendor.notifications.email', 'vendor.notifications.email-plain'], $message->toArray());
 
 	}
 

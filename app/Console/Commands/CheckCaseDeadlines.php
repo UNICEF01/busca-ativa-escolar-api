@@ -55,14 +55,14 @@ class CheckCaseDeadlines extends Command {
                     $newStatus = 'normal';
                 }
 
-                $this->comment("Processing: {$child->id}: {$stepDeadline} \t Etapa: {$step->getSlug()} days \t {$step->started_at} \t {$currentStatus} -> {$newStatus}");
+                //$this->comment("Processing: {$child->id}: {$stepDeadline} \t Etapa: {$step->getSlug()} days \t {$step->started_at} \t {$currentStatus} -> {$newStatus}");
 
                 // TODO: This may have heavy performance penalty due to each save triggering a Child reindex; refactor when on a larger scale
                 $child->update(['deadline_status' => $newStatus]);
 
             }
 
-		    $this->comment("Finalizando grupo de 500 casos");
+		    //$this->comment("Finalizando grupo de 500 casos");
 
         });
 

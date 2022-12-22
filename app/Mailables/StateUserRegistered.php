@@ -52,7 +52,7 @@ class StateUserRegistered extends Mailable {
 		$this->from(env('MAIL_USERNAME'), 'Busca Ativa Escolar');
 		$this->subject("[Busca Ativa Escolar] Novo usuário com acesso estadual: {$this->uf}");
 
-		return $this->view('vendor.notifications.email', $message->toArray());
+        return $this->view(['vendor.notifications.email', 'vendor.notifications.email-plain'], $message->toArray());
 
 	}
 

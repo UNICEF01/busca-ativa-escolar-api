@@ -54,7 +54,7 @@ class UserCredentialsForNewTenant extends Mailable {
 		$this->from(env('MAIL_USERNAME'), 'Busca Ativa Escolar');
 		$this->subject("[Busca Ativa Escolar] A plataforma de {$this->tenant->name} está pronta para acesso!");
 
-		return $this->view('vendor.notifications.email', $message->toArray());
+        return $this->view(['vendor.notifications.email', 'vendor.notifications.email-plain'], $message->toArray());
 
 	}
 

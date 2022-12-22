@@ -30,6 +30,7 @@ class PasswordReset extends Notification {
 
 	public function toMail($notifiable) {
 		return (new MailMessage)
+            ->view(['vendor.notifications.email', 'vendor.notifications.email-plain'])
 			->subject("[Busca Ativa Escolar] Troca de senha")
 			->line("Você solicitou a troca de sua senha no sistema Busca Ativa Escolar")
 			->line("Para escolher uma nova senha, clique no botão abaixo.")

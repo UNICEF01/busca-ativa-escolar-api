@@ -81,7 +81,7 @@ class ReopenCaseNotification extends Mailable
 
             $this->subject("[Busca Ativa Escolar] Reabertura de caso - ".$this->child_name);
 
-            return $this->view('vendor.notifications.email', $message->toArray());
+            return $this->view(['vendor.notifications.email', 'vendor.notifications.email-plain'], $message->toArray());
         }
 
         if ( $this->type_request == ReopenCaseNotification::TYPE_TRANSFER ) {
@@ -97,7 +97,7 @@ class ReopenCaseNotification extends Mailable
 
             $this->subject("[Busca Ativa Escolar] Solicitação de transferência de caso - ".$this->child_name);
 
-            return $this->view('vendor.notifications.email', $message->toArray());
+            return $this->view(['vendor.notifications.email', 'vendor.notifications.email-plain'], $message->toArray());
         }
 
         if ( $this->type_request == ReopenCaseNotification::TYPE_ACCEPT_REOPEN) {
@@ -110,7 +110,7 @@ class ReopenCaseNotification extends Mailable
 
             $this->subject("RE: [Busca Ativa Escolar] Solicitação de reabertura de caso - ".$this->child_name);
 
-            return $this->view('vendor.notifications.email', $message->toArray());
+            return $this->view(['vendor.notifications.email', 'vendor.notifications.email-plain'], $message->toArray());
         }
 
         if ( $this->type_request == ReopenCaseNotification::TYPE_REJECT_REOPEN ) {
@@ -124,7 +124,7 @@ class ReopenCaseNotification extends Mailable
 
             $this->subject("RE: [Busca Ativa Escolar] Solicitação de reabertura de caso - ".$this->child_name);
 
-            return $this->view('vendor.notifications.email', $message->toArray());
+            return $this->view(['vendor.notifications.email', 'vendor.notifications.email-plain'], $message->toArray());
         }
 
         if ( $this->type_request == ReopenCaseNotification::TYPE_ACCEPT_TRANSFER) {
@@ -137,7 +137,7 @@ class ReopenCaseNotification extends Mailable
 
             $this->subject("RE: [Busca Ativa Escolar] Solicitação de transferência de caso - ".$this->child_name);
 
-            return $this->view('vendor.notifications.email', $message->toArray());
+            return $this->view(['vendor.notifications.email', 'vendor.notifications.email-plain'], $message->toArray());
         }
 
         if ( $this->type_request == ReopenCaseNotification::TYPE_REJECT_TRANSFER) {
@@ -151,7 +151,7 @@ class ReopenCaseNotification extends Mailable
 
             $this->subject("RE: [Busca Ativa Escolar] Solicitação de transferência de caso - ".$this->child_name);
 
-            return $this->view('vendor.notifications.email', $message->toArray());
+            return $this->view(['vendor.notifications.email', 'vendor.notifications.email-plain'], $message->toArray());
         }
 
     }

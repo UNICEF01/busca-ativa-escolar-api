@@ -4,12 +4,10 @@ namespace BuscaAtivaEscolar\Jobs;
 
 use BuscaAtivaEscolar\Child;
 use BuscaAtivaEscolar\City;
-use BuscaAtivaEscolar\Goal;
 use BuscaAtivaEscolar\Tenant;
 use BuscaAtivaEscolar\TenantSignup;
 use Carbon\Carbon;
 use DB;
-use Excel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
@@ -17,6 +15,9 @@ use Illuminate\Queue\SerializesModels;
 use Log;
 use Rap2hpoutre\FastExcel\FastExcel;
 use File;
+use Illuminate\Database\Eloquent\Builder;
+use BuscaAtivaEscolar\CaseSteps\Rematricula;
+use BuscaAtivaEscolar\ChildCase;
 
 class ProcessReportSeloJob implements ShouldQueue
 {
@@ -30,7 +31,9 @@ class ProcessReportSeloJob implements ShouldQueue
         //File::makeDirectory(storage_path("app/attachments/selo_reports/" . Carbon::now()->timestamp), $mode = 0777, true, true);
 
         $cities = [];
-        $cities_with_goal = City::has('goal')->get();
+        $cities_with_goal = City::whereHas('goal', function (Builder $q){
+            $q->where('goal', '>', 0);
+        })->get();
 
         foreach ($cities_with_goal as $city) {
 
@@ -39,7 +42,6 @@ class ProcessReportSeloJob implements ShouldQueue
             $tenant_signup = TenantSignup::where('city_id', $city->id)->first();
 
             if ($tenant != null) {
-
                 $adesao = 'Sim';
             } else {
 
@@ -104,6 +106,44 @@ class ProcessReportSeloJob implements ShouldQueue
                         ]
                     )->count();
 
+                $createdBefore1NovAndCancelledAfter1Nov = Rematricula::whereHas('cases', function ($query) {
+                    $query->whereIn('case_status', [ChildCase::STATUS_CANCELLED, ChildCase::STATUS_INTERRUPTED, ChildCase::STATUS_TRANSFERRED])
+                        ->where([
+                            ['created_at', '<', '2021-11-01 00:00:00'],
+                            ['updated_at', '>', '2021-11-01 00:00:00']
+                        ]);
+                    })->where([
+                        ['tenant_id' , '=', $tenant->id],
+                        ['is_completed', '=', true]
+                    ])->count();
+
+                $createdAfter1NovAndCancelledAfter1Nov = Rematricula::whereHas('cases', function ($query) {
+                    $query->whereIn('case_status', [ChildCase::STATUS_CANCELLED, ChildCase::STATUS_INTERRUPTED, ChildCase::STATUS_TRANSFERRED])
+                        ->where([
+                            ['created_at', '>', '2021-11-01 00:00:00'],
+                            ['updated_at', '>', '2021-11-01 00:00:00']
+                        ]);
+                    })->where([
+                        ['tenant_id' , '=', $tenant->id],
+                        ['is_completed', '=', true],
+                    ])->count();
+
+                $rematriculas_com_canceladas = Rematricula::whereHas('cases', function ($query) {
+                    $query->where(['case_status' => 'in_progress'])
+                        ->orWhere(['cancel_reason' => 'city_transfer'])
+                        ->orWhere(['cancel_reason' => 'death'])
+                        ->orWhere(['cancel_reason' => 'not_found'])
+                        ->orWhere(['case_status' => 'completed'])
+                        ->orWhere(['case_status' => 'interrupted'])
+                        ->orWhere(['case_status' => 'transferred']);
+                })->where(
+                    [
+                        'tenant_id' => $tenant->id,
+                        'is_completed' => true
+                    ]
+                )
+                ->orderBy('completed_at', 'asc')
+                ->count();
 
                 array_push(
                     $cities,
@@ -126,7 +166,7 @@ class ProcessReportSeloJob implements ShouldQueue
 
                         'Meta de (Re)matrículas acumuladas para a primeira medição (31/03/2023) do Selo edição 21/24' => $city->goal->accumulated_ciclo1+$city->goal->goal,
 
-                        'Total de novas (Re)matrículas realizadas até o momento, válidas para o cumprimento das metas do Selo edição 21/24' => ($obs1 + $obs2 + $obs3 + $obs4 + $concluidos)-($city->goal->accumulated_ciclo1),
+                        'Total de novas (Re)matrículas realizadas até o momento, válidas para o cumprimento das metas do Selo edição 21/24' => $rematriculas_com_canceladas - $city->goal->accumulated_ciclo1,
 
                         'Aprovados' =>
                         DB::table('children')
@@ -220,9 +260,16 @@ class ProcessReportSeloJob implements ShouldQueue
                         'Concluídos' => $concluidos,
 
                         'CeA na Escola' => $obs1 + $obs2 + $obs3 + $obs4 + $concluidos,
-                        '% Atingimento da Meta' => $city->goal->goal > 0 ? ((($obs1 + $obs2 + $obs3 + $obs4 + $concluidos)-($city->goal->accumulated_ciclo1)) * 100) / $city->goal->goal : 0,
 
-                        'ID-CIDADE' => $city->id
+                        'CeA na escola com cancelados' => $rematriculas_com_canceladas,
+
+                        '% Atingimento da Meta' => $city->goal->goal > 0 ? (($rematriculas_com_canceladas - $city->goal->accumulated_ciclo1) * 100) / $city->goal->goal : 0,
+
+                        'ID-CIDADE' => $city->id,
+
+                        'Criados antes do dia 31 OUT 2021 - Cancelados depois do dia 31 OUT 2021' => $createdBefore1NovAndCancelledAfter1Nov,
+
+                        'Criados depois do dia 31 OUT 2021 - Cancelados depois do dia 31 OUT 2021' => $createdAfter1NovAndCancelledAfter1Nov,
                     ]
                 );
             } else {
@@ -254,7 +301,10 @@ class ProcessReportSeloJob implements ShouldQueue
                         'Cancelados' => '',
                         'Concluídos' => '',
                         'CeA na Escola' => '',
+                        'CeA na escola com cancelados' => '',
                         '% Atingimento da Meta' => '',
+                        'Criados antes do dia 31 OUT 2021 - Cancelados depois do dia 31 OUT 2021' => '',
+                        'Criados depois do dia 31 OUT 2021 - Cancelados depois do dia 31 OUT 2021' => ''
                     ]
                 );
             }

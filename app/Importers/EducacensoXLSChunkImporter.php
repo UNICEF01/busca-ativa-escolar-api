@@ -52,8 +52,9 @@ class EducacensoXLSChunkImporter
 
     /**
      * @var int The year of Educacenso
+     * This is ony for register. The real value is registered in Children created_at.
      */
-    public $educacenso_year = 2019;
+    public $educacenso_year = 2022;
 
     /**
      * Handles the importing of Educacenso's XLS
@@ -100,7 +101,7 @@ class EducacensoXLSChunkImporter
                 return;
             }
 
-            if($startRow == 0 AND $this->isHeaderEducacenso($records[12]) == false){
+            if($startRow == 3 AND $this->isHeaderEducacenso($records[12]) == false){
                 throw new \Exception("Cabeçalho padrão do Educacenso não localizado");
             }
 
@@ -228,22 +229,22 @@ class EducacensoXLSChunkImporter
         Log::info($headerArray);
         Log::info("---------------------");
 
-
+    //	COD ALUNO	NOME ALUNO	NASCIMENTO	NOME MAE	MODALIDADE	ETAPA
         $headerFileEducacenso = [
-            0 => 'UF',
-            1 => 'Município',
-            2 => 'Dependência Administrativa',
-            3 => 'Categoria da escola privada',
-            4 => 'Conveniada com o poder público',
-            5 => 'Localização',
-            6 => 'Código da escola',
-            7 => 'Nome da escola',
-            8 => 'Identificação única',
-            9 => 'Nome do aluno',
-            10 => 'Data de nascimento',
-            11 => 'Filiação 1',
-            12 => 'Modalidade de ensino',
-            13 => 'Etapa de ensino',
+            0 => 'ESTADO',
+            1 => 'MUNICIPIO',
+            2 => 'DEPENDENCIA',
+            3 => 'CATEGORIA',
+            4 => 'CONVENIO',
+            5 => 'LOCALIZACAO',
+            6 => 'COD ESCOLA',
+            7 => 'NOME ESCOLA',
+            8 => 'COD ALUNO',
+            9 => 'NOME ALUNO',
+            10 => 'NASCIMENTO',
+            11 => 'NOME MAE',
+            12 => 'MODALIDADE',
+            13 => 'ETAPA',
         ];
 
         return $headerArray == $headerFileEducacenso;

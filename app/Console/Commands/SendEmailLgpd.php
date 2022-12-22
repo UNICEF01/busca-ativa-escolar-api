@@ -41,9 +41,8 @@ class SendEmailLgpd extends Command
     {
         $message = new Lgpd();
         $emails = ['contato@buscaativaescolar.org.br', 
+                   'dalvinhao@gmail.com',
                    'dmagalhaes@unicef.org', 
-                   'rcorreia@unicef.org', 
-                   'mansouza@unicef.org',
                    'vbezerra@unicef.org', 
                    'maraujo@unicef.org', 
                    'ndasilva@unicef.org', 

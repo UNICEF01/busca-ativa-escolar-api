@@ -555,8 +555,8 @@ class Child extends Model implements Searchable, CanBeAggregated, CollectsDailyM
 
             $data['assigned_group_name'] = $assignedUser->group->name ?? null;
 
-            $data['step_name'] = $this->currentStep->getName() ?? null;
-            $data['step_slug'] = str_slug($this->currentStep->getName(), '_') ?? null;
+            $data['step_name'] = $this->currentStep->rename()[0] ?? null;
+            $data['step_slug'] = $this->currentStep->rename()[1] ?? null;
 
             $now = Carbon::now();
             // O tenant pode ser nulo quando o mesmo foi desativado
