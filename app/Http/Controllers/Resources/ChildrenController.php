@@ -16,6 +16,7 @@ namespace BuscaAtivaEscolar\Http\Controllers\Resources;
 
 use Auth;
 use BuscaAtivaEscolar\City;
+use Illuminate\Support\Facades\Log;
 use function Aws\map;
 use BuscaAtivaEscolar\ActivityLog;
 use BuscaAtivaEscolar\Attachment;
@@ -86,8 +87,10 @@ class ChildrenController extends BaseController
 			$params['uf'] = Auth::user()->uf;
 		}
 
-		if (isset($params['uf'])) $params['uf'] = Str::lower($params['uf']);
-		if (isset($params['assigned_uf'])) $params['assigned_uf'] = Str::lower($params['assigned_uf']);
+		if (isset($params['uf']))
+			$params['uf'] = Str::lower($params['uf']);
+		if (isset($params['assigned_uf']))
+			$params['assigned_uf'] = Str::lower($params['assigned_uf']);
 
 		$query = ElasticSearchQuery::withParameters($params)
 			->filterByTerm('tenant_id', false)
@@ -120,8 +123,10 @@ class ChildrenController extends BaseController
 			$group = Auth::user()->group; /* @var $group Group */
 			$tenant = Auth::user()->tenant;
 
-			if (!$group) $group = $tenant->primaryGroup;
-			if (!$group) $group = new Group();
+			if (!$group)
+				$group = $tenant->primaryGroup;
+			if (!$group)
+				$group = new Group();
 
 			//adiciona os motivos de alertas 500 e 600 a supervisores da educacao sempre
 			$handledAlertCauses = $group->getSettings()->getHandledAlertCauses();
@@ -213,7 +218,8 @@ class ChildrenController extends BaseController
 		$output = [];
 
 		foreach ($input as $key => $value) {
-			if (in_array($key, $fields)) $value = Str::ascii($value);
+			if (in_array($key, $fields))
+				$value = Str::ascii($value);
 			$output[$key] = $value;
 		}
 
@@ -269,7 +275,8 @@ class ChildrenController extends BaseController
 	public function removeComment(Child $child, Comment $comment)
 	{
 
-		if ($child == null or $comment == null) return $this->api_failure("A anotação não pode ser removida");
+		if ($child == null or $comment == null)
+			return $this->api_failure("A anotação não pode ser removida");
 
 		if ($this->currentUser()->id != $comment->author_id) {
 			return $this->api_failure("Você não tem permissão para remover a anotação selecionada");
@@ -281,7 +288,8 @@ class ChildrenController extends BaseController
 
 	public function getComment(Child $child, Comment $comment)
 	{
-		if ($child == null or $comment == null) return $this->api_failure("A anotação não foi encontrada");
+		if ($child == null or $comment == null)
+			return $this->api_failure("A anotação não foi encontrada");
 
 		if ($this->currentUser()->id != $comment->author_id) {
 			return $this->api_failure("Você não tem permissão para visualizar a anotação selecionada");
@@ -331,7 +339,8 @@ class ChildrenController extends BaseController
 			$message = request('message', '');
 			$id_message = request('id_message', null);
 
-			if ($message == null or $id_message == null) return $this->api_failure("A anotação não pode ser editada");
+			if ($message == null or $id_message == null)
+				return $this->api_failure("A anotação não pode ser editada");
 
 			$comment = Comment::updateComment(Auth::user(), $id_message, $message);
 
@@ -386,7 +395,8 @@ class ChildrenController extends BaseController
 			$data = request()->toArray();
 			$validation = (new Alerta())->validate($data);
 
-			if ($validation->fails()) return $this->api_validation_failed('validation_failed', $validation);
+			if ($validation->fails())
+				return $this->api_validation_failed('validation_failed', $validation);
 
 			$child = Child::spawnFromAlertData($tenant, $user->id, $data);
 
@@ -405,18 +415,7 @@ class ChildrenController extends BaseController
 
 		$city_id = request('city_id');
 
-		$mapCenter = ['lat' => '-13.5013846', 'lng' => '-51.901559', 'zoom' => 4];
-
-		if ($this->currentUser()->isRestrictedToTenant() && !$this->currentUser()->isRestrictedToUF()) {
-			$mapCenter =  $this->currentUser()->tenant->getMapCoordinates();
-		}
-
-		if ($this->currentUser()->isRestrictedToUF()) {
-			$mapCenter = UF::getByCode($this->currentUser()->uf)->getCoordinates();
-			$mapCenter['zoom'] = 6;
-		}
-
-		// TODO: cache this (w/ tenant ID)
+		$mapCenter = ['lat' => '-10.5013846', 'lng' => '-50.901559', 'zoom' => 10];
 
 		if ($city_id == null) {
 			$coordinates = Child::query()
@@ -425,8 +424,8 @@ class ChildrenController extends BaseController
 				->whereNotNull('lng')
 				->get(['id', 'lat', 'lng'])
 				->map(function ($child) {
-					return ['id' => $child->id, 'latitude' => $child->lat, 'longitude' => $child->lng];
-				});
+				    return ['id' => $child->id, 'latitude' => $child->lat, 'longitude' => $child->lng];
+			    });
 		} else {
 			$city_ibge = City::where('ibge_city_id', '=', intval($city_id))->first();
 			$coordinates = Child::query()
@@ -436,8 +435,8 @@ class ChildrenController extends BaseController
 				->whereNotNull('lng')
 				->get(['id', 'lat', 'lng'])
 				->map(function ($child) {
-					return ['id' => $child->id, 'latitude' => $child->lat, 'longitude' => $child->lng];
-				});
+				    return ['id' => $child->id, 'latitude' => $child->lat, 'longitude' => $child->lng];
+			    });
 		}
 
 		return response()->json([
@@ -477,20 +476,20 @@ class ChildrenController extends BaseController
 		}
 	}
 
-    public function create_report_child(Search $search)
-    {
-        $query = $this->prepareSearchQuery();
-        $query = $query->getQuery();
-        $job = new ProcessExportChildrenJob(Auth::user(), $query);
-        $job->handle($search);
-        return response()->json(
-            [
-                'msg' => 'Arquivo criado',
-                'date' => Carbon::now()->timestamp
-            ],
-            200
-        );
+	public function create_report_child(Search $search)
+	{
+		$query = $this->prepareSearchQuery();
+		$query = $query->getQuery();
+		$job = new ProcessExportChildrenJob(Auth::user(), $query);
+		$job->handle($search);
+		return response()->json(
+			[
+				'msg' => 'Arquivo criado',
+				'date' => Carbon::now()->timestamp
+			],
+			200
+		);
 
-    }
+	}
 
 }
