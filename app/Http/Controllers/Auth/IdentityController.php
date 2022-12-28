@@ -38,6 +38,8 @@ class IdentityController extends BaseController
     public function authenticate(Request $request)
     {
 
+        return response()->json(['error' => 'invalid_credentials'], 401);
+
         if (request('grant_type', 'login') == "refresh") {
             return $this->refresh($request);
         }
