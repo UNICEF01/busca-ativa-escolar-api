@@ -57,7 +57,8 @@ class Kernel extends ConsoleKernel
         Commands\SendEmailLgpd::class,
         Commands\SendEmailSelo::class,
         Commands\CheckInconsistenciesCases::class,
-        Commands\ReindexChildrenByTenant::class
+        Commands\ReindexChildrenByTenant::class,
+        Commands\ReindexAllSchoolsOfCity::class
     ];
 
     /**
