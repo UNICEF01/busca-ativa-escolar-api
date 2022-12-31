@@ -3,9 +3,7 @@
 namespace BuscaAtivaEscolar\Console\Commands;
 
 use Illuminate\Console\Command;
-use BuscaAtivaEscolar\Child;
 use DB;
-use Log;
 
 class CheckInconsistenciesCases extends Command
 {
@@ -78,7 +76,8 @@ class CheckInconsistenciesCases extends Command
             return;
         }
 
-        function cleanData(&$str){
+        function cleanData(&$str)
+        {
             if ($str == 't')
                 $str = 'TRUE';
             if ($str == 'f')
@@ -92,9 +91,9 @@ class CheckInconsistenciesCases extends Command
 
 
         if ($casosComAlertStatusDiferentes->total > 0):
-            $file = fopen("/home/forge/inconsistencias/alert_status_diferentes_".date('d_m_Y').".csv",'w'); 
+            $file = fopen(env('INCONSISTENCIES_FOLDER') . "/alert_status_diferentes_" . date('d_m_Y') . ".csv", 'w');
             $flag = false;
-            foreach ($casosComAlertStatusDiferentes->values as $child) {    
+            foreach ($casosComAlertStatusDiferentes->values as $child) {
                 if (!$flag) {
                     fputcsv($file, array_keys($child), ',', '"');
                     $flag = true;
@@ -106,9 +105,9 @@ class CheckInconsistenciesCases extends Command
         endif;
 
         if ($casosEstruturaDeCasoIncompleta->total > 0):
-            $file = fopen("/home/forge/inconsistencias/estrutura_tabelas_incompleta_".date('d_m_Y').".csv",'w'); 
+            $file = fopen(env('INCONSISTENCIES_FOLDER') . "/estrutura_tabelas_incompleta_" . date('d_m_Y') . ".csv", 'w');
             $flag = false;
-            foreach ($casosEstruturaDeCasoIncompleta->values as $child) {    
+            foreach ($casosEstruturaDeCasoIncompleta->values as $child) {
                 if (!$flag) {
                     fputcsv($file, array_keys($child), ',', '"');
                     $flag = true;
@@ -121,9 +120,9 @@ class CheckInconsistenciesCases extends Command
 
 
         if ($casosCriancasSemInformacaodeStep->total > 0):
-            $file = fopen("/home/forge/inconsistencias/current_step_incompleto_".date('d_m_Y').".csv",'w'); 
+            $file = fopen(env('INCONSISTENCIES_FOLDER') . "/current_step_incompleto_" . date('d_m_Y') . ".csv", 'w');
             $flag = false;
-            foreach ($casosCriancasSemInformacaodeStep->values as $child) {    
+            foreach ($casosCriancasSemInformacaodeStep->values as $child) {
                 if (!$flag) {
                     fputcsv($file, array_keys($child), ',', '"');
                     $flag = true;
@@ -134,7 +133,7 @@ class CheckInconsistenciesCases extends Command
             fclose($file);
         endif;
 
-        
+
     }
 
     private function queryObject($sql)
