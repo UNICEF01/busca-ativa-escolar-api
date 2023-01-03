@@ -135,59 +135,53 @@ class CheckInconsistenciesCases extends Command
         //remocoes
         $resposta = $this->ask("Essa ação removerá $casosEstruturaDeCasoIncompleta->total crianças com estrutura de tabelas incompleta, $casosCriancasSemInformacaodeStep->total crianças sem etapa em children_case e $alertasSemNome->total alertas sem o nome e informaçõe essencias da criança. \n Deseja continuar? sim ou não.");
 
-        if ($resposta == 'sim') {
-
-            $totalCasosInconsistentes = 0;
-            if ($casosEstruturaDeCasoIncompleta->total > 0):
-                foreach ($casosEstruturaDeCasoIncompleta->values as $child) {
-                    $id = $child['id'];
-                    $result = $this->excluirCasos($id);
-                    if ($result) {
-                        $this->comment('Criança inconsistente id: ' . $id . ' excluído!');
-                        Log::info('Caso inconsistente exluída id: ' . $id);
-                    } else {
-                        $this->comment('Criança inconsistente id: ' . $id . ' problema ao excluír!');
-                        Log::info('Caso inconsistente problema ao exluir id: ' . $id);
-                    }
-                    $totalCasosInconsistentes++;
+        $totalCasosInconsistentes = 0;
+        if ($casosEstruturaDeCasoIncompleta->total > 0):
+            foreach ($casosEstruturaDeCasoIncompleta->values as $child) {
+                $id = $child['id'];
+                $result = $this->excluirCasos($id);
+                if ($result) {
+                    $this->comment('Criança inconsistente id: ' . $id . ' excluído!');
+                    Log::info('Caso inconsistente exluída id: ' . $id);
+                } else {
+                    $this->comment('Criança inconsistente id: ' . $id . ' problema ao excluír!');
+                    Log::info('Caso inconsistente problema ao exluir id: ' . $id);
                 }
-            endif;
+                $totalCasosInconsistentes++;
+            }
+        endif;
 
-            $totalCasosInconsistentes = 0;
-            if ($casosCriancasSemInformacaodeStep->total > 0):
-                foreach ($casosCriancasSemInformacaodeStep->values as $child) {
-                    $id = $child['id'];
-                    $result = $this->excluirCasos($id);
-                    if ($result) {
-                        $this->comment('Criança inconsistente id: ' . $id . ' excluído!');
-                        Log::info('Caso inconsistente exluída id: ' . $id);
-                    } else {
-                        $this->comment('Criança inconsistente id: ' . $id . ' problema ao excluír!');
-                        Log::info('Caso inconsistente problema ao exluir id: ' . $id);
-                    }
-                    $totalCasosInconsistentes++;
+        $totalCasosInconsistentes = 0;
+        if ($casosCriancasSemInformacaodeStep->total > 0):
+            foreach ($casosCriancasSemInformacaodeStep->values as $child) {
+                $id = $child['id'];
+                $result = $this->excluirCasos($id);
+                if ($result) {
+                    $this->comment('Criança inconsistente id: ' . $id . ' excluído!');
+                    Log::info('Caso inconsistente exluída id: ' . $id);
+                } else {
+                    $this->comment('Criança inconsistente id: ' . $id . ' problema ao excluír!');
+                    Log::info('Caso inconsistente problema ao exluir id: ' . $id);
                 }
-            endif;
+                $totalCasosInconsistentes++;
+            }
+        endif;
 
-            $totalCasosInconsistentes = 0;
-            if ($alertasSemNome->total > 0):
-                foreach ($alertasSemNome->values as $child) {
-                    $id = $child['id'];
-                    $result = $this->excluirCasos($id);
-                    if ($result) {
-                        $this->comment('Criança inconsistente id: ' . $id . ' excluído!');
-                        Log::info('Caso inconsistente exluída id: ' . $id);
-                    } else {
-                        $this->comment('Criança inconsistente id: ' . $id . ' problema ao excluír!');
-                        Log::info('Caso inconsistente problema ao exluir id: ' . $id);
-                    }
-                    $totalCasosInconsistentes++;
+        $totalCasosInconsistentes = 0;
+        if ($alertasSemNome->total > 0):
+            foreach ($alertasSemNome->values as $child) {
+                $id = $child['id'];
+                $result = $this->excluirCasos($id);
+                if ($result) {
+                    $this->comment('Criança inconsistente id: ' . $id . ' excluído!');
+                    Log::info('Caso inconsistente exluída id: ' . $id);
+                } else {
+                    $this->comment('Criança inconsistente id: ' . $id . ' problema ao excluír!');
+                    Log::info('Caso inconsistente problema ao exluir id: ' . $id);
                 }
-            endif;
-
-        } else {
-            $this->comment('Ação Cancelada! ');
-        }
+                $totalCasosInconsistentes++;
+            }
+        endif;
 
     }
 
