@@ -133,7 +133,7 @@ class CheckInconsistenciesCases extends Command
         endif;
 
         //remocoes
-        $resposta = $this->ask("Essa ação removerá $casosEstruturaDeCasoIncompleta->total crianças com estrutura de tabelas incompleta, $casosCriancasSemInformacaodeStep->total crianças sem etapa em children_case e $alertasSemNome->total alertas sem o nome e informaçõe essencias da criança. \n Deseja continuar? sim ou não.");
+        //$resposta = $this->ask("Essa ação removerá $casosEstruturaDeCasoIncompleta->total crianças com estrutura de tabelas incompleta, $casosCriancasSemInformacaodeStep->total crianças sem etapa em children_case e $alertasSemNome->total alertas sem o nome e informaçõe essencias da criança. \n Deseja continuar? sim ou não.");
 
         $totalCasosInconsistentes = 0;
         if ($casosEstruturaDeCasoIncompleta->total > 0):
