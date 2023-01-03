@@ -30,20 +30,29 @@ class SnapshotDailyMetrics extends Command
 
         $today = $this->argument('date') ?? date('Y-m-d');
 
-        Child::with(['currentCase', 'submitter', 'city'])->chunk(500, function ($children) use ($today){
+        $days = [
+            '2022-12-29',
+            '2022-12-30',
+            '2022-12-31',
+            '2023-01-01',
+            '2023-01-02',
+            '2023-01-03'
+        ];
 
-            //$this->info("[index] Building children index: {$today}...");
+        foreach ($days as $day) {
 
-            foreach ($children as $child) {
-                if (!empty($child->currentCase)) {
-                    $this->comment("[index:{$today}] Child #{$child->id} - {$child->name}");
-                    $this->rel->buildSnapshot($child, $today);
+            Child::with(['currentCase', 'submitter', 'city'])->where([['created_at', '<=', '2022-12-28 23:59:59']])->chunk(500, function ($children) use ($day) {
+
+                foreach ($children as $child) {
+                    if (!empty($child->currentCase)) {
+                        $this->comment("[index:{$day}] Child #{$child->id} - {$child->name}");
+                        $this->rel->buildSnapshot($child, $day);
+                    }
                 }
-            }
-        });
 
+            });
 
-       //$this->info("[index] Index built!");
+        }
 
     }
 
