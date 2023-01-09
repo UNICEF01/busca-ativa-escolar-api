@@ -35,26 +35,26 @@ class CheckCaseDeadlinesByTenant extends Command
 
                 $this->comment($stepDeadline);
 
-                // $currentStatus = $child->deadline_status;
+                $currentStatus = $child->deadline_status;
 
-                // if ($step->isLate($today, $stepDeadline)) {
-                //     $newStatus = 'late';
-                // } else {
-                //     $newStatus = 'normal';
-                // }
+                if ($step->isLate($today, $stepDeadline)) {
+                    $newStatus = 'late';
+                } else {
+                    $newStatus = 'normal';
+                }
 
-                // if ($child->child_status === Child::STATUS_CANCELLED || $child->child_status === Child::STATUS_IN_SCHOOL) {
-                //     $newStatus = 'normal';
-                // }
+                if ($child->child_status === Child::STATUS_CANCELLED || $child->child_status === Child::STATUS_IN_SCHOOL) {
+                    $newStatus = 'normal';
+                }
 
-                // if ($step->getSlug() === "gestao_do_caso") {
-                //     $newStatus = 'normal';
-                // }
+                if ($step->getSlug() === "gestao_do_caso") {
+                    $newStatus = 'normal';
+                }
 
-                // $this->comment("Processing: {$child->id}: {$stepDeadline} \t Etapa: {$step->getSlug()} days \t {$step->started_at} \t {$currentStatus} -> {$newStatus}");
+                $this->comment("Processing: {$child->id}: {$stepDeadline} \t Etapa: {$step->getSlug()} days \t {$step->started_at} \t {$currentStatus} -> {$newStatus}");
 
 
-                // $child->update(['deadline_status' => $newStatus]);
+                $child->update(['deadline_status' => $newStatus]);
             }
 
         });
