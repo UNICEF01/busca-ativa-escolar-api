@@ -81,6 +81,7 @@ class IdentityController extends BaseController
         $this->tickTenantLastActivity();
 
         return response()->json(compact('token', 'user'));
+        
     }
 
     public function refresh(Request $request)
