@@ -3,12 +3,15 @@ curl -XPOST localhost:9200/tenants_daily -d
 
 {
     "settings" : {
-        "number_of_shards" : 1,
         "number_of_replicas" : 0
     },
     "mappings" : {
         "tenant" : {
             "properties" : {
+                "type": {
+                    "type": "string",
+                    "index": "not_analyzed"
+                },
                 "id": {
                     "type": "string",
                     "index": "not_analyzed"
@@ -32,9 +35,6 @@ curl -XPOST localhost:9200/tenants_daily -d
                 },
                 "tenant_ibge_id": {
                     "type": "integer"
-                },
-                "child_uf": {
-                    "type": "string"
                 },
                 "alert_status_accepted": {
                     "type": "integer"
