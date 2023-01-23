@@ -34,10 +34,12 @@ class StateManagerNotification extends Mailable
 
     $this->subject("[Busca Ativa Escolar] Adesão estadual");
 
+    /*
     $this->withSwiftMessage(function ($message) {
       $headers = $message->getHeaders();
       $headers->addTextHeader('message-id', $this->state_signup->id);
     });
+    */
 
       return $this->view(['vendor.notifications.email', 'vendor.notifications.email-plain'], $message->toArray());
   }

@@ -39,10 +39,12 @@ class SchoolFrequencyNotification extends Mailable
 
         $this->subject("[Busca Ativa Escolar] Controle de frequência");
 
+        /*
         $this->withSwiftMessage(function ($message) {
             $headers = $message->getHeaders();
             $headers->addTextHeader('message-id', $this->job_id);
         });
+        */
 
         return $this->view(['vendor.notifications.email', 'vendor.notifications.email-plain'], $message->toArray());
     }
