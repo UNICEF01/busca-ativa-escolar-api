@@ -1,13 +1,13 @@
 
-curl -XPOST localhost:9200/tenants_daily -d
+curl -XPOST localhost: 9200/tenants_daily -d
 
 {
-    "settings" : {
-        "number_of_replicas" : 0
+    "settings": {
+        "number_of_replicas": 0
     },
-    "mappings" : {
-        "tenant" : {
-            "properties" : {
+    "mappings": {
+        "tenant": {
+            "properties": {
                 "type": {
                     "type": "string",
                     "index": "not_analyzed"
@@ -22,7 +22,7 @@ curl -XPOST localhost:9200/tenants_daily -d
                     "store": true
                 },
                 "tenant_id": {
-                    "type": "integer"
+                    "type": "string"
                 },
                 "tenant_region": {
                     "type": "string"
@@ -454,6 +454,21 @@ curl -XPOST localhost:9200/tenants_daily -d
                     "type": "integer"
                 },
                 "school_last_grade_eja_alfabetizado": {
+                    "type": "integer"
+                },
+                "region_n": {
+                    "type": "integer"
+                },
+                "region_s": {
+                    "type": "integer"
+                },
+                "region_co": {
+                    "type": "integer"
+                },
+                "region_se": {
+                    "type": "integer"
+                },
+                "region_no": {
                     "type": "integer"
                 }
             }
