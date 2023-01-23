@@ -34,10 +34,12 @@ class MayorSignupConfirmation extends Mailable
 
     $this->subject("[Busca Ativa Escolar] Adesão municipal - Aviso importante!");
 
+    /*
     $this->withSwiftMessage(function ($message) {
       $headers = $message->getHeaders();
       $headers->addTextHeader('message-id', $this->tenant_signup->id);
     });
+    */
 
     return $this->view(['vendor.notifications.email', 'vendor.notifications.email-plain'], $message->toArray());
   }

@@ -41,10 +41,12 @@ class UserRegisterNotification extends Mailable
 
         $this->subject($subject);
 
+        /*
         $this->withSwiftMessage(function ($message) {
             $headers = $message->getHeaders();
             $headers->addTextHeader('message-id', $this->user->id);
         });
+        */
 
         return $this->view(['vendor.notifications.email', 'vendor.notifications.email-plain'], $message->toArray());
     }

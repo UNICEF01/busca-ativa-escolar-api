@@ -36,10 +36,12 @@ class SchoolEducacensoNotification extends Mailable
 
 		$this->subject("Precisamos da sua colaboração!");
 
-		$this->withSwiftMessage(function($message){
+		/*
+        $this->withSwiftMessage(function($message){
             $headers = $message->getHeaders();
             $headers->addTextHeader('message-id', $this->job_id);
         });
+        */
 
         return $this->view(['vendor.notifications.email', 'vendor.notifications.email-plain'], $message->toArray());
     }

@@ -26,10 +26,12 @@ class Lgpd extends Mailable
     $this->attach(storage_path("app/attachments/relatorio_usuario.csv"));
     $this->subject("Busca Ativa Escolar - Relatório LGPD");
 
+    /*
     $this->withSwiftMessage(function ($message) {
       $headers = $message->getHeaders();
       $headers->addTextHeader('message-id', '123456');
     });
+    */
 
     
 return $this->view(['vendor.notifications.email', 'vendor.notifications.email-plain'], $message->toArray());
