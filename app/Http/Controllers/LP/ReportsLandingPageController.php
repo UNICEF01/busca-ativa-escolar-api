@@ -123,48 +123,48 @@ class ReportsLandingPageController extends BaseController
 
                 if ($alerts)
                     $data['alerts'] = [
-                        '_total' => $alerts[0]->accepted + $alerts[0]->pending + $alerts[0]->rejected,
-                        '_approved' => $alerts[0]->accepted,
-                        '_pending' => $alerts[0]->pending,
-                        '_rejected' => $alerts[0]->rejected
+                        'total' => $alerts[0]->accepted + $alerts[0]->pending + $alerts[0]->rejected,
+                        'approved' => $alerts[0]->accepted,
+                        'pending' => $alerts[0]->pending,
+                        'rejected' => $alerts[0]->rejected
                     ];
                 else
                     $data['alerts'] = [
-                        '_total' => 0,
-                        '_approved' => 0,
-                        '_pending' => 0,
-                        '_rejected' => 0
+                        'total' => 0,
+                        'approved' => 0,
+                        'pending' => 0,
+                        'rejected' => 0
                     ];
                 if ($cases)
                     $data['cases'] = [
-                        '_total' => $cases[0]->_in_school +
+                        'total' => $cases[0]->_in_school +
                             $cases[0]->_in_observation +
                             $cases[0]->_out_of_school +
                             $cases[0]->_cancelled +
                             $cases[0]->_transferred +
                             $cases[0]->_interrupted,
-                        '_in_progress' => $cases[0]->_in_progress,
-                        '_enrollment' => $cases[0]->_enrollment,
-                        '_in_school' => $cases[0]->_in_school,
-                        '_in_observation' => $cases[0]->_in_observation,
-                        '_out_of_school' => $cases[0]->_out_of_school,
-                        '_cancelled' => $cases[0]->_cancelled,
-                        '_transferred' => $cases[0]->_transferred,
-                        '_interrupted' => $cases[0]->_interrupted,
-                        '_enrollment_with_cancelled' => $cases[0]->_enrollment_with_cancelled
+                        'in_progress' => $cases[0]->_in_progress,
+                        'enrollment' => $cases[0]->_enrollment,
+                        'in_school' => $cases[0]->_in_school,
+                        'in_observation' => $cases[0]->_in_observation,
+                        'out_of_school' => $cases[0]->_out_of_school,
+                        'cancelled' => $cases[0]->_cancelled,
+                        'transferred' => $cases[0]->_transferred,
+                        'interrupted' => $cases[0]->_interrupted,
+                        'enrollment_with_cancelled' => $cases[0]->_enrollment_with_cancelled
                     ];
                 else
                     $data['cases'] = [
-                        '_total' => 0,
-                        '_in_progress' => 0,
-                        '_enrollment' => 0,
-                        '_in_school' => 0,
-                        '_in_observation' => 0,
-                        '_out_of_school' => 0,
-                        '_cancelled' => 0,
-                        '_transferred' => 0,
-                        '_interrupted' => 0,
-                        '_enrollment_with_cancelled' => 0
+                        'total' => 0,
+                        'in_progress' => 0,
+                        'enrollment' => 0,
+                        'in_school' => 0,
+                        'in_observation' => 0,
+                        'out_of_school' => 0,
+                        'cancelled' => 0,
+                        'transferred' => 0,
+                        'interrupted' => 0,
+                        'enrollment_with_cancelled' => 0
                     ];
                 $data['causes_cases'] = $causes;
                 $data['data_city'] = $data_city;
