@@ -54,10 +54,14 @@ class ReportsLandingPageController extends BaseController
 
         if ($ibge_id != null) {
             $city_ibge = City::where('ibge_city_id', '=', intval($ibge_id))->first();
-            if($ibge_id == '3550308')
-                $tenant = Tenant::where([['city_id', '=', $city_ibge->id], ['is_active', '=', 1]])->first();
+            if ($city_ibge){
+                if($ibge_id == '3550308')
+                    $tenant = Tenant::where([['city_id', '=', $city_ibge->id], ['is_active', '=', 1]])->first();
+                else
+                    $tenant = Tenant::where([['city_id', '=', $city_ibge->id], ['is_active', '=', 1]])->withTrashed()->first();
+            }
             else
-                $tenant = Tenant::where([['city_id', '=', $city_ibge->id], ['is_active', '=', 1]])->withTrashed()->first();
+                $tenant = null;
         }
 
         $tenantId = $tenant ? $tenant->id : 0;
@@ -84,7 +88,7 @@ class ReportsLandingPageController extends BaseController
                 'causes' => [],
                 'data_city' => $data_city
             ];
-            return response()->json(['status' => 'ok', '_data' => $data]);
+            return response()->json(['status' => 'ok', 'stats' => $data]);
         }
 
         try {
