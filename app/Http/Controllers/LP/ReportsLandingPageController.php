@@ -170,7 +170,7 @@ class ReportsLandingPageController extends BaseController
                 $data['data_city'] = $data_city;
                 return $data;
             });
-            return response()->json(['status' => 'ok', '_data' => $stats]);
+            return response()->json(['status' => 'ok', 'stats' => $stats]);
         } catch (\Exception $ex) {
             return $this->api_exception($ex);
         }
