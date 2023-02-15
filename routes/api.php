@@ -257,10 +257,10 @@ Route::group(['prefix' => 'v1', 'middleware' => 'api'], function () {
 	//Open data to landing page
 	//Route::get('/lp/report', 'LP\ReportsLandingPageController@report');
 	Route::get('/reports/report', 'Resources\ReportsController@report');
-	Route::get('/lp/report/city', 'LP\ReportsLandingPageController@report_city');
+	Route::get('/reports/report/city', 'LP\ReportsLandingPageController@report_city');
 	Route::get('/lp/report/list/cities', 'LP\ReportsLandingPageController@list_cities');
 	Route::get('/lp/report/reach', 'LP\ReportsLandingPageController@reach');
-    Route::get('/lp/report/by_dates/city', 'LP\ReportsLandingPageController@report_by_dates');
+    	Route::get('/lp/report/by_dates/city', 'LP\ReportsLandingPageController@report_by_dates');
 
 	//Open data to landing page pnad
 	Route::get('/reports/pnad', 'Resources\ReportsController@pnad');
