@@ -42,7 +42,8 @@ class SendEmailSelo extends Command
         $message = new Seal();
         $emails = ['zlauletta@unicef.org',
                    'daranha@unicef.org',
-                   'dmagalhaes@unicef.org'];
+                   'dmagalhaes@unicef.org',
+                   'lcortellazzi@unicef.org'];
         Mail::to($emails)->send($message);
     }
 }
