@@ -12,7 +12,7 @@ use BuscaAtivaEscolar\Http\Controllers\BaseController;
 
 class CacheService extends BaseController
 {
-    
+
     private function getAlert(string $region_or_uf): array
     {
         $region_or_uf = $region_or_uf == "BR" ? "" : $region_or_uf;
@@ -46,7 +46,8 @@ class CacheService extends BaseController
         ];
     }
 
-    private function getTenantsStatus(string $region_or_uf): array{
+    private function getTenantsStatus(string $region_or_uf): array
+    {
         $region_or_uf = $region_or_uf == "BR" ? "" : $region_or_uf;
         $tenants = explode(" ", Cache::get("tenants_" . $region_or_uf));
         return [
@@ -56,7 +57,8 @@ class CacheService extends BaseController
         ];
     }
 
-    private function getTenants(string $region_or_uf): array{
+    private function getTenants(string $region_or_uf): array
+    {
         $signups = $this->getTenantSignup($region_or_uf);
         $tenants = $this->getTenantsStatus($region_or_uf);
         return [
@@ -69,7 +71,8 @@ class CacheService extends BaseController
         ];
     }
 
-    private function getCases(string $region_or_uf): array{
+    private function getCases(string $region_or_uf): array
+    {
         $region_or_uf = $region_or_uf == "BR" ? "" : $region_or_uf;
         $causes = explode(" ", Cache::get("cases_" . $region_or_uf));
         return [
@@ -85,33 +88,36 @@ class CacheService extends BaseController
         ];
     }
 
-    private function getReasonsCauses(string $region_or_uf): array {
+    private function getReasonsCauses(string $region_or_uf): array
+    {
         $region_or_uf = $region_or_uf == "BR" ? "" : $region_or_uf;
         $reason_causes = [];
         $reasons = explode(" ", Cache::get("reason_cases_" . $region_or_uf));
         $i = 0;
-        foreach (CaseCause::getAll() as $case) 
+        foreach (CaseCause::getAll() as $case)
             array_push($reason_causes, ['id' => $case->id, 'cause' => $case->label, 'qtd' => $reasons[$i++]]);
         return $reason_causes;
     }
 
-    private function getTenantsIds(string $region_or_uf){
+    private function getTenantsIds(string $region_or_uf)
+    {
         $reg = ["N", "NE", "CO", "SD", "S", "BR"];
         if (!in_array($region_or_uf, $reg))
             return Tenant::getIDsWithinUF($region_or_uf);
         return "";
     }
 
-    private function getCityIds(string $region_or_uf){
+    private function getCityIds(string $region_or_uf)
+    {
         $reg = ["N", "NE", "CO", "SD", "S", "BR"];
         if (!in_array($region_or_uf, $reg))
-            return  City::getIDsWithinUF($region_or_uf);
+            return City::getIDsWithinUF($region_or_uf);
     }
 
     public function returnData(string $region_or_uf): array
     {
         $data = [];
-        $data  = [
+        $data = [
             "ufs" => $this->getUfs($region_or_uf),
             "tenants" => $this->getTenants($region_or_uf),
             "alerts" => $this->getAlert($region_or_uf),
@@ -162,10 +168,10 @@ class CacheService extends BaseController
             $key = "map_" . $uf;
             $cache = Cache::get($key);
             $cache = explode("\n", $cache);
-            for ($i = 0; $i < count($cache) - 2; ++$i) {
+            for ($i = 0; $i < count($cache); ++$i) {
                 $result = explode("-", $cache[$i]);
-                $name = utf8_encode(trim($result[1]));
-                array_push($all_values, (int)trim($result[2]));
+                $name = trim($result[1]);
+                array_push($all_values, (int) trim($result[2]));
                 $data[$j++] = [
                     "id" => trim($result[0]),
                     "value" => trim($result[2]),
@@ -176,11 +182,11 @@ class CacheService extends BaseController
         } else {
             $cache = Cache::get("map_BR");
             $cache = explode("\n", $cache);
-            for ($i = 0; $i < count($cache) - 1; ++$i) {
+            for ($i = 0; $i < count($cache); ++$i) {
                 $result = explode("-", $cache[$i]);
                 $name = trim($result[0]);
                 if ($result[1] > 0) {
-                    array_push($all_values, (int)trim($result[1]));
+                    array_push($all_values, (int) trim($result[1]));
                     $data[$j++] = [
                         "place_uf" => $name,
                         "value" => trim($result[1]),
@@ -213,7 +219,8 @@ class CacheService extends BaseController
 
     public function getGrafico(string $selo, string $uf)
     {
-        if ($uf == 'null') $uf = null;
+        if ($uf == 'null')
+            $uf = null;
         $name = "grafico" . $this->rename($selo) . "_" . $uf;
         $cache = Cache::get($name);
         $cache = explode("--", $cache);
@@ -226,13 +233,13 @@ class CacheService extends BaseController
 
     public function getGraficoTenant(string $selo, string $tenantId)
     {
-        $daily = DB::table("daily_metrics_consolidated")->select("date", DB::raw("in_school + in_observation as rematricula"), "justified_cancelled")->where("tenant_id", $tenantId  && $tenantId != "null" ? $tenantId : Auth::user()->isRestrictedToTenant())->get()->toArray();
+        $daily = DB::table("daily_metrics_consolidated")->select("date", DB::raw("in_school + in_observation as rematricula"), "justified_cancelled")->where("tenant_id", $tenantId && $tenantId != "null" ? $tenantId : Auth::user()->isRestrictedToTenant())->get()->toArray();
         $data = ["goal" => "0", "data" => [], "selo" => $selo];
         $i = 0;
         $this->generateArrayTenant($daily, $data, $i, "(Re)matrícula", "rematricula");
         $this->generateArrayTenant($daily, $data, $i, "Cancelamento após (re)matrícula", "justified_cancelled");
         if (Auth::user()->isRestrictedToTenant()) {
-            $data["goal"] = Auth::user()->tenant->city->goal ?
+            $data["goal"] = Auth::user()->tenant->city->goal ? 
                 $this->currentUser()->tenant->city->goal->goal + $this->currentUser()->tenant->city->goal->accumulated_ciclo1 : 0;
         } else {
             $goals = DB::table("tenants")
@@ -245,7 +252,8 @@ class CacheService extends BaseController
                 ->select(DB::raw("goal+accumulated_ciclo1  as goals"))
                 ->where("tenants.id", "=", $tenantId)
                 ->get()->toArray();
-            if (count($goals) >= 1) $data["goal"] = $goals[0]->goals;
+            if (count($goals) >= 1)
+                $data["goal"] = $goals[0]->goals;
         }
         return response()->json(
             [
