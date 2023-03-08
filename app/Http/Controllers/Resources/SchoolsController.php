@@ -177,7 +177,7 @@ class SchoolsController extends BaseController
     {
 
         $input = request()->all();
-        $school = School::findOrFail((int)$input['id']);
+        $school = School::findOrFail((int) $input['id']);
         $school->fill($input);
 
         try {
@@ -205,9 +205,9 @@ class SchoolsController extends BaseController
         //create a stdclass to paginate
         $meta = new \stdClass();
         $pagination = new \stdClass();
-        $pagination->count = (int)request('max', 5);
-        $pagination->per_page = (int)request('max', 5);
-        $pagination->current_page = (int)request('page', 1);
+        $pagination->count = (int) request('max', 5);
+        $pagination->per_page = (int) request('max', 5);
+        $pagination->current_page = (int) request('page', 1);
 
         //get a list ids of schools by tenant and educacenso id
         $schools_array_id = Pesquisa::query()
@@ -234,7 +234,7 @@ class SchoolsController extends BaseController
 
         $total_pages =
             $pagination->total % $pagination->per_page > 0 ?
-            (int)($pagination->total / $pagination->per_page + 1) :
+            (int) ($pagination->total / $pagination->per_page + 1) :
             $pagination->total / $pagination->per_page;
 
         $pagination->total_pages = $total_pages;
@@ -245,18 +245,18 @@ class SchoolsController extends BaseController
 
         $schools = DB::select(
             "select " .
-                "sc.id, sc.name, sc.city_name, sc.uf, sc.school_cell_phone, sc.school_phone, sc.school_email, " .
-                "count(csp.school_last_id) as count_children, " .
-                "count(case when csa.place_address is not null and csa.place_neighborhood is not null then 0 end) as count_with_cep " .
-                "from schools as sc " .
-                "inner join case_steps_pesquisa as csp on sc.id = csp.school_last_id " .
-                "inner join case_steps_alerta as csa on csp.child_id = csa.child_id " .
-                "inner join children as ch on ch.id = csa.child_id " .
-                "where sc.id in (" . implode(",", $schools_array_id) . ") " .
-                "and year(ch.created_at) = " . request('year_educacenso', date("Y")) . " " .
-                //"and csa.place_cep is null ".
-                "group by sc.id " .
-                "limit " . $cursor . ", " . request('max', 5) . ""
+            "sc.id, sc.name, sc.city_name, sc.uf, sc.school_cell_phone, sc.school_phone, sc.school_email, " .
+            "count(csp.school_last_id) as count_children, " .
+            "count(case when csa.place_address is not null and csa.place_neighborhood is not null then 0 end) as count_with_cep " .
+            "from schools as sc " .
+            "inner join case_steps_pesquisa as csp on sc.id = csp.school_last_id " .
+            "inner join case_steps_alerta as csa on csp.child_id = csa.child_id " .
+            "inner join children as ch on ch.id = csa.child_id " .
+            "where sc.id in (" . implode(",", $schools_array_id) . ") " .
+            "and year(ch.created_at) = " . request('year_educacenso', date("Y")) . " " .
+            //"and csa.place_cep is null ".
+            "group by sc.id " .
+            "limit " . $cursor . ", " . request('max', 5) . ""
         );
 
         //add a array of emailjobs to each school of the last query
@@ -277,7 +277,8 @@ class SchoolsController extends BaseController
     public function getCursor($limit, $interval, $point)
     {
 
-        if ($interval == 0) return 0;
+        if ($interval == 0)
+            return 0;
 
         $final_array = [];
         $actual_array = [];
@@ -317,8 +318,10 @@ class SchoolsController extends BaseController
         }
 
         $max = request('max', 128);
-        if ($max > 128) $max = 128;
-        if ($max < 5) $max = 5;
+        if ($max > 128)
+            $max = 128;
+        if ($max < 5)
+            $max = 5;
 
         $paginator = $query->paginate($max);
         $collection = $paginator->getCollection();
@@ -334,8 +337,10 @@ class SchoolsController extends BaseController
 
     private function includeResults($result)
     {
-        if (!isset($result['hits'])) return null;
-        if (!isset($result['hits']['hits'])) return null;
+        if (!isset($result['hits']))
+            return null;
+        if (!isset($result['hits']['hits']))
+            return null;
         $values = $result['hits']['hits'];
 
         $arrayValues = [];
@@ -353,8 +358,10 @@ class SchoolsController extends BaseController
 
     private function includeResultsForPesquisaWash($result)
     {
-        if (!isset($result['hits'])) return null;
-        if (!isset($result['hits']['hits'])) return null;
+        if (!isset($result['hits']))
+            return null;
+        if (!isset($result['hits']['hits']))
+            return null;
         $values = $result['hits']['hits'];
 
         $arrayValues = [];
@@ -369,5 +376,29 @@ class SchoolsController extends BaseController
             array_push($arrayValues, $objet);
         }
         return $arrayValues;
+    }
+
+    public function store()
+    {
+        try {
+            $parameters = request()->all();
+            $isSchoolRegistred = School::select('name')->where('id', $parameters['codigo'])->get()->toArray();
+            if (count($isSchoolRegistred) > 0)
+                return response()->json(['status' => 'error', 'reason' => 'INEP has already been registered', 'name' => $isSchoolRegistred[0]['name']], 409);
+            $school = new School();
+            $school->id = $parameters['codigo'];
+            $school->name = $parameters['name'];
+            $school->uf = $parameters['uf'];
+            $school->uf_id = $parameters['uf_id'];
+            $school->city_id = $parameters['city_id'];
+            $school->city_ibge_id = $parameters['city_ibge_id'];
+            $school->city_name = $parameters['city_name'];
+            $school->region = $parameters['region'];
+            $school->school_email = $parameters['school_email'] ?? null;
+            $school->save();
+            return response()->json(['status' => 'ok', 'id' => $school->id]);
+        } catch (\Exception $ex) {
+            return $this->api_exception($ex);
+        }
     }
 }

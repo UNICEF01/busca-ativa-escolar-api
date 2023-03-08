@@ -40,7 +40,6 @@ class Kernel extends ConsoleKernel
         Commands\ForceObligatorinessEducationReason::class,
         Commands\DisplayPrimaryGroupsUnrelatedWithAllAlerts::class,
         Commands\ReindexSchoolById::class,
-        Commands\RemoveDuplicatedChildsWithoutAlerts::class,
         Commands\ExportErrorsCasesDisabled::class,
         Commands\FixErrorsCasesDisabled::class,
         Commands\TransferNisToAlert::class,
@@ -48,7 +47,6 @@ class Kernel extends ConsoleKernel
         Commands\ReindexOneChild::class,
         Commands\FixMapLocationChildOutBrazil::class,
         Commands\fixNameChildPesquisa::class,
-        Commands\removeInconsistenciesCases::class,
         Commands\SnapshotDailyMetricsConsolidated::class,
         Commands\SnapshotDailyMetricsFullMySQL::class,
         Commands\InsertCancelReasonDailyMetrics::class,
@@ -58,7 +56,11 @@ class Kernel extends ConsoleKernel
         Commands\SendEmailToTenantsWithTerms::class,
         Commands\ForceImportEducacensoFile::class,
         Commands\SendEmailLgpd::class,
-        Commands\SendEmailSelo::class
+        Commands\SendEmailSelo::class,
+        Commands\CheckInconsistenciesCases::class,
+        Commands\ReindexChildrenByTenant::class,
+        Commands\ReindexAllSchoolsOfCity::class,
+        Commands\CheckCaseDeadlinesByTenant::class
     ];
 
     /**
@@ -70,11 +72,12 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         //$schedule->command('debug:test_scheduling_system')->everyMinute();
-        $schedule->command('workflow:check_case_deadlines')->dailyAt('20:00');
-        $schedule->command('snapshot:daily_metrics')->dailyAt('21:00');
-        $schedule->command('snapshot:daily_metrics_consolidated')->dailyAt('22:00');
-        $schedule->command('snapshot:daily_metrics_full_mysql')->dailyAt('23:00');
-        $schedule->command('maintenance:send_emails_actualize_frequency')->dailyAt('00:00');
+        //$schedule->command('snapshot:daily_metrics_full_mysql')->dailyAt('23:00');
+        //$schedule->command('maintenance:send_emails_actualize_frequency')->dailyAt('00:00');
+
+        $schedule->command('workflow:check_case_deadlines')->dailyAt('21:00');
+        $schedule->command('snapshot:daily_metrics')->dailyAt('22:00');
+        
     }
 
 

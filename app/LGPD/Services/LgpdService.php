@@ -33,25 +33,28 @@ class LgpdService implements ILgpd
     return $this->lgpdRepository->update($attributes, $id);
   }
 
-  public function checkAccess(string $mail): bool
+  public function deleteLgpd(string $id): bool
   {
-    $user = User::where('email', $mail)->first();
-    if($user && $user->lgpd === 1){
-      if(str_contains($user->type, 'estadual')){
-        return $this->findLgpd($user->id) && $this->findLgpd($user->uf) ? true : false;
+    //TODO
+    return 1;
+  }
+
+  public function checkAccess(array $attributes): bool
+  {
+    if ($this->findLgpd($attributes['user'])) {
+      /*if (array_key_exists('uf', $attributes) && !is_null($attributes['uf'])) {
+      if ($this->findLgpd($attributes['uf']))
+      return true;
+      return false;
       }
-      else{
-        if(str_contains($user->type, 'nacional')){
-          return $this->findLgpd($user->id) ? true : false;
-        }
-        else{
-          $tenantData = Tenant::where('id', $user->tenant_id)->first();
-          $signupTenantData = TenantSignup::where('tenant_id', $tenantData->id)
-                                          ->orWhere('city_id', $tenantData->city_id)->first();
-          return $this->findLgpd($user->id) && $this->findLgpd($signupTenantData->id) ? true : false;
-        }
-      }
+      if (array_key_exists('tenant_id', $attributes) && !is_null($attributes['tenant_id'])) {
+      if ($this->findLgpd($attributes['tenant_id']))
+      return true;
+      return false;
+      }*/
+      return true;
     }
+
     return false;
   }
 }

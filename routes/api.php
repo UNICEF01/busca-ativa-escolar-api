@@ -184,6 +184,7 @@ Route::group(['prefix' => 'v1', 'middleware' => 'api'], function () {
 
 		// INEP Schools
 		Route::post('/schools/search', 'Resources\SchoolsController@search')->name('api.school.search');
+		Route::post('/schools', 'Resources\SchoolsController@store')->middleware('can:schools.view');
 		Route::get('/schools/all_educacenso', 'Resources\SchoolsController@all_educacenso')->middleware('can:settings.educacenso');
 		Route::put('/schools/{id}', 'Resources\SchoolsController@update')->middleware('can:update.school');
 
@@ -206,7 +207,7 @@ Route::group(['prefix' => 'v1', 'middleware' => 'api'], function () {
 		Route::post('/reports/tenants', 'Resources\ReportsController@query_tenants')->middleware('can:reports.view');
 		Route::post('/reports/ufs', 'Resources\ReportsController@query_ufs')->middleware('can:reports.view');
 		Route::post('/reports/signups', 'Resources\ReportsController@query_signups')->middleware('can:reports.view');
-		Route::get('/reports/country_stats', 'Resources\ReportsController@country_stats');
+		//Route::get('/reports/country_stats', 'Resources\ReportsController@country_stats');
 		Route::get('/reports/state_stats', 'Resources\ReportsController@state_stats');
 		Route::get('/reports/exported/{filename}', 'Resources\ReportsController@download_exported')->name('api.reports.download_exported')->middleware('can:reports.view');
 
@@ -272,13 +273,15 @@ Route::group(['prefix' => 'v1', 'middleware' => 'api'], function () {
 	Route::get('/integration/forms/{form}', 'Integration\FormBuilderController@render_form');
 
 	//Open data to landing page
-	Route::get('/lp/report', 'LP\ReportsLandingPageController@report');
-	Route::get('/lp/report/city', 'LP\ReportsLandingPageController@report_city');
+	//Route::get('/lp/report', 'LP\ReportsLandingPageController@report');
+	Route::get('/reports/report', 'Resources\ReportsController@report');
+	Route::get('/reports/report/city', 'LP\ReportsLandingPageController@report_city');
 	Route::get('/lp/report/list/cities', 'LP\ReportsLandingPageController@list_cities');
 	Route::get('/lp/report/reach', 'LP\ReportsLandingPageController@reach');
+    	Route::get('/lp/report/by_dates/city', 'LP\ReportsLandingPageController@report_by_dates');
 
 	//Open data to landing page pnad
-	Route::get('/pnad/report', 'LP\ReportsPnadController@pnad');
+	Route::get('/reports/pnad', 'Resources\ReportsController@pnad');
 
 	//Webhooks Mailgun
 	Route::post('/mailgun/update', 'Mailgun\MailgunController@update');

@@ -230,7 +230,7 @@ class EducacensoXLSChunkImporter
         Log::info($headerArray);
         Log::info("---------------------");
 
-
+    //	COD ALUNO	NOME ALUNO	NASCIMENTO	NOME MAE	MODALIDADE	ETAPA
         $headerFileEducacenso = [
             0 => 'ESTADO',
             1 => 'MUNICIPIO',

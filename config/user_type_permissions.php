@@ -26,6 +26,7 @@ return [
         'developer_tools',
         'maintenance',
         'update.yourself',
+        'schools.view'
     ],
 
     BuscaAtivaEscolar\User::TYPE_GESTOR_NACIONAL => [
@@ -49,6 +50,7 @@ return [
         'cities.selo_reports',
         'users.reports',
         'update.yourself',
+        'schools.view'
     ],
 
     BuscaAtivaEscolar\User::TYPE_COMITE_NACIONAL => [

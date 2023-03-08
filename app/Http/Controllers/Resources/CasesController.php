@@ -42,7 +42,8 @@ class CasesController extends BaseController
 
             $reason = request('reason');
 
-            if (!$reason) return $this->api_failure('reason_required');
+            if (!$reason)
+                return $this->api_failure('reason_required');
 
             $case->cancel($reason);
 
@@ -58,7 +59,8 @@ class CasesController extends BaseController
 
             $reason = request('reason');
 
-            if (!$reason) return $this->api_failure('reason_required');
+            if (!$reason)
+                return $this->api_failure('reason_required');
 
             return $case->reopen($reason);
         } catch (\Exception $ex) {
@@ -73,7 +75,8 @@ class CasesController extends BaseController
 
             $reason = request('reason');
 
-            if (!$reason) return $this->api_failure('reason_required');
+            if (!$reason)
+                return $this->api_failure('reason_required');
 
             return $case->requestReopen($reason);
         } catch (\Exception $ex) {
@@ -105,9 +108,12 @@ class CasesController extends BaseController
             $tenant_recipient_id = request('tenant_id');
             $city_id = request('city_id');
 
-            if (!$reason) return $this->api_failure('reason_required');
-            if (!$case_id) return $this->api_failure('case_id_required');
-            if (!$tenant_recipient_id) return $this->api_failure('tenant_recipient_id_required');
+            if (!$reason)
+                return $this->api_failure('reason_required');
+            if (!$case_id)
+                return $this->api_failure('case_id_required');
+            if (!$tenant_recipient_id)
+                return $this->api_failure('tenant_recipient_id_required');
 
             return $case->requestTransfer($reason, $case_id, $tenant_recipient_id, $city_id);
         } catch (\Exception $ex) {
@@ -141,30 +147,32 @@ class CasesController extends BaseController
                     return $case['id'];
                 }, $request->input('cases'));
 
-                foreach ( ChildCase::whereIn('child_id', $casesArray)->get() as $case){
-                   $currentStep = $case->currentStep;
-                   $assignedUser = $currentStep->assignedUser;
-                   if($case->case_status == ChildCase::STATUS_IN_PROGRESS){
-                       if( $assignedUser != null ){
-                           if(!$assignedUser->isRestrictedToUF()){
-                               if($request->input('newObject')['id'] != $currentStep->assignedUser->group->id && 
-                               strpos($treeIds, $currentStep->assignedUser->group->id) === false)
-                                   $currentStep->detachUser();
-                               
+                foreach (ChildCase::whereIn('child_id', $casesArray)->get() as $case) {
+                    $currentStep = $case->currentStep;
+                    $assignedUser = $currentStep->assignedUser;
+                    if ($case->case_status == ChildCase::STATUS_IN_PROGRESS) {
+                        if ($assignedUser != null) {
+                            if (!$assignedUser->isRestrictedToUF()) {
+                                if (
+                                    $request->input('newObject')['id'] != $currentStep->assignedUser->group->id &&
+                                    strpos($treeIds, $currentStep->assignedUser->group->id) === false
+                                )
+                                    $currentStep->detachUser();
+
                                 $case->group_id = $request->input('newObject')['id'];
                                 $case->tree_id = $treeIds;
                                 $case->save();
                                 $case->child->save(); //reindex
-                           }
-                       } else {
-                           $case->group_id = $request->input('newObject')['id'];
-                           $case->tree_id = $treeIds;
-                           $case->save();
-                           $case->child->save(); //reindex
+                            }
+                        } else {
+                            $case->group_id = $request->input('newObject')['id'];
+                            $case->tree_id = $treeIds;
+                            $case->save();
+                            $case->child->save(); //reindex
 
-                       }
+                        }
 
-                   }
+                    }
 
                 }
                 return response()->json(['status' => 'ok']);

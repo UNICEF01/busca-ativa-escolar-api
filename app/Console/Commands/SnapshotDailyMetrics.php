@@ -30,7 +30,7 @@ class SnapshotDailyMetrics extends Command
 
         $today = $this->argument('date') ?? date('Y-m-d');
 
-        Child::with(['currentCase', 'submitter', 'city'])->chunk(500, function ($children) use ($today){
+        Child::with(['currentCase', 'submitter', 'city'])->chunk(500, function ($children) use ($today) {
 
             //$this->info("[index] Building children index: {$today}...");
 
@@ -43,7 +43,7 @@ class SnapshotDailyMetrics extends Command
         });
 
 
-       //$this->info("[index] Index built!");
+        //$this->info("[index] Index built!");
 
     }
 

@@ -44,7 +44,7 @@ class EducacensoController extends BaseController
 		$file = request()->file('file');
 
 		if (!in_array($file->getMimeType(), self::PERMITED_FILES_MIME_TYPES)) {
-			return response()->json(["reason" => "File not permitted",  "status" => "error"], 400);
+			return response()->json(["reason" => "File not permitted", "status" => "error"], 400);
 		}
 
 		$tenant = auth()->user()->tenant; /* @var $tenant Tenant */
@@ -54,7 +54,7 @@ class EducacensoController extends BaseController
 		}
 
 		if (!$file || !$file->isValid()) {
-			return response()->json(["reason" => "File not permitted",  "status" => "error"], 400);
+			return response()->json(["reason" => "File not permitted", "status" => "error"], 400);
 		}
 
 		try {
@@ -65,7 +65,8 @@ class EducacensoController extends BaseController
 
 			$job = ImportJob::createFromAttachment(EducacensoXLSChunkImporter::TYPE, $attachment);
 
-			dispatch(new ProcessImportJob($job));
+			//dispatch(new ProcessImportJob($job));
+
 		} catch (\Exception $ex) {
 			return $this->api_exception($ex);
 		}

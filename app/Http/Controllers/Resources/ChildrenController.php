@@ -16,6 +16,8 @@ namespace BuscaAtivaEscolar\Http\Controllers\Resources;
 
 use Auth;
 use BuscaAtivaEscolar\City;
+use Illuminate\Support\Facades\Log;
+use function Aws\map;
 use BuscaAtivaEscolar\ActivityLog;
 use BuscaAtivaEscolar\Attachment;
 use BuscaAtivaEscolar\CaseSteps\Alerta;
@@ -63,8 +65,10 @@ class ChildrenController extends BaseController
 		if (Auth::user()->isRestrictedToUF())
 			$params['assigned_uf'] = Auth::user()->uf;
 
-		if (isset($params['uf'])) $params['uf'] = Str::lower($params['uf']);
-		if (isset($params['assigned_uf'])) $params['assigned_uf'] = Str::lower($params['assigned_uf']);
+		if (isset($params['uf']))
+			$params['uf'] = Str::lower($params['uf']);
+		if (isset($params['assigned_uf']))
+			$params['assigned_uf'] = Str::lower($params['assigned_uf']);
 
 		$query = ElasticSearchQuery::withParameters($params)
 			->filterByTerm('tenant_id', false)
@@ -96,7 +100,7 @@ class ChildrenController extends BaseController
 				}
 			}
 		}
-    
+
 		$query->getGroups($params);
 
 		return $query;
@@ -111,7 +115,7 @@ class ChildrenController extends BaseController
 		$attempted = $query->getAttemptedQuery();
 		$query = $query->getQuery();
 
-		$results = $search->search(new Child(), $query, $size, $from-1 ); //need to use -1 (value of front is always 1 or more and eastic needs to start at 0)
+		$results = $search->search(new Child(), $query, $size, $from - 1); //need to use -1 (value of front is always 1 or more and eastic needs to start at 0)
 
 		return fractal()
 			->item($results)
@@ -167,7 +171,8 @@ class ChildrenController extends BaseController
 		$output = [];
 
 		foreach ($input as $key => $value) {
-			if (in_array($key, $fields)) $value = Str::ascii($value);
+			if (in_array($key, $fields))
+				$value = Str::ascii($value);
 			$output[$key] = $value;
 		}
 
@@ -223,7 +228,8 @@ class ChildrenController extends BaseController
 	public function removeComment(Child $child, Comment $comment)
 	{
 
-		if ($child == null or $comment == null) return $this->api_failure("A anotação não pode ser removida");
+		if ($child == null or $comment == null)
+			return $this->api_failure("A anotação não pode ser removida");
 
 		if ($this->currentUser()->id != $comment->author_id) {
 			return $this->api_failure("Você não tem permissão para remover a anotação selecionada");
@@ -235,7 +241,8 @@ class ChildrenController extends BaseController
 
 	public function getComment(Child $child, Comment $comment)
 	{
-		if ($child == null or $comment == null) return $this->api_failure("A anotação não foi encontrada");
+		if ($child == null or $comment == null)
+			return $this->api_failure("A anotação não foi encontrada");
 
 		if ($this->currentUser()->id != $comment->author_id) {
 			return $this->api_failure("Você não tem permissão para visualizar a anotação selecionada");
@@ -285,7 +292,8 @@ class ChildrenController extends BaseController
 			$message = request('message', '');
 			$id_message = request('id_message', null);
 
-			if ($message == null or $id_message == null) return $this->api_failure("A anotação não pode ser editada");
+			if ($message == null or $id_message == null)
+				return $this->api_failure("A anotação não pode ser editada");
 
 			$comment = Comment::updateComment(Auth::user(), $id_message, $message);
 
@@ -340,7 +348,8 @@ class ChildrenController extends BaseController
 			$data = request()->toArray();
 			$validation = (new Alerta())->validate($data);
 
-			if ($validation->fails()) return $this->api_validation_failed('validation_failed', $validation);
+			if ($validation->fails())
+				return $this->api_validation_failed('validation_failed', $validation);
 
 			$child = Child::spawnFromAlertData($tenant, $user->id, $data);
 
@@ -359,18 +368,7 @@ class ChildrenController extends BaseController
 
 		$city_id = request('city_id');
 
-		$mapCenter = ['lat' => '-13.5013846', 'lng' => '-51.901559', 'zoom' => 4];
-
-		if ($this->currentUser()->isRestrictedToTenant() && !$this->currentUser()->isRestrictedToUF()) {
-			$mapCenter =  $this->currentUser()->tenant->getMapCoordinates();
-		}
-
-		if ($this->currentUser()->isRestrictedToUF()) {
-			$mapCenter = UF::getByCode($this->currentUser()->uf)->getCoordinates();
-			$mapCenter['zoom'] = 6;
-		}
-
-		// TODO: cache this (w/ tenant ID)
+		$mapCenter = ['lat' => '-10.5013846', 'lng' => '-50.901559', 'zoom' => 10];
 
 		if ($city_id == null) {
 			$coordinates = Child::query()
@@ -444,5 +442,7 @@ class ChildrenController extends BaseController
 			],
 			200
 		);
+
 	}
+
 }
