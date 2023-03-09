@@ -129,31 +129,6 @@ class CacheService extends BaseController
         return $data;
     }
 
-<<<<<<< HEAD
-    public function binarySerchString(array $arr, string $target): int
-    {
-        $l = 0;
-        $r = count($arr) - 1;
-
-        while ($l <= $r) {
-            $m = $l + (int)(($r - $l) / 2);
-            $res = strcmp($target, $arr[$m]);
-
-            if ($res == 0)
-                return $m;
-
-            else if ($res > 0)
-                $l = $m + 1;
-
-            else
-                $r = $m - 1;
-        }
-
-        return -1;
-    }
-
-=======
->>>>>>> master
     public function returnMap($uf)
     {
 
@@ -186,44 +161,6 @@ class CacheService extends BaseController
             'SE' => ['026', 'Sergipe'],
             'TO' => ['027', 'Tocantins']
         ];
-<<<<<<< HEAD
-        $ufs_keys = array_keys($ufs);
-        $cache = Cache::get("map_cache");
-        $cache = explode("&", $cache);
-        $data = [];
-        $all_values = [];
-        if ($uf != null and $uf != "null"){
-            $index = $this->binarySerchString($ufs_keys, $uf);
-            $cache = explode('=', explode(']', $cache[$index])[1]);
-            $j = 0;
-            for ($i = 1; $i < count($cache) - 1; ++$i) {
-                $result = explode("*", $cache[$i]);
-                array_push($all_values, (int)$result[2]);
-                $data[$j++] = [
-                    "id" => trim($result[0]),
-                    "value" => trim($result[2]),
-                    "name_city" => $result[1],
-                    "showLabel" => 0,
-                ];
-            }
-        }
-        else{
-            $dataCountry = [];
-            for($i = 0; $i < count($cache) - 1; ++$i){
-                $cacheData = explode(']', $cache[$i]);
-                $value = explode(' ', $cacheData[2]);
-                array_push($dataCountry, [$cacheData[0], $value[1]]);
-            }
-            $j = 0;
-            for($i = 0; $i < count($dataCountry); ++$i){
-                if($dataCountry[$i][1] > 0){
-                    array_push($all_values, $dataCountry[$i][1]);
-                    $name = $dataCountry[$i][0];
-                    $data[$j++] = [
-                        "place_uf" => $name,
-                        "value" =>$dataCountry[$i][1],
-                        "id" => $ufs[$name][0],
-=======
         $data = [];
         $all_values = [];
         $j = 0;
@@ -254,12 +191,11 @@ class CacheService extends BaseController
                         "place_uf" => $name,
                         "value" => trim($result[1]),
                         "id" => $ufs[trim($name)][0],
->>>>>>> master
                         "displayValue" => $name,
                         "showLabel" => 1,
                         "simple_name" => strtolower($name)
                     ];
-                }  
+                }
             }
         }
         usort($data, function ($item1, $item2) {
@@ -280,8 +216,6 @@ class CacheService extends BaseController
         ];
         return $final_data;
     }
-<<<<<<< HEAD
-=======
 
     public function getGrafico(string $selo, string $uf)
     {
@@ -305,7 +239,7 @@ class CacheService extends BaseController
         $this->generateArrayTenant($daily, $data, $i, "(Re)matrícula", "rematricula");
         $this->generateArrayTenant($daily, $data, $i, "Cancelamento após (re)matrícula", "justified_cancelled");
         if (Auth::user()->isRestrictedToTenant()) {
-            $data["goal"] = Auth::user()->tenant->city->goal ? 
+            $data["goal"] = Auth::user()->tenant->city->goal ?
                 $this->currentUser()->tenant->city->goal->goal + $this->currentUser()->tenant->city->goal->accumulated_ciclo1 : 0;
         } else {
             $goals = DB::table("tenants")
@@ -356,5 +290,4 @@ class CacheService extends BaseController
     {
         return strtolower($name[0]);
     }
->>>>>>> master
 }
