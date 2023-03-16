@@ -62,8 +62,10 @@ class ElasticSearchQuery
 	{
 		array_push($this->attemptedQuery, ['addTextField', $name, $priority, $this->params[$name] ?? null]);
 
-		if (!isset($this->params[$name])) return $this;
-		if (strlen($this->params[$name]) <= 0) return $this;
+		if (!isset($this->params[$name]))
+			return $this;
+		if (strlen($this->params[$name]) <= 0)
+			return $this;
 
 		array_push($this->query['bool'][$priority], [$mode => [$name => $this->params[$name]]]);
 
@@ -84,8 +86,10 @@ class ElasticSearchQuery
 	{
 		array_push($this->attemptedQuery, ['addTextFields+', $names, $priority, sizeof($names)]);
 
-		if (sizeof($names) <= 0) return $this;
-		foreach ($names as $name) $this->addTextField($name, $mode, $priority);
+		if (sizeof($names) <= 0)
+			return $this;
+		foreach ($names as $name)
+			$this->addTextField($name, $mode, $priority);
 		return $this;
 	}
 
@@ -103,14 +107,19 @@ class ElasticSearchQuery
 	{
 		array_push($this->attemptedQuery, ['searchTextInColumns', $name, $fields, $priority, $this->params[$name] ?? null, sizeof($fields)]);
 
-		if (!isset($this->params[$name])) return $this;
-		if (strlen($this->params[$name]) <= 0) return $this;
-		if (sizeof($fields) <= 0) return $this;
+		if (!isset($this->params[$name]))
+			return $this;
+		if (strlen($this->params[$name]) <= 0)
+			return $this;
+		if (sizeof($fields) <= 0)
+			return $this;
 
-		array_push($this->query['bool'][$priority], ['multi_match' => [
-			'query' => $this->params[$name],
-			'fields' => $fields,
-		]]);
+		array_push($this->query['bool'][$priority], [
+			'multi_match' => [
+				'query' => $this->params[$name],
+				'fields' => $fields,
+			]
+		]);
 
 		return $this;
 	}
@@ -128,18 +137,23 @@ class ElasticSearchQuery
 	{
 		array_push($this->attemptedQuery, ['autocompleteTextInColumns', $name, $fields, $priority, $this->params[$name] ?? null]);
 
-		if (!isset($this->params[$name])) return $this;
-		if (strlen($this->params[$name]) <= 0) return $this;
-		if (sizeof($fields) <= 0) return $this;
+		if (!isset($this->params[$name]))
+			return $this;
+		if (strlen($this->params[$name]) <= 0)
+			return $this;
+		if (sizeof($fields) <= 0)
+			return $this;
 
-		array_push($this->query['bool'][$priority], ['suggest' => [
+		array_push($this->query['bool'][$priority], [
+			'suggest' => [
 
-			"prefix" => $this->params[$name],
-			"completion" => [
-				"field" => "name_ascii"
-			],
+				"prefix" => $this->params[$name],
+				"completion" => [
+					"field" => "name_ascii"
+				],
 
-		]]);
+			]
+		]);
 
 		return $this;
 	}
@@ -160,12 +174,15 @@ class ElasticSearchQuery
 	{
 		array_push($this->attemptedQuery, ['filterByTerm', $name, $includeNullFields, $priority, $this->params[$name] ?? null]);
 
-		if (!isset($this->params[$name])) return $this;
-		if (strlen($this->params[$name]) <= 0) return $this;
+		if (!isset($this->params[$name]))
+			return $this;
+		if (strlen($this->params[$name]) <= 0)
+			return $this;
 
 		$filter = ['bool' => [$requirement => [['term' => [$name => $this->params[$name]]]]]];
 
-		if ($includeNullFields) array_push($filter['bool'][$requirement], ['missing' => ['field' => $name]]);
+		if ($includeNullFields)
+			array_push($filter['bool'][$requirement], ['missing' => ['field' => $name]]);
 
 		array_push($this->query['bool'][$priority], $filter);
 
@@ -187,12 +204,15 @@ class ElasticSearchQuery
 	{
 		array_push($this->attemptedQuery, ['filterByTerms', $name, $includeNullFields, $priority, $this->params[$name] ?? null]);
 
-		if (!isset($this->params[$name])) return $this;
-		if (!is_array($this->params[$name])) return $this;
+		if (!isset($this->params[$name]))
+			return $this;
+		if (!is_array($this->params[$name]))
+			return $this;
 
 		$filter = ['bool' => ['should' => [['terms' => [$name => $this->params[$name]]]]]];
 
-		if ($includeNullFields) array_push($filter['bool']['should'], ['missing' => ['field' => $name]]);
+		if ($includeNullFields)
+			array_push($filter['bool']['should'], ['missing' => ['field' => $name]]);
 
 		array_push($this->query['bool'][$priority], $filter);
 
@@ -207,7 +227,8 @@ class ElasticSearchQuery
 
 		foreach ($conditions as $field => $params) {
 			array_push($filter['bool']['should'], [$params['type'] => [$field => $params['search']]]);
-			if ($includeNullFields) array_push($filter['bool']['should'], ['missing' => ['field' => $field]]);
+			if ($includeNullFields)
+				array_push($filter['bool']['should'], ['missing' => ['field' => $field]]);
 		}
 
 		array_push($this->query['bool'][$priority], $filter);
@@ -230,12 +251,15 @@ class ElasticSearchQuery
 	{
 		array_push($this->attemptedQuery, ['filterByRange', $name, $priority, $this->params[$name] ?? null, is_array($this->params[$name] ?? null)]);
 
-		if (!isset($this->params[$name])) return $this;
-		if (!is_array($this->params[$name])) return $this;
+		if (!isset($this->params[$name]))
+			return $this;
+		if (!is_array($this->params[$name]))
+			return $this;
 
 		$filter = ['bool' => ['should' => [['range' => [$name => $this->params[$name]]]]]];
 
-		if ($includeNullFields) array_push($filter['bool']['should'], ['missing' => ['field' => $name]]);
+		if ($includeNullFields)
+			array_push($filter['bool']['should'], ['missing' => ['field' => $name]]);
 
 		array_push($this->query['bool'][$priority], $filter);
 
@@ -288,12 +312,13 @@ class ElasticSearchQuery
 	}
 
 	public function getGroups(array $params)
-	{	
+	{
 		$i = count($this->query['bool']['must']);
-		if(array_key_exists('tree', $params) && $params['tree'] == 1)
+		if (array_key_exists('tree', $params) && $params['tree'] == 1)
 			return $this->query['bool']['must'][$i++]['match_phrase']['tree_id'] = $params['group_id'];
-		if(array_key_exists('group_id', $params) || array_key_exists('tree', $params) && $params['tree'] == 0)
+		if (array_key_exists('group_id', $params) || array_key_exists('tree', $params) && $params['tree'] == 0)
 			return $this->query['bool']['must'][$i++]['match']['group_id'] = $params['group_id'];
 		return $this->query['bool']['must'][$i++]['match_phrase']['tree_id'] = \Auth::user()->group_id;
 	}
+
 }
