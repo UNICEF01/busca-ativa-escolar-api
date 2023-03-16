@@ -127,7 +127,8 @@ class Group extends Model
 	 */
 	public function getSettings()
 	{
-		if (!$this->settings) return new GroupSettings($this);
+		if (!$this->settings)
+			return new GroupSettings($this);
 		return GroupSettings::unserialize($this->settings);
 	}
 
@@ -142,7 +143,7 @@ class Group extends Model
 	{
 		return self::create([
 			'tenant_id' => $tenant->id,
-			'name' => 'BAE',
+			'name' => 'Busca Ativa Escolar',
 			'is_primary' => true
 		]);
 	}
@@ -163,7 +164,8 @@ class Group extends Model
 	 */
 	public static function updateCausesMap(Group $group)
 	{
-		if (!$group->tenant_id) return;
+		if (!$group->tenant_id)
+			return;
 
 		$map = DB::table("group_causes");
 		$causes = $group->getSettings()->getHandledAlertCauses();
@@ -191,38 +193,41 @@ class Group extends Model
 			->toArray();
 	}
 
-	public function getArrayOfParentsId(){
-        $parentIds = [];
-        if($this->parent != null){
-            array_push($parentIds, $this->parent->id);
-            if($this->parent->parent != null){
-                array_push($parentIds, $this->parent->parent->id);
-                if($this->parent->parent->parent != null){
-                    array_push($parentIds, $this->parent->parent->parent->id);
-                }
-            }
-        }
-        return $parentIds;
+	public function getArrayOfParentsId()
+	{
+		$parentIds = [];
+		if ($this->parent != null) {
+			array_push($parentIds, $this->parent->id);
+			if ($this->parent->parent != null) {
+				array_push($parentIds, $this->parent->parent->id);
+				if ($this->parent->parent->parent != null) {
+					array_push($parentIds, $this->parent->parent->parent->id);
+				}
+			}
+		}
+		return $parentIds;
 	}
 
-    public function getTree(){
-		if($this->parent['parent']['parent'])
+	public function getTree()
+	{
+		if ($this->parent['parent']['parent'])
 			return [$this->parent->parent->parent['id'], $this->parent->parent['id'], $this->parent['id'], $this->id];
-		if($this->parent['parent']) 
+		if ($this->parent['parent'])
 			return [$this->parent->parent['id'], $this->parent['id'], $this->id];
-        if($this->parent)
+		if ($this->parent)
 			return [$this->parent['id'], $this->id];
-        return [$this->id];
-    }
+		return [$this->id];
+	}
 
-	public function getTreeName(){
-		if($this->parent['parent']['parent'])
+	public function getTreeName()
+	{
+		if ($this->parent['parent']['parent'])
 			return [$this->parent->parent->parent['name'], $this->parent->parent['name'], $this->parent['name'], $this->name];
-		if($this->parent['parent']) 
+		if ($this->parent['parent'])
 			return [$this->parent->parent['name'], $this->parent['name'], $this->name];
-        if($this->parent)
+		if ($this->parent)
 			return [$this->parent['name'], $this->name];
-        return [$this->name];
+		return [$this->name];
 	}
 
 }
