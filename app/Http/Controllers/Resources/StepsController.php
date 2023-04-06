@@ -14,7 +14,6 @@
 
 namespace BuscaAtivaEscolar\Http\Controllers\Resources;
 
-
 use BuscaAtivaEscolar\CaseSteps\CaseStep;
 use BuscaAtivaEscolar\Http\Controllers\BaseController;
 use BuscaAtivaEscolar\ReopeningRequests;
@@ -29,30 +28,22 @@ use Carbon\Carbon;
 
 class StepsController extends BaseController
 {
-
 	public function show($step_type, $step_id)
 	{
-
 		/* @var $user User */
 		$user = \Auth::user();
 		$user->type = User::TYPE_GESTOR_NACIONAL;
 
-
 		try {
 			$step = CaseStep::fetch($step_type, $step_id);
 
-			$reopeningRequest = ReopeningRequests::where(
-				['child_id' => $step->child_id]
-			)->first();
+			return fractal()
+				->item($step)
+				->transformWith(new StepTransformer())
+				->serializeWith(new SimpleArraySerializer())
+				->parseIncludes(request('with'))
+				->respond();
 
-			if (($step['tenant_id'] == $user['tenant_id']) || ($user['tenant_id'] == $reopeningRequest['tenant_recipient_id'])) {
-				return fractal()
-					->item($step)
-					->transformWith(new StepTransformer())
-					->serializeWith(new SimpleArraySerializer())
-					->parseIncludes(request('with'))
-					->respond();
-			}
 		} catch (\Exception $ex) {
 			return response()->json(['status' => 'error', 'reason' => $ex->getMessage()]);
 		}
@@ -72,9 +63,11 @@ class StepsController extends BaseController
 
 			$validation = $step->validate($data);
 
-			if (!$this->isValidDateForUpdateStep($step)) return $this->api_failure("A etapa ainda não está no perído para cadastro");
+			if (!$this->isValidDateForUpdateStep($step))
+				return $this->api_failure("A etapa ainda não está no perído para cadastro");
 
-			if ($validation->fails()) return $this->api_validation_failed('validation_failed', $validation);
+			if ($validation->fails())
+				return $this->api_validation_failed('validation_failed', $validation);
 
 			$input = $step->setFields($data);
 
@@ -91,18 +84,22 @@ class StepsController extends BaseController
 
 			$step = CaseStep::fetch($step_type, $step_id);
 
-			if ($step->is_completed) return response()->json(['status' => 'error', 'reason' => 'step_already_completed']);
-			if (!$step->assigned_user_id) return response()->json(['status' => 'error', 'reason' => 'no_assigned_user']);
+			if ($step->is_completed)
+				return response()->json(['status' => 'error', 'reason' => 'step_already_completed']);
+			if (!$step->assigned_user_id)
+				return response()->json(['status' => 'error', 'reason' => 'no_assigned_user']);
 
 			$validation = $step->validate($step->toArray(), true);
 
-			if ($validation->fails()) return $this->api_validation_failed('validation_failed', $validation);
+			if ($validation->fails())
+				return $this->api_validation_failed('validation_failed', $validation);
 
 			$next = $step->complete();
 
 			// TODO: $step->canBeCompletedBy(Auth::user());
 
-			if (!$next) return response()->json(['status' => 'ok', 'hasNext' => false]);
+			if (!$next)
+				return response()->json(['status' => 'ok', 'hasNext' => false]);
 
 			return response()->json([
 				'status' => 'ok',
@@ -112,6 +109,7 @@ class StepsController extends BaseController
 					->transformWith(new StepTransformer())
 					->serializeWith(new SimpleArraySerializer())
 			]);
+
 		} catch (\Exception $ex) {
 			return $this->api_exception($ex);
 		}
