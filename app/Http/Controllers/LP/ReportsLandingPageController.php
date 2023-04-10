@@ -33,7 +33,8 @@ class ReportsLandingPageController extends BaseController
         try {
             $typeOfCache = 'country';
             foreach ($resqueted as $key => $value) {
-                if (!empty($value)) $typeOfCache = $key;
+                if (!empty($value))
+                    $typeOfCache = $key;
             }
             $cache = new CacheService();
             return response()->json(['status' => 'ok', '_data' => $cache->returnData($resqueted[$typeOfCache] ? $resqueted[$typeOfCache] : 'BR')]);
@@ -54,13 +55,12 @@ class ReportsLandingPageController extends BaseController
 
         if ($ibge_id != null) {
             $city_ibge = City::where('ibge_city_id', '=', intval($ibge_id))->first();
-            if ($city_ibge){
-                if($ibge_id == '3550308')
+            if ($city_ibge) {
+                if ($ibge_id == '3550308')
                     $tenant = Tenant::where([['city_id', '=', $city_ibge->id], ['is_active', '=', 1]])->first();
                 else
                     $tenant = Tenant::where([['city_id', '=', $city_ibge->id], ['is_active', '=', 1]])->withTrashed()->first();
-            }
-            else
+            } else
                 $tenant = null;
         }
 
@@ -94,27 +94,29 @@ class ReportsLandingPageController extends BaseController
         try {
 
             $stats = Cache::remember('report_city_' . $tenantId, 86400, function () use ($tenantId, $data_city) {
+
                 $causes = [];
 
                 foreach (CaseCause::getAll() as $case) {
 
-                    //alerta pemanece com status de aceito se caso for cancelado!
-                    $qtd =
-                        \DB::table('children')
-                        ->join('case_steps_pesquisa', 'children.id', '=', 'case_steps_pesquisa.child_id')
-                        ->where(
-                            [
-                                ['case_steps_pesquisa.tenant_id', $tenantId],
-                                ['case_steps_pesquisa.case_cause_ids', 'like', "%{$case->id}%"],
-                                ['children.alert_status', 'accepted']
-                            ]
-                        )
-                        ->count();
+                    if ($case->hidden != 1) {
+                        $qtd =
+                            \DB::table('children')
+                                ->join('case_steps_pesquisa', 'children.id', '=', 'case_steps_pesquisa.child_id')
+                                ->whereJsonContains('case_steps_pesquisa.case_cause_ids', $case->id)
+                                ->where([
+                                    ['case_steps_pesquisa.tenant_id', $tenantId],
+                                    ['children.alert_status', 'accepted']
+                                ])
+                                ->count();
 
-                    if ($qtd > 0) {
-                        array_push($causes, ['id' => $case->id, 'cause' => $case->label, 'qtd' => $qtd]);
+                        if ($qtd > 0) {
+                            array_push($causes, ['id' => $case->id, 'cause' => $case->label, 'qtd' => $qtd]);
+                        }
                     }
+
                 }
+
                 $alerts = DB::select(
                     DB::raw("select t2.accepted, t1.pending, t2.rejected from(select `children`.`tenant_id`, count(1) as pending from `children` inner join `tenants` on `children`.`tenant_id` = `tenants`.`id` where exists(select count(1) from `case_steps_alerta` where `children`.`id` = `case_steps_alerta`.`child_id` and `alert_status` = 'pending' and `case_steps_alerta`.`deleted_at` is null) and `alert_status` = 'pending' and `children`.`deleted_at` is null and `children`.`tenant_id` = '{$tenantId}') as t1, (select `children`.`tenant_id`, sum(case when `case_steps_alerta`.`alert_status` = 'accepted' and `children`.`alert_status` = 'accepted' then 1 else 0 end) as accepted, sum(case when `children`.`alert_status` = 'rejected' then 1 else 0 end) as rejected from `children` inner join `case_steps_alerta` on `children`.`id` = `case_steps_alerta`.`child_id` inner join `tenants` on `children`.`tenant_id` = `tenants`.`id` where `children`.`deleted_at` is null and `children`.`tenant_id` = '{$tenantId}') as t2 where t1.tenant_id = t2.tenant_id"),
                 );
@@ -142,11 +144,11 @@ class ReportsLandingPageController extends BaseController
                 if ($cases)
                     $data['cases'] = [
                         'total' => $cases[0]->_in_school +
-                            $cases[0]->_in_observation +
-                            $cases[0]->_out_of_school +
-                            $cases[0]->_cancelled +
-                            $cases[0]->_transferred +
-                            $cases[0]->_interrupted,
+                        $cases[0]->_in_observation +
+                        $cases[0]->_out_of_school +
+                        $cases[0]->_cancelled +
+                        $cases[0]->_transferred +
+                        $cases[0]->_interrupted,
                         'in_progress' => $cases[0]->_in_progress,
                         'enrollment' => $cases[0]->_enrollment,
                         'in_school' => $cases[0]->_in_school,
@@ -174,7 +176,9 @@ class ReportsLandingPageController extends BaseController
                 $data['data_city'] = $data_city;
                 return $data;
             });
+
             return response()->json(['status' => 'ok', 'stats' => $stats]);
+
         } catch (\Exception $ex) {
             return $this->api_exception($ex);
         }
@@ -199,7 +203,8 @@ class ReportsLandingPageController extends BaseController
         }
     }
 
-    public function report_by_dates(){
+    public function report_by_dates()
+    {
 
         $ibge_id = request('ibge_id');
         $initial_date = request('initial_date');
@@ -211,18 +216,18 @@ class ReportsLandingPageController extends BaseController
         try {
             Carbon::parse($initial_date);
             Carbon::parse($final_date);
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             return $this->api_failure('invalid_date');
         }
 
         $city = City::where('ibge_city_id', '=', $ibge_id)->get()->first();
 
-        if(!$city)
+        if (!$city)
             return $this->api_failure('invalid_city_id');
 
         $tenant = Tenant::where('city_id', '=', $city->id)->get()->first();
 
-        if(!$tenant)
+        if (!$tenant)
             return $this->api_failure('there_is_no_adhesion');
 
         $goal = $tenant->city->goal ? $tenant->city->goal->goal : null;
