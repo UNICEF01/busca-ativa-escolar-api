@@ -93,91 +93,93 @@ class ReportsLandingPageController extends BaseController
 
         try {
 
-            $stats = Cache::remember('report_city_' . $tenantId, 86400, function () use ($tenantId, $data_city) {
+            //$stats = Cache::remember('report_city_' . $tenantId, 86400, function () use ($tenantId, $data_city) {
 
-                $causes = [];
+            $causes = [];
 
-                foreach (CaseCause::getAll() as $case) {
+            foreach (CaseCause::getAll() as $case) {
 
-                    if (!$case->hidden) {
-                        $qtd =
-                            \DB::table('children')
-                                ->join('case_steps_pesquisa', 'children.id', '=', 'case_steps_pesquisa.child_id')
-                                ->whereJsonContains('case_steps_pesquisa.case_cause_ids', $case->id)
-                                ->where([
+                if (!$case->hidden) {
+                    $qtd =
+                        \DB::table('children')
+                            ->join('case_steps_pesquisa', 'children.id', '=', 'case_steps_pesquisa.child_id')
+                            ->where(function ($query) use ($case, $tenantId) {
+                                $query->whereJsonContains('case_steps_pesquisa.case_cause_ids', $case->id);
+                                $query->where([
                                     ['case_steps_pesquisa.tenant_id', $tenantId],
                                     ['children.alert_status', 'accepted']
-                                ])
-                                ->count();
+                                ]);
+                            })
+                            ->count();
 
-                        if ($qtd > 0) {
-                            array_push($causes, ['id' => $case->id, 'cause' => $case->label, 'qtd' => $qtd]);
-                        }
+                    if ($qtd > 0) {
+                        array_push($causes, ['id' => $case->id, 'cause' => $case->label, 'qtd' => $qtd]);
                     }
-
                 }
 
-                $alerts = DB::select(
-                    DB::raw("select t2.accepted, t1.pending, t2.rejected from(select `children`.`tenant_id`, count(1) as pending from `children` inner join `tenants` on `children`.`tenant_id` = `tenants`.`id` where exists(select count(1) from `case_steps_alerta` where `children`.`id` = `case_steps_alerta`.`child_id` and `alert_status` = 'pending' and `case_steps_alerta`.`deleted_at` is null) and `alert_status` = 'pending' and `children`.`deleted_at` is null and `children`.`tenant_id` = '{$tenantId}') as t1, (select `children`.`tenant_id`, sum(case when `case_steps_alerta`.`alert_status` = 'accepted' and `children`.`alert_status` = 'accepted' then 1 else 0 end) as accepted, sum(case when `children`.`alert_status` = 'rejected' then 1 else 0 end) as rejected from `children` inner join `case_steps_alerta` on `children`.`id` = `case_steps_alerta`.`child_id` inner join `tenants` on `children`.`tenant_id` = `tenants`.`id` where `children`.`deleted_at` is null and `children`.`tenant_id` = '{$tenantId}') as t2 where t1.tenant_id = t2.tenant_id"),
-                );
+            }
 
-                $cases = DB::select(
-                    DB::raw("select tenants.uf, sum(case when `alert_status` = 'accepted' and `child_status` in ('out_of_school', 'in_observation') then 1 else 0 end) as '_in_progress', sum(case when `child_status` in ('in_school', 'in_observation') then 1 else 0 end) as '_enrollment', sum(case when `child_status` = 'in_school' then 1 else 0 end) as '_in_school', sum(case when `child_status` = 'in_observation' then 1 else 0 end) as '_in_observation', sum(case when `child_status` = 'out_of_school' and `alert_status` = 'accepted' then 1 else 0 end) as '_out_of_school', sum(case when `child_status` = 'cancelled' and `alert_status` = 'accepted' then 1 else 0 end) as '_cancelled', sum(case when `child_status` = 'transferred' then 1 else 0 end) as '_transferred', sum(case when `child_status` = 'interrupted' then 1 else 0 end) as '_interrupted', sum(case when (case_status = 'in_progress' or cancel_reason = 'city_transfer' or cancel_reason = 'death' or cancel_reason = 'not_found' or case_status in ('completed', 'interrupted', 'transferred')) and csr.deleted_at is null and cc.deleted_at is null and is_completed = 1 then 1 else 0 end) as '_enrollment_with_cancelled' from children inner join tenants on children.tenant_id = tenants.id left join children_cases cc on children.id = cc.child_id left join case_steps_rematricula csr on children.id = csr.child_id where children.deleted_at is null and tenants.id = '{$tenantId}'"),
-                );
+            $alerts = DB::select(
+                DB::raw("select t2.accepted, t1.pending, t2.rejected from(select `children`.`tenant_id`, count(1) as pending from `children` inner join `tenants` on `children`.`tenant_id` = `tenants`.`id` where exists(select count(1) from `case_steps_alerta` where `children`.`id` = `case_steps_alerta`.`child_id` and `alert_status` = 'pending' and `case_steps_alerta`.`deleted_at` is null) and `alert_status` = 'pending' and `children`.`deleted_at` is null and `children`.`tenant_id` = '{$tenantId}') as t1, (select `children`.`tenant_id`, sum(case when `case_steps_alerta`.`alert_status` = 'accepted' and `children`.`alert_status` = 'accepted' then 1 else 0 end) as accepted, sum(case when `children`.`alert_status` = 'rejected' then 1 else 0 end) as rejected from `children` inner join `case_steps_alerta` on `children`.`id` = `case_steps_alerta`.`child_id` inner join `tenants` on `children`.`tenant_id` = `tenants`.`id` where `children`.`deleted_at` is null and `children`.`tenant_id` = '{$tenantId}') as t2 where t1.tenant_id = t2.tenant_id"),
+            );
 
-                $data = [];
+            $cases = DB::select(
+                DB::raw("select tenants.uf, sum(case when `alert_status` = 'accepted' and `child_status` in ('out_of_school', 'in_observation') then 1 else 0 end) as '_in_progress', sum(case when `child_status` in ('in_school', 'in_observation') then 1 else 0 end) as '_enrollment', sum(case when `child_status` = 'in_school' then 1 else 0 end) as '_in_school', sum(case when `child_status` = 'in_observation' then 1 else 0 end) as '_in_observation', sum(case when `child_status` = 'out_of_school' and `alert_status` = 'accepted' then 1 else 0 end) as '_out_of_school', sum(case when `child_status` = 'cancelled' and `alert_status` = 'accepted' then 1 else 0 end) as '_cancelled', sum(case when `child_status` = 'transferred' then 1 else 0 end) as '_transferred', sum(case when `child_status` = 'interrupted' then 1 else 0 end) as '_interrupted', sum(case when (case_status = 'in_progress' or cancel_reason = 'city_transfer' or cancel_reason = 'death' or cancel_reason = 'not_found' or case_status in ('completed', 'interrupted', 'transferred')) and csr.deleted_at is null and cc.deleted_at is null and is_completed = 1 then 1 else 0 end) as '_enrollment_with_cancelled' from children inner join tenants on children.tenant_id = tenants.id left join children_cases cc on children.id = cc.child_id left join case_steps_rematricula csr on children.id = csr.child_id where children.deleted_at is null and tenants.id = '{$tenantId}'"),
+            );
 
-                if ($alerts)
-                    $data['alerts'] = [
-                        'total' => $alerts[0]->accepted + $alerts[0]->pending + $alerts[0]->rejected,
-                        'approved' => $alerts[0]->accepted,
-                        'pending' => $alerts[0]->pending,
-                        'rejected' => $alerts[0]->rejected
-                    ];
-                else
-                    $data['alerts'] = [
-                        'total' => 0,
-                        'approved' => 0,
-                        'pending' => 0,
-                        'rejected' => 0
-                    ];
-                if ($cases)
-                    $data['cases'] = [
-                        'total' => $cases[0]->_in_school +
-                        $cases[0]->_in_observation +
-                        $cases[0]->_out_of_school +
-                        $cases[0]->_cancelled +
-                        $cases[0]->_transferred +
-                        $cases[0]->_interrupted,
-                        'in_progress' => $cases[0]->_in_progress,
-                        'enrollment' => $cases[0]->_enrollment,
-                        'in_school' => $cases[0]->_in_school,
-                        'in_observation' => $cases[0]->_in_observation,
-                        'out_of_school' => $cases[0]->_out_of_school,
-                        'cancelled' => $cases[0]->_cancelled,
-                        'transferred' => $cases[0]->_transferred,
-                        'interrupted' => $cases[0]->_interrupted,
-                        'enrollment_with_cancelled' => $cases[0]->_enrollment_with_cancelled
-                    ];
-                else
-                    $data['cases'] = [
-                        'total' => 0,
-                        'in_progress' => 0,
-                        'enrollment' => 0,
-                        'in_school' => 0,
-                        'in_observation' => 0,
-                        'out_of_school' => 0,
-                        'cancelled' => 0,
-                        'transferred' => 0,
-                        'interrupted' => 0,
-                        'enrollment_with_cancelled' => 0
-                    ];
-                $data['causes_cases'] = $causes;
-                $data['data_city'] = $data_city;
-                return $data;
-            });
+            $data = [];
 
-            return response()->json(['status' => 'ok', 'stats' => $stats]);
+            if ($alerts)
+                $data['alerts'] = [
+                    'total' => $alerts[0]->accepted + $alerts[0]->pending + $alerts[0]->rejected,
+                    'approved' => $alerts[0]->accepted,
+                    'pending' => $alerts[0]->pending,
+                    'rejected' => $alerts[0]->rejected
+                ];
+            else
+                $data['alerts'] = [
+                    'total' => 0,
+                    'approved' => 0,
+                    'pending' => 0,
+                    'rejected' => 0
+                ];
+            if ($cases)
+                $data['cases'] = [
+                    'total' => $cases[0]->_in_school +
+                    $cases[0]->_in_observation +
+                    $cases[0]->_out_of_school +
+                    $cases[0]->_cancelled +
+                    $cases[0]->_transferred +
+                    $cases[0]->_interrupted,
+                    'in_progress' => $cases[0]->_in_progress,
+                    'enrollment' => $cases[0]->_enrollment,
+                    'in_school' => $cases[0]->_in_school,
+                    'in_observation' => $cases[0]->_in_observation,
+                    'out_of_school' => $cases[0]->_out_of_school,
+                    'cancelled' => $cases[0]->_cancelled,
+                    'transferred' => $cases[0]->_transferred,
+                    'interrupted' => $cases[0]->_interrupted,
+                    'enrollment_with_cancelled' => $cases[0]->_enrollment_with_cancelled
+                ];
+            else
+                $data['cases'] = [
+                    'total' => 0,
+                    'in_progress' => 0,
+                    'enrollment' => 0,
+                    'in_school' => 0,
+                    'in_observation' => 0,
+                    'out_of_school' => 0,
+                    'cancelled' => 0,
+                    'transferred' => 0,
+                    'interrupted' => 0,
+                    'enrollment_with_cancelled' => 0
+                ];
+            $data['causes_cases'] = $causes;
+            $data['data_city'] = $data_city;
+            //return $data;
+            //});
+
+            return response()->json(['status' => 'ok', 'stats' => $data]);
 
         } catch (\Exception $ex) {
             return $this->api_exception($ex);
