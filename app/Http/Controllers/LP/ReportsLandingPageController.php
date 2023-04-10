@@ -99,7 +99,7 @@ class ReportsLandingPageController extends BaseController
 
                 foreach (CaseCause::getAll() as $case) {
 
-                    if ($case->hidden != 1) {
+                    if (!$case->hidden) {
                         $qtd =
                             \DB::table('children')
                                 ->join('case_steps_pesquisa', 'children.id', '=', 'case_steps_pesquisa.child_id')
