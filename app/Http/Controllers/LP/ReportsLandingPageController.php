@@ -300,5 +300,54 @@ class ReportsLandingPageController extends BaseController
         );
 
     }
+    public function report_by_city()
+    {
+
+        $initial_date = request('initial_date');
+        $final_date = request('final_date');
+
+        if (!$initial_date || !$final_date)
+            return $this->api_failure('invalid_request');
+
+        try {
+            Carbon::parse($initial_date);
+            Carbon::parse($final_date);
+        } catch (\Exception $e) {
+            return $this->api_failure('invalid_date');
+        }
+
+        $goals = DB::table('goals')
+            ->where('goal', '>', 0)
+            ->select(['goals.id as id', 'cities.id as city_id', 'cities.name as city', 'goals.goal as goal', 'tenants.id as tenant_id'])
+            ->join('cities', function ($join) {
+                $join->on('goals.id', '=', 'cities.ibge_city_id');
+            })
+            ->join('tenants', function ($join) {
+                $join->on('cities.id', '=', 'tenants.city_id');
+            })
+            ->get();
+
+        $goals = $goals->map(function ($goal) use ($initial_date, $final_date) {
+
+            $first_data = DB::table('daily_metrics_consolidated')
+                ->select(DB::raw("DATE_FORMAT(date, '%Y-%m-%d') as date, justified_cancelled as cancelamento_apos_rematricula, in_observation+in_school as 'rematricula' "))
+                ->where('tenant_id', '=', $goal->tenant_id)
+                ->where('date', '=', $initial_date)->get()->first();
+
+            $final_data = DB::table('daily_metrics_consolidated')
+                ->select(DB::raw("DATE_FORMAT(date, '%Y-%m-%d') as date, justified_cancelled as cancelamento_apos_rematricula, in_observation+in_school as 'rematricula' "))
+                ->where('tenant_id', '=', $goal->tenant_id)
+                ->where('date', '=', $final_date)->get()->first();
+
+            $goal->first_date = $first_data;
+            $goal->final_date = $final_data;
+
+            return $goal;
+
+        });
+
+        return response()->json($goals);
+
+    }
 
 }
