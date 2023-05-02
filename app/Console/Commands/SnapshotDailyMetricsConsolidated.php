@@ -96,9 +96,10 @@ class SnapshotDailyMetricsConsolidated extends Command
                 ->count();
 
                 $justified_cancelled = Rematricula::whereHas('cases', function ($query) {
-                    $query->where(['cancel_reason' => 'city_transfer'])
+                    $query->where(['cancel_reason' => 'city_transfer']) 
                         ->orWhere(['cancel_reason' => 'death'])
                         ->orWhere(['cancel_reason' => 'not_found'])
+                        ->orWhere(['cancel_reason' => 'justified_cancelled'])
                         ->orWhere(['case_status' => 'interrupted'])
                         ->orWhere(['case_status' => 'transferred']);
                 })->where(
