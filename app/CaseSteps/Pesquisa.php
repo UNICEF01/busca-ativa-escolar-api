@@ -1,4 +1,5 @@
 <?php
+
 /**
  * busca-ativa-escolar-api
  * PesquisaCaseStep.php
@@ -14,12 +15,12 @@
 namespace BuscaAtivaEscolar\CaseSteps;
 
 use BuscaAtivaEscolar\City;
-use BuscaAtivaEscolar\Data\AlertCause;
 use BuscaAtivaEscolar\Data\CaseCause;
 use BuscaAtivaEscolar\Data\Gender;
 use BuscaAtivaEscolar\Data\GuardianType;
 use BuscaAtivaEscolar\Data\HandicappedRejectReason;
 use BuscaAtivaEscolar\Data\IncomeRange;
+use BuscaAtivaEscolar\Data\Nationality;
 use BuscaAtivaEscolar\Data\PlaceKind;
 use BuscaAtivaEscolar\Data\Race;
 use BuscaAtivaEscolar\Data\SchoolGrade;
@@ -28,11 +29,9 @@ use BuscaAtivaEscolar\Data\SchoolLastStatus;
 use BuscaAtivaEscolar\Data\WorkActivity;
 use BuscaAtivaEscolar\FormBuilder\CanGenerateForms;
 use BuscaAtivaEscolar\FormBuilder\FormBuilder;
-use BuscaAtivaEscolar\IBGE\UF;
 use BuscaAtivaEscolar\Traits\Data\checkPhases;
 use BuscaAtivaEscolar\User;
 use Illuminate\Database\Eloquent\Builder;
-use Log;
 
 class Pesquisa extends CaseStep implements CanGenerateForms
 {
@@ -103,8 +102,8 @@ class Pesquisa extends CaseStep implements CanGenerateForms
         'place_map_region',
         'place_map_geocoded_address',
         'aux',
-        'nis'
-
+        'nis',
+        'nationality'
     ];
 
     protected $casts = [
@@ -135,14 +134,14 @@ class Pesquisa extends CaseStep implements CanGenerateForms
              * da Pesquisa. Essa regra foi desabilitada. Cada etapa tem seu motivo.
              */
 
-//			if(isset($alerta['alert_cause_id'])) {
-//
-//				$caseCauseIDs = AlertCause::getByID(intval($alerta['alert_cause_id']))->case_cause_ids;
-//
-//				$this->case_cause_ids = $caseCauseIDs;
-//				$this->childCase->update(['case_cause_ids' => $caseCauseIDs]);
-//
-//			}
+            //			if(isset($alerta['alert_cause_id'])) {
+            //
+            //				$caseCauseIDs = AlertCause::getByID(intval($alerta['alert_cause_id']))->case_cause_ids;
+            //
+            //				$this->case_cause_ids = $caseCauseIDs;
+            //				$this->childCase->update(['case_cause_ids' => $caseCauseIDs]);
+            //
+            //			}
 
             $this->save();
         }
@@ -185,7 +184,6 @@ class Pesquisa extends CaseStep implements CanGenerateForms
                     'place_uf' => $city->uf,
                 ]);
             }
-
         }
 
         $this->child->save();
@@ -202,20 +200,21 @@ class Pesquisa extends CaseStep implements CanGenerateForms
         $new_place_lng = array_key_exists("place_lng", $request) ? $request['place_lng'] : null;
         $moviment = array_key_exists("moviment", $request) ? $request['moviment'] : false;
 
-        if($this->child->educacenso_id =! null) { $moviment = true; }
+        if ($this->child->educacenso_id = !null) {
+            $moviment = true;
+        }
 
         if ($moviment == false) {
 
             $location = $this->child->updateCoordinatesThroughGeocoding($newAdress);
 
-            if($location){
+            if ($location) {
                 $this->update([
                     'place_lat' => ($location->MapView) ? $location->MapView->TopLeft->Latitude : null,
                     'place_lng' => ($location->MapView) ? $location->MapView->TopLeft->Longitude : null,
                     'place_map_geocoded_address' => ($location) ? $location : null,
                 ]);
             }
-
         } else {
 
             $this->child->update([
@@ -228,8 +227,6 @@ class Pesquisa extends CaseStep implements CanGenerateForms
                 'lng' => $new_place_lng,
             ]);
         }
-
-
     }
 
     public function validate($data, $isCompletingStep = false)
@@ -310,7 +307,8 @@ class Pesquisa extends CaseStep implements CanGenerateForms
                     ->field('rg', 'alphanum', trans('form_builder.pesquisa.field.rg'))
                     ->field('cpf', 'alphanum', trans('form_builder.pesquisa.field.cpf'), ['mask' => 'cpf', 'transform' => 'strip_punctuation', 'placeholder' => '000.000.000-00'])
                     ->field('cns', 'alphanum', trans('form_builder.pesquisa.field.cns'))
-                    ->field('nis', 'alphanum', trans('form_builder.pesquisa.field.nis'));
+                    ->field('nis', 'alphanum', trans('form_builder.pesquisa.field.nis'))
+                    ->field('nationality', 'select', trans('form_builder.pesquisa.field.nationality'), ['options' => Nationality::getAllAsArray(), 'key' => 'slug', 'label' => 'label']);
             })
             ->group('school', trans('form_builder.pesquisa.group.school'), function (FormBuilder $group) {
                 return $group

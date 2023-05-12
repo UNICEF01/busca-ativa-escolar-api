@@ -1,4 +1,5 @@
 <?php
+
 /**
  * busca-ativa-escolar-api
  * Alerta.php
@@ -51,9 +52,10 @@ use BuscaAtivaEscolar\FormBuilder\FormBuilder;
  * @property string $place_lng
  * @property string $place_map_region
  * @property string $place_map_geocoded_address
- *
+ * @property string $nationality
  */
-class Alerta extends CaseStep implements CanGenerateForms  {
+class Alerta extends CaseStep implements CanGenerateForms
+{
 
     protected $table = "case_steps_alerta";
 
@@ -92,49 +94,55 @@ class Alerta extends CaseStep implements CanGenerateForms  {
         'place_lng',
         'place_map_region',
         'place_map_geocoded_address',
-        'observation'
+        'observation',
+        'nationality'
     ];
 
     protected $casts = [
         'place_map_geocoded_address' => 'array',
     ];
 
-    public function scopeAccepted($query) {
+    public function scopeAccepted($query)
+    {
         return $query->where('alert_status', 'accepted');
     }
 
-    public function scopeRejected($query) {
+    public function scopeRejected($query)
+    {
         return $query->where('alert_status', 'rejected');
     }
 
-    public function scopePending($query) {
+    public function scopePending($query)
+    {
         return $query->where('alert_status', 'pending');
     }
 
-    public function scopeNotRejected($query) {
+    public function scopeNotRejected($query)
+    {
         return $query->whereIn('alert_status', ['accepted', 'pending']);
     }
 
-    protected function onComplete() : bool {
+    protected function onComplete(): bool
+    {
 
-        if($this->gender) $this->child->gender = $this->gender;
-        if($this->name) $this->child->name = $this->name;
-        if($this->mother_name) $this->child->mother_name = $this->mother_name;
-        if($this->father_name) $this->child->father_name = $this->father_name;
+        if ($this->gender) $this->child->gender = $this->gender;
+        if ($this->name) $this->child->name = $this->name;
+        if ($this->mother_name) $this->child->mother_name = $this->mother_name;
+        if ($this->father_name) $this->child->father_name = $this->father_name;
 
         $this->child->save();
 
-        if($this->dob) $this->child->recalculateAgeThroughBirthday($this->dob);
+        if ($this->dob) $this->child->recalculateAgeThroughBirthday($this->dob);
 
         $location = $this->child->updateCoordinatesThroughGeocoding("{$this->place_address} {$this->place_neighborhood} {$this->place_city_name} {$this->place_uf} {$this->place_cep}");
 
-        if($location){
+        if ($location) {
             $this->update([
                 'place_lat' => ($location->DisplayPosition) ? $location->DisplayPosition->Latitude : null,
                 'place_lng' => ($location->DisplayPosition) ? $location->DisplayPosition->Longitude : null,
                 'place_map_geocoded_address' => ($location) ? $location : null,
             ]);
-        }else{
+        } else {
             $this->update([
                 'place_lat' => null,
                 'place_lng' => null,
@@ -143,10 +151,10 @@ class Alerta extends CaseStep implements CanGenerateForms  {
         }
 
         return true;
-
     }
 
-    public function validate($data, $isCompletingStep = false) {
+    public function validate($data, $isCompletingStep = false)
+    {
         return validator($data, [
             'name' => 'required',
             'gender' => \BuscaAtivaEscolar\Data\Gender::getSlugValidationMask(),
@@ -179,7 +187,8 @@ class Alerta extends CaseStep implements CanGenerateForms  {
         ]);
     }
 
-    public static function getFormFields(): FormBuilder {
+    public static function getFormFields(): FormBuilder
+    {
         return (new FormBuilder())
             ->group('personal', trans('form_builder.alerta.group.personal'), function (FormBuilder $group) {
                 return $group
@@ -229,5 +238,4 @@ class Alerta extends CaseStep implements CanGenerateForms  {
                     ->field('observation', 'string', trans('form_builder.alerta.field.observation'));
             });
     }
-
 }

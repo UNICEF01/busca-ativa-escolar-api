@@ -1,4 +1,5 @@
 <?php
+
 /**
  * busca-ativa-escolar-api
  * Race.php
@@ -14,16 +15,17 @@
 namespace BuscaAtivaEscolar\Data;
 
 
-class Race extends StaticObject {
+class Race extends StaticObject
+{
 
 	protected static $data = [
 		1 => ['id' => 1, 'slug' => 'indigena', 'label' => "Indígena"],
 		2 => ['id' => 2, 'slug' => 'branca', 'label' => "Branca"],
 		3 => ['id' => 3, 'slug' => 'preta', 'label' => "Preta"],
 		4 => ['id' => 4, 'slug' => 'amarela', 'label' => "Amarela"],
-        5 => ['id' => 5, 'slug' => 'no_info', 'label' => "Sem informação"],
-        6 => ['id' => 6, 'slug' => 'parda', 'label' => "Parda"],
-    ];
+		5 => ['id' => 5, 'slug' => 'no_info', 'label' => "Sem informação"],
+		6 => ['id' => 6, 'slug' => 'parda', 'label' => "Parda"],
+	];
 
 	protected static $indexes = [
 		'slug' => [
@@ -31,8 +33,9 @@ class Race extends StaticObject {
 			'branca' => 2,
 			'preta' => 3,
 			'amarela' => 4,
-            'parda' => 5
-        ]
+			'no_info' => 5,
+			'parda' => 6
+		]
 	];
 
 	/**
@@ -55,8 +58,8 @@ class Race extends StaticObject {
 	 * @param string $slug
 	 * @return Race
 	 */
-	public static function getBySlug($slug) {
+	public static function getBySlug($slug)
+	{
 		return self::getByIndex('slug', $slug);
 	}
-
 }

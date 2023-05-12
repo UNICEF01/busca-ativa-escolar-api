@@ -1,4 +1,5 @@
 <?php
+
 /**
  * busca-ativa-escolar-api
  * Child.php
@@ -147,7 +148,8 @@ class Child extends Model implements Searchable, CanBeAggregated, CollectsDailyM
         'educacenso_id',
         'educacenso_year',
 
-        'father_id'
+        'father_id',
+        'nationality'
     ];
 
     protected $sortable = [
@@ -435,27 +437,27 @@ class Child extends Model implements Searchable, CanBeAggregated, CollectsDailyM
      */
     public function updateCoordinatesThroughGeocoding($rawAddress)
     {
-//        $geocoder = app('geocoder');
-//        /* @var $geocoder Geocoder */
-//        $address = null;
-//        $endPoint = "https://geocoder.ls.hereapi.com/6.2/geocode.json";
-//        $key = env('HERE_API_KEY');
-//        $client = new \GuzzleHttp\Client();
-//        $url = $endPoint . '?searchtext=' . $rawAddress . '&gen=9&apiKey=' . $key;
+        //        $geocoder = app('geocoder');
+        //        /* @var $geocoder Geocoder */
+        //        $address = null;
+        //        $endPoint = "https://geocoder.ls.hereapi.com/6.2/geocode.json";
+        //        $key = env('HERE_API_KEY');
+        //        $client = new \GuzzleHttp\Client();
+        //        $url = $endPoint . '?searchtext=' . $rawAddress . '&gen=9&apiKey=' . $key;
 
-//        $address = null;
-//        $endPoint = "https://geocoder.ls.hereapi.com/6.2/geocode.json";
-//        $key = env('HERE_API_KEY');
-//        $client = new \GuzzleHttp\Client();
-//        $url = $endPoint . '?searchtext=' . $rawAddress . '&gen=9&apiKey=' . $key;
-//
-//        $request = $client->request('GET', $endPoint . '?searchtext=' . $rawAddress . '&gen=9&apiKey=' . $key);
-//        $stream = json_decode($request->getBody()->getContents());
-//        $location = $stream->Response->View[0]->Result[0]->Location;
+        //        $address = null;
+        //        $endPoint = "https://geocoder.ls.hereapi.com/6.2/geocode.json";
+        //        $key = env('HERE_API_KEY');
+        //        $client = new \GuzzleHttp\Client();
+        //        $url = $endPoint . '?searchtext=' . $rawAddress . '&gen=9&apiKey=' . $key;
+        //
+        //        $request = $client->request('GET', $endPoint . '?searchtext=' . $rawAddress . '&gen=9&apiKey=' . $key);
+        //        $stream = json_decode($request->getBody()->getContents());
+        //        $location = $stream->Response->View[0]->Result[0]->Location;
 
         $location = $this->getLocationByRawAddress($rawAddress);
 
-        if($location){
+        if ($location) {
             if ($location->Address->Country == 'BRA') {
                 $this->update([
                     'lat' => ($location->DisplayPosition) ? $location->DisplayPosition->Latitude : null,
@@ -469,7 +471,7 @@ class Child extends Model implements Searchable, CanBeAggregated, CollectsDailyM
                     'map_geocoded_address' => null,
                 ]);
             }
-        }else{
+        } else {
             $this->update([
                 'lat' => null,
                 'lng' => null,
@@ -513,7 +515,7 @@ class Child extends Model implements Searchable, CanBeAggregated, CollectsDailyM
     public function buildSearchDocument(): array
     {
 
-        if (!$this->exists){
+        if (!$this->exists) {
             return 'null';
         }
 
@@ -570,7 +572,6 @@ class Child extends Model implements Searchable, CanBeAggregated, CollectsDailyM
                     if ($this->currentStep->getSlug() === "gestao_do_caso") {
                         $data['deadline_status'] = "normal";
                     }
-
                 } else {
                     $data['deadline_status'] = "normal";
                 }
@@ -592,15 +593,14 @@ class Child extends Model implements Searchable, CanBeAggregated, CollectsDailyM
             } else if ($this->currentCase->alert_cause_id) {
                 $data['cause_name'] = AlertCause::getByID(intval($this->currentCase->alert_cause_id))->label ?? '';
             }
-
         }
 
         $data['city_name'] = $this->city->name ?? null;
         $data['uf'] = $this->city->uf ?? null;
         $data['country_region'] = $this->city->region ?? null;
+        $data['nationality'] = $this->nationality ?? null;
 
         return $data;
-
     }
 
     // ------------------------------------------------------------------------
@@ -673,8 +673,8 @@ class Child extends Model implements Searchable, CanBeAggregated, CollectsDailyM
             "uf",
             "assigned_uf",
             "country_region",
+            "nationality"
         ]);
-
     }
 
     // ------------------------------------------------------------------------
@@ -739,7 +739,6 @@ class Child extends Model implements Searchable, CanBeAggregated, CollectsDailyM
         event(new AlertSpawned($child, $case, $alertStep));
 
         return $child;
-
     }
 
     /**
@@ -800,7 +799,6 @@ class Child extends Model implements Searchable, CanBeAggregated, CollectsDailyM
         $sons = $this->getSon($idForGetSon, $value);
         $fathers = $this->getFather($idForGetFather, $value);
         return array_merge($fathers, $sons);;
-
     }
 
     private function getFather($id, $value)
