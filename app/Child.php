@@ -142,7 +142,8 @@ class Child extends Model implements Searchable, CanBeAggregated, CollectsDailyM
         'educacenso_id',
         'educacenso_year',
 
-        'father_id'
+        'father_id',
+        'nationality'
     ];
 
     protected $sortable = [
@@ -592,7 +593,7 @@ class Child extends Model implements Searchable, CanBeAggregated, CollectsDailyM
             $data['group_id'] = $this->currentCase->group ? $this->currentCase->group->id : null;
             $data['group_name'] = $this->currentCase->group ? $this->currentCase->group->name : null;
 
-            if( $this->currentCase->group ){
+            if ($this->currentCase->group) {
                 $data['tree_id'] = implode(', ', Group::where('id', $this->currentCase->group->id)->get()->first()->getTree());
             }
         }
@@ -600,6 +601,7 @@ class Child extends Model implements Searchable, CanBeAggregated, CollectsDailyM
         $data['city_name'] = $this->city->name ?? null;
         $data['uf'] = $this->city->uf ?? null;
         $data['country_region'] = $this->city->region ?? null;
+        $data['nationality'] = $this->nationality ?? null;
 
         return $data;
     }
@@ -667,6 +669,11 @@ class Child extends Model implements Searchable, CanBeAggregated, CollectsDailyM
             "place_uf",
             "place_kind",
             "place_is_quilombola",
+
+            "place_is_indigena",
+            "place_is_do_campo",
+            "place_is_ribeirinha",
+
             "school_last_id",
             "alert_cause_id",
             "assigned_user_id",
@@ -674,6 +681,7 @@ class Child extends Model implements Searchable, CanBeAggregated, CollectsDailyM
             "uf",
             "assigned_uf",
             "country_region",
+            "nationality"
         ]);
     }
 

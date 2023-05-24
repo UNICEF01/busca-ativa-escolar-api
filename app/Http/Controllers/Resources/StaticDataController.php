@@ -1,4 +1,5 @@
 <?php
+
 /**
  * busca-ativa-escolar-api
  * StaticDataController.php
@@ -17,9 +18,11 @@ use BuscaAtivaEscolar\Http\Controllers\BaseController;
 use BuscaAtivaEscolar\User;
 use Route;
 
-class StaticDataController extends BaseController {
+class StaticDataController extends BaseController
+{
 
-	public function render() {
+	public function render()
+	{
 
 		// TODO: cache this
 
@@ -43,8 +46,8 @@ class StaticDataController extends BaseController {
 				'SchoolingLevel' => \BuscaAtivaEscolar\Data\SchoolingLevel::getAllAsArray(),
 				'WorkActivity' => \BuscaAtivaEscolar\Data\WorkActivity::getAllAsArray(),
 				'UserType' => \BuscaAtivaEscolar\User::$ALLOWED_TYPES,
-                'UserTypeVisitantes' => \BuscaAtivaEscolar\User::$ALLOWED_TYPES_VISITANTES,
-                'PermissionsFormForVisitante' => \BuscaAtivaEscolar\User::$PERMISSIONS_FORM_FOR_VISITANTE,
+				'UserTypeVisitantes' => \BuscaAtivaEscolar\User::$ALLOWED_TYPES_VISITANTES,
+				'PermissionsFormForVisitante' => \BuscaAtivaEscolar\User::$PERMISSIONS_FORM_FOR_VISITANTE,
 				'CaseStepSlugs' => \BuscaAtivaEscolar\CaseSteps\CaseStep::SLUGS,
 				'UFs' => \BuscaAtivaEscolar\IBGE\UF::getAllAsArray(),
 				'UFsByCode' => \BuscaAtivaEscolar\IBGE\UF::getAllByCode(),
@@ -59,25 +62,26 @@ class StaticDataController extends BaseController {
 						'allowed_mime_types' => config('uploads.allowed_mime_types'),
 					]
 				],
+				'Nationality' => \BuscaAtivaEscolar\Data\Nationality::getAllAsArray(),
 			]
 		]);
-
 	}
 
-	public function buildAPIEndpointList() {
+	public function buildAPIEndpointList()
+	{
 		$methods = Route::getRoutes()->getRoutesByMethod();
 		$list = [];
 
 		$prefix = 'api/v1/';
 
-		foreach($methods as $method => $routes) {
-			if($method == "HEAD") continue;
-			if($method == "PATCH") continue;
-			if($method == "OPTIONS") continue;
+		foreach ($methods as $method => $routes) {
+			if ($method == "HEAD") continue;
+			if ($method == "PATCH") continue;
+			if ($method == "OPTIONS") continue;
 
-			foreach($routes as $route) {
+			foreach ($routes as $route) {
 				$path = $route->getName();
-				if(substr($path, 0, 7) !== $prefix) continue;
+				if (substr($path, 0, 7) !== $prefix) continue;
 
 				$path = substr($path, 7);
 
@@ -92,5 +96,4 @@ class StaticDataController extends BaseController {
 
 		return $list;
 	}
-
 }

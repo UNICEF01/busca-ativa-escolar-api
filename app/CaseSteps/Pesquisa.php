@@ -20,6 +20,7 @@ use BuscaAtivaEscolar\Data\Gender;
 use BuscaAtivaEscolar\Data\GuardianType;
 use BuscaAtivaEscolar\Data\HandicappedRejectReason;
 use BuscaAtivaEscolar\Data\IncomeRange;
+use BuscaAtivaEscolar\Data\Nationality;
 use BuscaAtivaEscolar\Data\PlaceKind;
 use BuscaAtivaEscolar\Data\Race;
 use BuscaAtivaEscolar\Data\SchoolGrade;
@@ -96,13 +97,18 @@ class Pesquisa extends CaseStep implements CanGenerateForms
         'place_uf',
         'place_kind',
         'place_is_quilombola',
+
+        'place_is_indigena',
+        'place_is_do_campo',
+        'place_is_ribeirinha',
+
         'place_lat',
         'place_lng',
         'place_map_region',
         'place_map_geocoded_address',
         'aux',
-        'nis'
-
+        'nis',
+        'nationality'
     ];
 
     protected $casts = [
@@ -291,6 +297,10 @@ class Pesquisa extends CaseStep implements CanGenerateForms
             'place_uf' => 'required_for_completion|string|size:2',
             'place_kind' => 'required_for_completion|in:urban,rural',
             'place_is_quilombola' => 'nullable|boolean',
+
+            'place_is_indigena' => 'nullable|boolean',
+            'place_is_do_campo' => 'nullable|boolean',
+            'place_is_ribeirinha' => 'nullable|boolean'
         ]);
     }
 
@@ -306,7 +316,8 @@ class Pesquisa extends CaseStep implements CanGenerateForms
                     ->field('rg', 'alphanum', trans('form_builder.pesquisa.field.rg'))
                     ->field('cpf', 'alphanum', trans('form_builder.pesquisa.field.cpf'), ['mask' => 'cpf', 'transform' => 'strip_punctuation', 'placeholder' => '000.000.000-00'])
                     ->field('cns', 'alphanum', trans('form_builder.pesquisa.field.cns'))
-                    ->field('nis', 'alphanum', trans('form_builder.pesquisa.field.nis'));
+                    ->field('nis', 'alphanum', trans('form_builder.pesquisa.field.nis'))
+                    ->field('nationality', 'select', trans('form_builder.pesquisa.field.nationality'), ['options' => Nationality::getAllAsArray(), 'key' => 'slug', 'label' => 'label']);
             })
             ->group('school', trans('form_builder.pesquisa.group.school'), function (FormBuilder $group) {
                 return $group

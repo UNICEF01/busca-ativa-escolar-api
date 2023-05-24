@@ -86,13 +86,17 @@ class ChildCase extends Model
     const CANCEL_REASON_WRONGFUL_INSERTION = "wrongful_insertion";
     const CANCEL_REASON_REJECTED_ALERT = "rejected_alert";
     const CANCEL_REASON_CITY_TRANSFER = "city_transfer";
+    
+    //only for control of UNICEF ()
+    const CANCEL_REASON_JUSTIFIED_CANCELLED = "justified_cancelled";
 
     const CANCEL_REASONS = [
         self::CANCEL_REASON_DUPLICATE,
         self::CANCEL_REASON_DEATH,
         self::CANCEL_REASON_NOT_FOUND,
         self::CANCEL_REASON_WRONGFUL_INSERTION,
-        self::CANCEL_REASON_CITY_TRANSFER
+        self::CANCEL_REASON_CITY_TRANSFER,
+        self::CANCEL_REASON_JUSTIFIED_CANCELLED
     ];
 
     /**
