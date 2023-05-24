@@ -17,8 +17,8 @@ return [
 			'dob' => "Data de nascimento*",
 			'rg' => "RG",
 			'cpf' => "CPF",
-            'nis' => "NIS (Número de Identificação Social)",
-            'cns' => "CNS (Cartão Nacional do SUS)",
+			'nis' => "NIS (Número de Identificação Social)",
+			'cns' => "CNS (Cartão Nacional do SUS)",
 			'has_been_in_school' => "Já frequentou a escola alguma vez?*",
 			'reason_not_enrolled' => "Qual a justificativa de não ter frequentado?*",
 			'school_last_grade' => "Qual o último ano que frequentou?*",
@@ -37,8 +37,8 @@ return [
 			'parents_has_father' => 'A criança tem o pai presente?*',
 			'parents_has_mother' => "A criança tem a mãe presente?*",
 			'parents_has_brother' => 'A criança tem irmãos/irmãs presentes?*',
-            'parents_has_grandparents' => 'A criança tem avós presentes?*',
-            'parents_has_others' => 'A criança tem outros parentes presentes?*',
+			'parents_has_grandparents' => 'A criança tem avós presentes?*',
+			'parents_has_others' => 'A criança tem outros parentes presentes?*',
 			'parents_who_is_guardian' => "Quem é o responsável?*",
 			'mother_name' => "Nome completo da mãe*",
 			'guardian_name' => "Nome completo do responsável*",
@@ -62,6 +62,9 @@ return [
 			'place_uf' => 'UF*',
 			'place_city_id' => 'Município / UF*',
 			'place_city_name' => 'Município / UF*',
+			'place_is_indigena' => "Comunidade indígena",
+			'place_is_do_campo' => "Comunidade do campo",
+			'place_is_ribeirinha' => "Comunidade ribeirinha",
 		],
 	],
 
@@ -71,7 +74,7 @@ return [
 			'cause' => 'Sobre o motivo de exclusão escolar',
 			'parents' => 'Sobre os pais ou responsáveis',
 			'place' => 'Dados de localização',
-            'observation' => 'Observações (caso necessário)'
+			'observation' => 'Observações (caso necessário)'
 		],
 
 		'field' => [
@@ -105,7 +108,7 @@ return [
 			//'place_phone' => 'Telefone',
 			//'place_mobile' => 'Celular',
 
-            'observation' => 'Anotações ou registros'
+			'observation' => 'Anotações ou registros'
 		]
 	],
 

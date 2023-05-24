@@ -97,6 +97,11 @@ class Pesquisa extends CaseStep implements CanGenerateForms
         'place_uf',
         'place_kind',
         'place_is_quilombola',
+
+        'place_is_indigena',
+        'place_is_do_campo',
+        'place_is_ribeirinha',
+
         'place_lat',
         'place_lng',
         'place_map_region',
@@ -292,6 +297,10 @@ class Pesquisa extends CaseStep implements CanGenerateForms
             'place_uf' => 'required_for_completion|string|size:2',
             'place_kind' => 'required_for_completion|in:urban,rural',
             'place_is_quilombola' => 'nullable|boolean',
+
+            'place_is_indigena' => 'nullable|boolean',
+            'place_is_do_campo' => 'nullable|boolean',
+            'place_is_ribeirinha' => 'nullable|boolean'
         ]);
     }
 

@@ -666,6 +666,11 @@ class Child extends Model implements Searchable, CanBeAggregated, CollectsDailyM
             "place_uf",
             "place_kind",
             "place_is_quilombola",
+
+            "place_is_indigena",
+            "place_is_do_campo",
+            "place_is_ribeirinha",
+
             "school_last_id",
             "alert_cause_id",
             "assigned_user_id",
@@ -674,6 +679,7 @@ class Child extends Model implements Searchable, CanBeAggregated, CollectsDailyM
             "assigned_uf",
             "country_region",
             "nationality"
+
         ]);
     }
 
