@@ -1,4 +1,5 @@
 <?php
+
 /**
  * busca-ativa-escolar-api
  * ChildCase.php
@@ -87,7 +88,7 @@ class ChildCase extends Model
     const CANCEL_REASON_WRONGFUL_INSERTION = "wrongful_insertion";
     const CANCEL_REASON_REJECTED_ALERT = "rejected_alert";
     const CANCEL_REASON_CITY_TRANSFER = "city_transfer";
-    
+
     //only for control of UNICEF ()
     const CANCEL_REASON_JUSTIFIED_CANCELLED = "justified_cancelled";
 
@@ -96,8 +97,7 @@ class ChildCase extends Model
         self::CANCEL_REASON_DEATH,
         self::CANCEL_REASON_NOT_FOUND,
         self::CANCEL_REASON_WRONGFUL_INSERTION,
-        self::CANCEL_REASON_CITY_TRANSFER,
-        self::CANCEL_REASON_JUSTIFIED_CANCELLED
+        self::CANCEL_REASON_CITY_TRANSFER
     ];
 
     /**
@@ -256,7 +256,6 @@ class ChildCase extends Model
         $this->child->save();
 
         return $next;
-
     }
 
     /**
@@ -303,7 +302,7 @@ class ChildCase extends Model
     public function reopen($reason = "")
     {
 
-        if( $this->case_status == ChildCase::STATUS_INTERRUPTED OR $this->case_status == ChildCase::STATUS_TRANSFERRED){
+        if ($this->case_status == ChildCase::STATUS_INTERRUPTED or $this->case_status == ChildCase::STATUS_TRANSFERRED) {
             return response()->json(
                 [
                     'result' => 'O caso selecionado já está interrompido',
@@ -322,7 +321,7 @@ class ChildCase extends Model
 
         $child = $this->child->getAttributes();
 
-        $pesquisaArray = $this->returnPesquisaArray( $this->child->pesquisa->replicate()->toArray() );
+        $pesquisaArray = $this->returnPesquisaArray($this->child->pesquisa->replicate()->toArray());
 
         $currentUser = \Auth::user();
 
@@ -334,7 +333,7 @@ class ChildCase extends Model
 
         $newChildObj->father_id = $child['id'];
 
-        $newChildObj->acceptAlert(['id'=> $objChild->id]);
+        $newChildObj->acceptAlert(['id' => $objChild->id]);
 
         $pesquisaNewChildObj = Pesquisa::where('child_id', $newChildObj->id)->first();
 
@@ -351,16 +350,16 @@ class ChildCase extends Model
             ]
         )->first();
 
-        if ($reopeningRequest != null){
+        if ($reopeningRequest != null) {
 
             $reopeningRequest->status = ReopeningRequests::STATUS_APPROVED;
             $reopeningRequest->save();
 
-            if( $reopeningRequest->requester != null) {
+            if ($reopeningRequest->requester != null) {
 
-                try{
+                try {
 
-                        $msg = new ReopenCaseNotification(
+                    $msg = new ReopenCaseNotification(
                         $this->child->id,
                         $this->child->name,
                         $this->id,
@@ -373,13 +372,10 @@ class ChildCase extends Model
                         ReopenCaseNotification::TYPE_ACCEPT_REOPEN
                     );
 
-                    Mail::to( $reopeningRequest->requester->email )->send($msg);
-
-                }catch (\Exception $e){
-
+                    Mail::to($reopeningRequest->requester->email)->send($msg);
+                } catch (\Exception $e) {
                 }
             }
-
         }
 
         event(new ChildCaseCancelled($this->child, $this, $reason));
@@ -388,7 +384,7 @@ class ChildCase extends Model
         return response()->json(
             [
                 'status' => 'success',
-                'child_id'=> $newChildObj->id,
+                'child_id' => $newChildObj->id,
                 'result' => 'Reabertura realizada com sucesso'
             ]
         );
@@ -397,7 +393,7 @@ class ChildCase extends Model
     public function requestReopen($reason = "")
     {
 
-        if( $this->case_status == ChildCase::STATUS_INTERRUPTED OR $this->case_status == ChildCase::STATUS_TRANSFERRED){
+        if ($this->case_status == ChildCase::STATUS_INTERRUPTED or $this->case_status == ChildCase::STATUS_TRANSFERRED) {
             return response()->json(
                 [
                     'result' => 'O caso selecionado já foi reaberto',
@@ -421,20 +417,19 @@ class ChildCase extends Model
             ]
         )->first();
 
-        if( $reopeningRequest != null ){
+        if ($reopeningRequest != null) {
 
             $now = Carbon::now();
 
-            if( $now->diffInDays( $reopeningRequest->updated_at ) <= 15 ){
+            if ($now->diffInDays($reopeningRequest->updated_at) <= 15) {
 
                 return response()->json(
                     [
-                        'result' => 'O usuário '.$reopeningRequest->requester->name.' já solicitou a reabertura deste caso a menos de 15 dias',
+                        'result' => 'O usuário ' . $reopeningRequest->requester->name . ' já solicitou a reabertura deste caso a menos de 15 dias',
                         'status' => 'error'
                     ]
                 );
-
-            }else{
+            } else {
 
                 $dataReopeningRequest = [
                     'requester_id' => $requesterUser->id,
@@ -444,12 +439,10 @@ class ChildCase extends Model
                 $reopeningRequest->fill($dataReopeningRequest);
 
                 $reopeningRequest->save();
-
             }
-
         }
 
-        if( $reopeningRequest == null ){
+        if ($reopeningRequest == null) {
 
             $dataReopeningRequest = [
                 'requester_id' => $requesterUser->id,
@@ -463,7 +456,6 @@ class ChildCase extends Model
             ];
 
             $reopeningRequest = ReopeningRequests::create($dataReopeningRequest);
-
         }
 
         /* @var $coordinators Collection */
@@ -474,8 +466,8 @@ class ChildCase extends Model
             ]
         )->get();
 
-        if ( is_array($coordinators) && (sizeof($coordinators) <= 0) ) { // PHP 7.2
-//        if ( $coordinators->count() <= 0 ) { // Implementação antiga PHP 7.1
+        if (is_array($coordinators) && (sizeof($coordinators) <= 0)) { // PHP 7.2
+            //        if ( $coordinators->count() <= 0 ) { // Implementação antiga PHP 7.1
             return response()->json(
                 [
                     'result' => 'Solicitação realizada com sucesso, porém não existem coordenadores ativos no município',
@@ -484,9 +476,9 @@ class ChildCase extends Model
             );
         }
 
-        try{
+        try {
 
-            foreach ( $coordinators as $coordinator ) {
+            foreach ($coordinators as $coordinator) {
 
                 $msg = new ReopenCaseNotification(
                     $this->child->id,
@@ -502,10 +494,8 @@ class ChildCase extends Model
                 );
 
                 Mail::to($coordinator->email)->send($msg);
-
             }
-
-        } catch (\Exception $exception){
+        } catch (\Exception $exception) {
 
             return response()->json(
                 [
@@ -513,7 +503,6 @@ class ChildCase extends Model
                     'status' => 'success'
                 ]
             );
-
         }
 
         return response()->json(
@@ -522,12 +511,12 @@ class ChildCase extends Model
                 'status' => 'success'
             ]
         );
-
     }
 
-    public function transfer(){
+    public function transfer()
+    {
 
-        if( $this->case_status == ChildCase::STATUS_INTERRUPTED OR $this->case_status == ChildCase::STATUS_TRANSFERRED){
+        if ($this->case_status == ChildCase::STATUS_INTERRUPTED or $this->case_status == ChildCase::STATUS_TRANSFERRED) {
             return response()->json(
                 [
                     'result' => 'O caso selecionado já está interrompido',
@@ -545,8 +534,8 @@ class ChildCase extends Model
             ]
         )->first();
 
-        if( is_array($reopeningRequest) && (sizeof($reopeningRequest) <= 0)){
-//        if( $reopeningRequest->count() <= 0 ){
+        if (is_array($reopeningRequest) && (sizeof($reopeningRequest) <= 0)) {
+            //        if( $reopeningRequest->count() <= 0 ){
             return response()->json(
                 [
                     'result' => 'Não existe uma solicitação de transferência para o caso informado',
@@ -565,7 +554,7 @@ class ChildCase extends Model
 
         $child = $this->child->getAttributes();
 
-        $pesquisaArray = $this->returnPesquisaArray( $this->child->pesquisa->replicate()->toArray() );
+        $pesquisaArray = $this->returnPesquisaArray($this->child->pesquisa->replicate()->toArray());
 
         $data = $this->returnDataFromChild($child);
 
@@ -575,7 +564,7 @@ class ChildCase extends Model
 
         $newChildObj->father_id = $child['id'];
 
-        $newChildObj->acceptAlert(['id'=> $objChild->id]);
+        $newChildObj->acceptAlert(['id' => $objChild->id]);
 
         $pesquisaNewChildObj = Pesquisa::where('child_id', $newChildObj->id)->first();
 
@@ -583,9 +572,9 @@ class ChildCase extends Model
 
         $pesquisaNewChildObj->save();
 
-        if( $reopeningRequest->requester != null) {
+        if ($reopeningRequest->requester != null) {
 
-            try{
+            try {
 
                 $msg = new ReopenCaseNotification(
                     $this->child->id,
@@ -600,9 +589,8 @@ class ChildCase extends Model
                     ReopenCaseNotification::TYPE_ACCEPT_TRANSFER
                 );
 
-                Mail::to( $reopeningRequest->requester->email )->send($msg);
-
-            } catch (\Exception $exception){
+                Mail::to($reopeningRequest->requester->email)->send($msg);
+            } catch (\Exception $exception) {
                 //TODO em caso de erro de envio de email?
             }
         }
@@ -617,16 +605,16 @@ class ChildCase extends Model
         return response()->json(
             [
                 'status' => 'success',
-                'child_id'=> $newChildObj->id,
+                'child_id' => $newChildObj->id,
                 'result' => 'Transferência realizada com sucesso'
             ]
         );
-
     }
 
-    public function requestTransfer($reason = "", $case_id, $tenant_recipient_id, $city_id){
+    public function requestTransfer($reason = "", $case_id, $tenant_recipient_id, $city_id)
+    {
 
-        if( $this->case_status == ChildCase::STATUS_INTERRUPTED ){
+        if ($this->case_status == ChildCase::STATUS_INTERRUPTED) {
             return response()->json(
                 [
                     'result' => 'O caso selecionado já está interrompido',
@@ -653,20 +641,19 @@ class ChildCase extends Model
             ]
         )->first();
 
-        if( $reopeningRequest != null ){
+        if ($reopeningRequest != null) {
 
             $now = Carbon::now();
 
-            if( $now->diffInDays( $reopeningRequest->updated_at ) <= 15 ){
+            if ($now->diffInDays($reopeningRequest->updated_at) <= 15) {
 
                 return response()->json(
                     [
-                        'result' => 'O usuário '.$reopeningRequest->requester->name.' já solicitou a transferência deste caso a menos de 15 dias',
+                        'result' => 'O usuário ' . $reopeningRequest->requester->name . ' já solicitou a transferência deste caso a menos de 15 dias',
                         'status' => 'error'
                     ]
                 );
-
-            }else{
+            } else {
 
                 $dataReopeningRequest = [
                     'requester_id' => $requesterUser->id,
@@ -676,12 +663,10 @@ class ChildCase extends Model
                 $reopeningRequest->fill($dataReopeningRequest);
 
                 $reopeningRequest->save();
-
             }
-
         }
 
-        if( $reopeningRequest == null ){
+        if ($reopeningRequest == null) {
 
             $dataReopeningRequest = [
                 'requester_id' => $requesterUser->id,
@@ -695,7 +680,6 @@ class ChildCase extends Model
             ];
 
             $reopeningRequest = ReopeningRequests::create($dataReopeningRequest);
-
         }
 
         //Coordenadores do município a ser reportado
@@ -704,7 +688,8 @@ class ChildCase extends Model
         $requesterUser->type = User::TYPE_GESTOR_NACIONAL;
 
         /* @var $coordinators Collection */
-        $coordinators = User::where([
+        $coordinators = User::where(
+            [
                 'tenant_id' => $tenant_recipient_id,
                 'type' => User::TYPE_GESTOR_OPERACIONAL
             ]
@@ -714,7 +699,7 @@ class ChildCase extends Model
         $requesterUser->type = User::TYPE_GESTOR_OPERACIONAL;
 
         if (is_array($coordinators) && (sizeof($coordinators) <= 0)) {
-//        if ( $coordinators->count() <= 0 ) {
+            //        if ( $coordinators->count() <= 0 ) {
             return response()->json(
                 [
                     'result' => 'Solicitação realizada com sucesso, porém não existem coordendores ativos no município',
@@ -723,9 +708,9 @@ class ChildCase extends Model
             );
         }
 
-        try{
+        try {
 
-            foreach ( $coordinators as $coordinator ) {
+            foreach ($coordinators as $coordinator) {
 
                 $msg = new ReopenCaseNotification(
                     $this->child->id,
@@ -741,18 +726,15 @@ class ChildCase extends Model
                 );
 
                 Mail::to($coordinator->email)->send($msg);
-
             }
-
-        } catch (\Exception $exception){
+        } catch (\Exception $exception) {
 
             return response()->json(
                 [
-                    'result' => 'Solicitação realizada com sucesso. Já está disponível para o outro município' ,
+                    'result' => 'Solicitação realizada com sucesso. Já está disponível para o outro município',
                     'status' => 'success'
                 ]
             );
-
         }
 
         return response()->json(
@@ -761,7 +743,6 @@ class ChildCase extends Model
                 'status' => 'success'
             ]
         );
-
     }
 
 
@@ -899,5 +880,4 @@ class ChildCase extends Model
 
         return $toArray;
     }
-
 }
