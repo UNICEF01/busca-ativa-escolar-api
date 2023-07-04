@@ -2,7 +2,6 @@
 
 namespace BuscaAtivaEscolar\Mail;
 
-use BuscaAtivaEscolar\TenantSignup;
 use BuscaAtivaEscolar\User;
 use Illuminate\Mail\Mailable;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -14,8 +13,10 @@ class UserRegisterNotification extends Mailable
 
     protected $user;
     protected $type_register;
+    protected $type_tenant;
 
-    public function __construct(User $user, $type_register){
+    public function __construct(User $user, $type_register)
+    {
         $this->user = $user;
         $this->type_register = $type_register;
     }
@@ -27,31 +28,28 @@ class UserRegisterNotification extends Mailable
      */
     public function build()
     {
-        $subject = "";
+        $subject = $this->type_register == self::TYPE_REGISTER_INITIAL ?
+            "[Busca Ativa Escolar] Confirmação de cadastro" :
+            "[Busca Ativa Escolar] Confirmação de reativação";
 
-        if( $this->type_register == self::TYPE_REGISTER_INITIAL ) { $subject = "[Busca Ativa Escolar] Confirmação de cadastro"; }
-        if( $this->type_register == self::TYPE_REGISTER_REACTIVATION ) { $subject = "[Busca Ativa Escolar] Confirmação de reativação"; }
+        if ($this->user->tenant()) {
+            $this->type_tenant = $this->user->tenant->is_state ? "estado" : "município";
+        }
 
         $message = (new MailMessage())
             ->success()
             ->subject($subject)
-            ->line("Caro(a) usuário(a) ".$this->user->name)
-            ->line("Você agora faz parte da equipe da Busca Ativa Escolar em seu município. Por favor, confirme seu cadastro clicando no botão abaixo.")
+            ->line("Caro(a) usuário(a) " . $this->user->name)
+            ->line("Você agora faz parte da equipe da Busca Ativa Escolar em seu " . $this->type_tenant . " Por favor, confirme seu cadastro clicando no botão abaixo.")
             ->action('Confirmar cadastro', $this->getUrlConfirmRegister());
 
         $this->subject($subject);
 
-        /*
-        $this->withSwiftMessage(function ($message) {
-            $headers = $message->getHeaders();
-            $headers->addTextHeader('message-id', $this->user->id);
-        });
-        */
-
         return $this->view(['vendor.notifications.email', 'vendor.notifications.email-plain'], $message->toArray());
     }
 
-    protected function getUrlConfirmRegister(){
-        return env('APP_PANEL_URL')."/user_setup/".$this->user->id."?token=".$this->user->getURLToken();
+    protected function getUrlConfirmRegister()
+    {
+        return env('APP_PANEL_URL') . "/user_setup/" . $this->user->id . "?token=" . $this->user->getURLToken();
     }
 }
