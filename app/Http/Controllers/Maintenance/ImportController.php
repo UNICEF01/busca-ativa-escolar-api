@@ -32,7 +32,7 @@ class ImportController extends BaseController {
 		$file = request()->file('file');
 		$type = request('type');
 
-		if(!in_array($type, array_keys(ImportJob::TYPES))) {
+        if(!in_array($type, array_keys(ImportJob::TYPES))) {
 			return $this->api_failure('invalid_type');
 		}
 
