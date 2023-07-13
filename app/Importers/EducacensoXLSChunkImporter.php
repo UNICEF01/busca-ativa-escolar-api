@@ -147,6 +147,7 @@ class EducacensoXLSChunkImporter
                     }
                     DB::commit();
                 } catch (\Exception $e) {
+                    DB::rollback();
                     throw new \Exception("Erro ao inserir os dados. Tente novamente mais tarde");
                 }
             }
