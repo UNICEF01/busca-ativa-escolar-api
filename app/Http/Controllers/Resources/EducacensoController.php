@@ -64,10 +64,6 @@ class EducacensoController extends BaseController
 
 			$job = ImportJob::createFromAttachment(EducacensoXLSChunkImporter::TYPE, $attachment);
 
-			$processo = new ProcessImportJob($job);
-
-			//$processo->handle();
-
 			dispatch(new ProcessImportJob($job));
 		} catch (\Exception $ex) {
 			return $this->api_exception($ex);
