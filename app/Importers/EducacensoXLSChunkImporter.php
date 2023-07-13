@@ -75,6 +75,8 @@ class EducacensoXLSChunkImporter
 
         $reader->setReadFilter($chunkFilter);
 
+        $this->job->total_records = 0;
+
         /**  O limite de linha 65536 está relacionado ao número máximo de linhas de um XLS **/
         for ($startRow = 0; $startRow <= 65536; $startRow += $chunkSize) {
 
@@ -127,6 +129,7 @@ class EducacensoXLSChunkImporter
                             break 2;
                         }
                         $this->insertRow($parsedChild);
+                        $this->job->total_records++;
                     }
                     DB::commit();
                 } catch (\Exception $e) {
@@ -144,6 +147,7 @@ class EducacensoXLSChunkImporter
                             break 2;
                         }
                         $this->insertRow($parsedChild);
+                        $this->job->total_records++;
                     }
                     DB::commit();
                 } catch (\Exception $e) {
