@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: manoelfilho
- * Date: 08/10/18
- * Time: 09:26
- */
 
 namespace BuscaAtivaEscolar\Importers;
 
@@ -13,17 +7,13 @@ use BuscaAtivaEscolar\Child;
 use BuscaAtivaEscolar\Comment;
 use BuscaAtivaEscolar\Data\AlertCause;
 use BuscaAtivaEscolar\Importers\TypeImporters\ChunkEducacensoReadFilter;
-use BuscaAtivaEscolar\Importers\TypeImporters\EducacensoImporter;
 use BuscaAtivaEscolar\ImportJob;
 use BuscaAtivaEscolar\Tenant;
 use BuscaAtivaEscolar\User;
 use Carbon\Carbon;
-use Config;
-use Excel;
-use League\CommonMark\Inline\Parser\EscapableParser;
 use Log;
 use PhpOffice\PhpSpreadsheet\IOFactory;
-
+use DB;
 
 class EducacensoXLSChunkImporter
 {
@@ -54,14 +44,15 @@ class EducacensoXLSChunkImporter
      * @var int The year of Educacenso
      * This is ony for register. The real value is registered in Children created_at.
      */
-    public $educacenso_year = 2022;
+    public $educacenso_year = 0;
 
     /**
      * Handles the importing of Educacenso's XLS
      * @param ImportJob $job
      * @throws \Exception
      */
-    public function handle(ImportJob $job) {
+    public function handle(ImportJob $job)
+    {
 
         set_time_limit(0);
 
@@ -71,12 +62,9 @@ class EducacensoXLSChunkImporter
 
         $this->agent = User::find(User::ID_EDUCACENSO_BOT);
 
-        if(!$this->agent) {
+        if (!$this->agent) {
             throw new \Exception("Failed to find Educacenso bot user!");
         }
-
-        Log::info("[educacenso_import] Tenant {$this->tenant->name}, file {$this->file}");
-        Log::info("[educacenso_import] Loading spreadsheet data into memory ...");
 
         /** Cria o reader do PhpSpreadsheet */
         $reader = IOFactory::createReader('Xlsx');
@@ -93,40 +81,78 @@ class EducacensoXLSChunkImporter
         for ($startRow = 0; $startRow <= 65536; $startRow += $chunkSize) {
 
             $chunkFilter->setRows($startRow, $chunkSize);
-            $maxRow = ($startRow + $chunkSize)-1;
+            $maxRow = ($startRow + $chunkSize) - 1;
             $spreadsheet = $reader->load($this->file);
-            $records = $spreadsheet->getActiveSheet()->rangeToArray('A'.$startRow.':N'.$maxRow);
+            $records = $spreadsheet->getActiveSheet()->rangeToArray('A' . $startRow . ':N' . $maxRow);
 
-            if($startRow > 0 AND $records[0][0] == null){
-                return;
+            if ($startRow > 0 and $records[0][0] == null) {
+                break;
             }
 
-            if($startRow == 3 AND $this->isHeaderEducacenso($records[12]) == false){
-                throw new \Exception("Cabeçalho padrão do Educacenso não localizado");
-            }
+            if ($startRow == 0) {
 
-            foreach ($records as $key => $record) {
+                //verifica o ano do educacenso informado no arquivo
+                $textWithYear = $records[5][1];
+                $patternYear = '/\b\d+\b/';
+                preg_match($patternYear, $textWithYear, $matches);
 
-                if( ($startRow == 0 AND $key > 12) OR ($startRow > 0) ) {
-
-                    if ($record[0] == null) { goto end; }
-
-                    if(!$this->isThereChild($record)){
-
-                        $this->parseChildRow($record);
-
-                    }
-
+                if (isset($matches[0])) {
+                    $this->educacenso_year = $matches[0];
+                } else {
+                    throw new \Exception("Ano do Educacenso não localizado - Arquivo pode estar fora do padrão");
                 }
 
+                //verifica o cabecalho do educacenso informado no arquivo
+                $headerFileEducacenso = $records[12];
+                if ($this->isHeaderEducacenso($headerFileEducacenso)) {
+                } else {
+                    throw new \Exception("Cabeçalho padrão do Educacenso não localizado - Arquivo pode estar fora do padrão");
+                }
+
+                //verifica primeira linha de dados
+                if ($records[13][0] == null) {
+                    throw new \Exception("Arquivo correto, porém com primeira linha de informações vazia");
+                }
             }
 
+            if ($startRow == 0) {
+                // Primeiro bloco de 100 valores. Inicia a leitura na linha 13
+                DB::beginTransaction();
+                try {
+                    foreach ($records as $key => $record) {
+                        if ($key <= 12) {
+                            continue;
+                        }
+                        $parsedChild = $this->parseDataXlsToSystemFields($record);
+                        if ($parsedChild == null) {
+                            break 2;
+                        }
+                        $this->insertRow($parsedChild);
+                    }
+                    DB::commit();
+                } catch (\Exception $e) {
+                    DB::rollback();
+                    throw new \Exception("Erro ao inserir os dados. Tente novamente mais tarde");
+                }
+            } else {
+                // Segundo bloco de 100 valores em diante. Inicia a leitura na linha 0
+                DB::beginTransaction();
+                try {
+                    foreach ($records as $record) {
+                        $parsedChild = $this->parseDataXlsToSystemFields($record);
+                        if ($parsedChild == null) {
+                            break 2;
+                        }
+                        $this->insertRow($parsedChild);
+                    }
+                    DB::commit();
+                } catch (\Exception $e) {
+                    throw new \Exception("Erro ao inserir os dados. Tente novamente mais tarde");
+                }
+            }
         }
 
         end:
-        Log::info("Última linha do arquivo localizada");
-
-        Log::info("[educacenso_import] Completed parsing all records");
 
         $this->tenant->educacenso_import_details = [
             'has_imported' => true,
@@ -136,77 +162,37 @@ class EducacensoXLSChunkImporter
         ];
 
         $this->tenant->save();
-
-        Log::info("[educacenso_import] Job completed!");
-
     }
 
-    public function parseChildRow($row) {
+    public function insertRow($data)
+    {
 
-        Log::info("[educacenso_import] Bot Agent User: {$this->agent->id}, {$this->agent->name}");
-
-        $placeKindMap = [
-            'URBANA' => 'urban',
-            'RURAL' => 'rural',
-        ];
-
-        $fieldMap = [
-            8 => 'educacenso_id',
-            9 => 'name',
-            10 => 'dob',
-            11 => 'mother_name',
-            5 => 'place_kind',
-            6 => 'school_last_id',
-            7 => 'school_last_name',
-        ];
-
-        $data = [];
-
-        foreach($fieldMap as $xlsField => $systemField) {
-            if(!isset($row[$xlsField])) continue;
-            $data[$systemField] = $row[$xlsField];
-        }
-
-        $data['observation'] = "Escola: ".$row[7]." | Modalidade de ensino: ".$row[12]." | Etapa: ".$row[13];
-
+        $data['observation'] = "Escola: " . $data['school_last_name'] . " | Modalidade de ensino: " . $data['modalidade'] . " | Etapa: " . $data['etapa'];
         $data['alert_cause_id'] = AlertCause::getBySlug('educacenso_inep')->id;
-
         $data['educacenso_id'] = strval($data['educacenso_id'] ?? "unkn_" . uniqid());
-        $data['name'] = $data['name'] ?? "-- informação não disponível --";
+        $data['name'] = $data['name'];
         $data['dob'] = isset($data['dob']) ? Carbon::createFromFormat('d/m/Y', $data['dob'])->format('Y-m-d') : null;
         $data['place_uf'] = $this->tenant->city->uf;
         $data['place_city_id'] = strval($this->tenant->city->id);
         $data['place_city_name'] = $this->tenant->city->name;
-        $data['place_kind'] = isset($data['place_kind']) ? ($placeKindMap[$data['place_kind']] ?? null) : null;
+        $data['place_kind'] = $data['place_kind'];
         $data['has_been_in_school'] = true;
         $data['educacenso_year'] = $this->educacenso_year;
         $data['group_id'] = $this->tenant->primary_group_id;
+        $data['tree_id'] = $this->tenant->primary_group_id;
 
-        Log::info("[educacenso_import] \t Parsed data: " . print_r($data, true));
+        Log::info($data);
 
-        $child = Child::spawnFromAlertData($this->tenant, $this->agent->id, $data);
+        //$child = Child::spawnFromAlertData($this->tenant, $this->agent->id, $data);
+        //$pesquisa = Pesquisa::fetchWithinCase($child->current_case_id, Pesquisa::class, 20);
+        //$pesquisa->setFields($data);
 
-        Log::info("[educacenso_import] \t Spawned child with ID: {$child->id}");
-
-        $pesquisa = Pesquisa::fetchWithinCase($child->current_case_id, Pesquisa::class, 20);
-
-        Log::info("[educacenso_import] \t Found pesquisa: {$pesquisa->id}");
-
-        $pesquisa->setFields($data);
-
-        Log::info("[educacenso_import] \t Posting comments...");
-
-        Comment::post($child, $this->agent, "Caso importado na planilha do Educacenso");
-
-        if(isset($row[13])) {
-            Comment::post($child, $this->agent, "Última etapa de ensino: "  . $row[13]);
-        }
-
-        Log::info("[educacenso_import] \t Child spawn complete!");
+        //Comment::post($child, $this->agent, "Caso importado na planilha do Educacenso");
 
     }
 
-    public function isThereChild($row){
+    public function isThereChild($row)
+    {
         $identificacao_unica = strval($row[8]);
         $child = Child::where(
             [
@@ -216,40 +202,83 @@ class EducacensoXLSChunkImporter
             ]
         )->first();
 
-        if($child == null){
+        if ($child == null) {
             return false;
-        }else{
-            Log::info("Child already exists ".$child->name." | ID: ".$child->id." | ID Educacenso: ".$child->educacenso_id." | Ano: ".$child->educacenso_year);
+        } else {
+            Log::info("Child already exists " . $child->name . " | ID: " . $child->id . " | ID Educacenso: " . $child->educacenso_id . " | Ano: " . $child->educacenso_year);
             return true;
         }
     }
 
-    public function isHeaderEducacenso ($headerArray) {
-
-        Log::info("CABECALHO DO ARQUIVO");
-        Log::info($headerArray);
-        Log::info("---------------------");
-
-    //	COD ALUNO	NOME ALUNO	NASCIMENTO	NOME MAE	MODALIDADE	ETAPA
+    public function isHeaderEducacenso($headerArray)
+    {
+        //padrão do educacenso para o ano de 2022 - confirmado pelo inep
         $headerFileEducacenso = [
-            0 => 'ESTADO',
-            1 => 'MUNICIPIO',
-            2 => 'DEPENDENCIA',
-            3 => 'CATEGORIA',
-            4 => 'CONVENIO',
-            5 => 'LOCALIZACAO',
-            6 => 'COD ESCOLA',
-            7 => 'NOME ESCOLA',
-            8 => 'COD ALUNO',
-            9 => 'NOME ALUNO',
-            10 => 'NASCIMENTO',
-            11 => 'NOME MAE',
-            12 => 'MODALIDADE',
-            13 => 'ETAPA',
+            0 => 'UF',
+            1 => 'Município',
+            2 => 'Localização',
+            3 => 'Código da escola',
+            4 => 'Nome da escola',
+            5 => 'Identificação única',
+            6 => 'Nome do aluno',
+            7 => 'Data de nascimento',
+            8 => 'Filiação 1',
+            9 => 'Modalidade de ensino',
+            10 => 'Etapa de ensino',
+            11 => NULL,
+            12 => NULL,
+            13 => NULL,
         ];
-
         return $headerArray == $headerFileEducacenso;
-
     }
 
+    public function isValidLineData($arrayValues)
+    {
+        foreach ($arrayValues as $element) {
+            if ($element == null) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public function parseDataXlsToSystemFields($xlsData)
+    {
+        $data = [];
+
+        /** Mapeamento de campos do xls para campos do sistema **/
+        $fieldMap = [
+            2 => 'place_kind',
+            3 => 'school_last_id',
+            4 => 'school_last_name',
+            5 => 'educacenso_id',
+            6 => 'name',
+            7 => 'dob',
+            8 => 'mother_name',
+            9 => 'modalidade',
+            10 => 'etapa'
+        ];
+
+        $placeKindMap = [
+            'URBANA' => 'urban',
+            'RURAL' => 'rural',
+        ];
+
+        foreach ($fieldMap as $xlsField => $systemField) {
+            if (!isset($xlsData[$xlsField])) {
+                return null;
+            }
+            $data[$systemField] = $xlsData[$xlsField];
+        }
+
+        isset($data['place_kind']) ? ($placeKindMap[$data['place_kind']] ?? null) : null;
+
+        foreach ($fieldMap as $xlsField => $systemField) {
+            if (!isset($data[$systemField]) || $data[$systemField] === null) {
+                return null;
+            }
+        }
+
+        return $data;
+    }
 }
