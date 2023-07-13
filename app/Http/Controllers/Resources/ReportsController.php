@@ -35,6 +35,7 @@ use DB;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Excel as ExcelB;
 use BuscaAtivaEscolar\Cache\CacheService;
+use Log;
 
 class ReportsController extends BaseController
 {
@@ -53,6 +54,8 @@ class ReportsController extends BaseController
         $params = request()->all();
         $filters = request('filters', []);
         $format = request('format', 'json');
+
+        Log::info($params);
 
 
         // Verifica se usuário está restrito a município

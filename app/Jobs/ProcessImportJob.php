@@ -56,12 +56,13 @@ class ProcessImportJob implements ShouldQueue
 		}
 
 		try {
+			set_time_limit(0);
 			$this->importJob->setStatus(ImportJob::STATUS_PROCESSING);
 			$this->importJob->handle();
 			$this->importJob->setStatus(ImportJob::STATUS_COMPLETED);
 			$this->importJob->save();
+			end:
 		} catch (\Exception $ex) {
-
 			$this->importJob->setStatus(ImportJob::STATUS_FAILED);
 			$this->importJob->storeError($ex);
 			$this->importJob->save();

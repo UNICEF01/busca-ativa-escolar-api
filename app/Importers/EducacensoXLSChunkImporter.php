@@ -54,8 +54,6 @@ class EducacensoXLSChunkImporter
     public function handle(ImportJob $job)
     {
 
-        set_time_limit(0);
-
         $this->job = $job;
         $this->tenant = $job->tenant;
         $this->file = $job->getAbsolutePath();
@@ -125,6 +123,7 @@ class EducacensoXLSChunkImporter
                         }
                         $parsedChild = $this->parseDataXlsToSystemFields($record);
                         if ($parsedChild == null) {
+                            DB::commit();
                             break 2;
                         }
                         $this->insertRow($parsedChild);
@@ -141,6 +140,7 @@ class EducacensoXLSChunkImporter
                     foreach ($records as $record) {
                         $parsedChild = $this->parseDataXlsToSystemFields($record);
                         if ($parsedChild == null) {
+                            DB::commit();
                             break 2;
                         }
                         $this->insertRow($parsedChild);
@@ -151,8 +151,6 @@ class EducacensoXLSChunkImporter
                 }
             }
         }
-
-        end:
 
         $this->tenant->educacenso_import_details = [
             'has_imported' => true,
