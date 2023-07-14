@@ -20,14 +20,20 @@ use BuscaAtivaEscolar\Scopes\TenantScope;
 use BuscaAtivaEscolar\User;
 use Illuminate\Database\Eloquent\Builder;
 use BuscaAtivaEscolar\ChildCase;
-
+use BuscaAtivaEscolar\Jobs\DeleteUser;
 
 class MaintenanceController extends BaseController
 {
 
     public function assignForAdminUser($userId)
     {
+        $user = User::withoutGlobalScope(TenantScope::class)->findOrFail($userId);
 
+        dispatch(new DeleteUser($user));
+
+        return response()->json(['status' => 'ok', 'user' => $user]);
+
+        /*
         try {
             $user = User::withoutGlobalScope(TenantScope::class)->findOrFail($userId);
             if ($user->tenant_id && in_array($user->type, User::$TENANT_SCOPED_TYPES)) {
@@ -65,5 +71,6 @@ class MaintenanceController extends BaseController
         } catch (\Exception $ex) {
             return $this->api_exception($ex);
         }
+        */
     }
 }
