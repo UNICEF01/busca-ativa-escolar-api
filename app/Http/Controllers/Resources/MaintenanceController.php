@@ -29,6 +29,10 @@ class MaintenanceController extends BaseController
     {
         $user = User::withoutGlobalScope(TenantScope::class)->findOrFail($userId);
 
+        $user->lgpd = 0;
+        $user->save();
+        $user->delete();
+
         dispatch(new DeleteUser($user));
 
         return response()->json(['status' => 'ok', 'user' => $user]);
