@@ -50,31 +50,38 @@ class DeleteUser implements ShouldQueue
             [Pesquisa::class, AnaliseTecnica::class, GestaoDoCaso::class, Observacao::class, Rematricula::class]
             Desconsidera etapa Alerta
             Busca apenas os casos com stats in_progress
+            Consultas do tipo chunk não retornar 100% dos dados -> https://laravel.com/docs/10.x/queries#chunking-results
+            O loop da linha 66 permite que retorne aos dados enquanto existir informação
         */
 
-        ChildCase::where('case_status', ChildCase::STATUS_IN_PROGRESS)->whereHasMorph(
-            'currentStep',
-            [Pesquisa::class, AnaliseTecnica::class, GestaoDoCaso::class, Observacao::class, Rematricula::class],
-            function (Builder $query) {
-                $query->where('assigned_user_id', '=', $this->user->id);
-            }
-        )->chunk(100, function ($cases) {
-            DB::beginTransaction();
-            foreach ($cases as $case) {
-                $this->qtd++;
-                try {
-                    $case->currentStep->detachUser();
-                    $case->currentStep->save();
-                    $case->assigned_user_id = null;
-                    $case->save();
-                    $case->child->save();
-                } catch (\Exception $e) {
-                    DB::rollback();
-                    throw $e;
+        $query = ChildCase::where('case_status', ChildCase::STATUS_IN_PROGRESS)
+            ->whereHasMorph(
+                'currentStep',
+                [Pesquisa::class, AnaliseTecnica::class, GestaoDoCaso::class, Observacao::class, Rematricula::class],
+                function (Builder $query) {
+                    $query->where('assigned_user_id', '=', $this->user->id);
                 }
-            }
-            DB::commit();
-        });
+            );
+
+        while ($query->count > 0) {
+            $query->chunk(100, function ($cases) {
+                DB::transaction();
+                foreach ($cases as $case) {
+                    $this->qtd++;
+                    try {
+                        $case->currentStep->detachUser();
+                        $case->currentStep->save();
+                        $case->assigned_user_id = null;
+                        $case->save();
+                        $case->child->save();
+                    } catch (\Exception $e) {
+                        DB::rollback();
+                        throw $e;
+                    }
+                }
+                DB::commit();
+            });
+        }
 
         Log::info($this->qtd);
     }
