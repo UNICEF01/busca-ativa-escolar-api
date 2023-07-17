@@ -25,8 +25,6 @@ class DeleteUser implements ShouldQueue
 
     public $user;
 
-    public $qtd;
-
     /**
      * Create a new job instance.
      *
@@ -35,7 +33,6 @@ class DeleteUser implements ShouldQueue
     public function __construct(User $user)
     {
         $this->user = $user;
-        $this->qtd = 0;
     }
 
     /**
@@ -65,7 +62,6 @@ class DeleteUser implements ShouldQueue
 
                 DB::beginTransaction();
                 foreach ($cases as $case) {
-                    $this->qtd++;
                     try {
                         $case->currentStep->detachUser();
                         $case->currentStep->save();
@@ -79,8 +75,5 @@ class DeleteUser implements ShouldQueue
                 }
                 DB::commit();
             });
-
-
-        Log::info($this->qtd);
     }
 }
