@@ -54,18 +54,16 @@ class DeleteUser implements ShouldQueue
             O loop da linha 66 permite que retorne aos dados enquanto existir informação
         */
 
-        $query = ChildCase::where('case_status', ChildCase::STATUS_IN_PROGRESS)
+        ChildCase::where('case_status', ChildCase::STATUS_IN_PROGRESS)
             ->whereHasMorph(
                 'currentStep',
                 [Pesquisa::class, AnaliseTecnica::class, GestaoDoCaso::class, Observacao::class, Rematricula::class],
                 function (Builder $query) {
                     $query->where('assigned_user_id', '=', $this->user->id);
                 }
-            );
-
-        while ($query->count > 0) {
-            $query->chunk(100, function ($cases) {
-                DB::transaction();
+            )->chunk(5, function ($cases) {       
+            
+                DB::beginTransaction();
                 foreach ($cases as $case) {
                     $this->qtd++;
                     try {
@@ -81,7 +79,7 @@ class DeleteUser implements ShouldQueue
                 }
                 DB::commit();
             });
-        }
+       
 
         Log::info($this->qtd);
     }
