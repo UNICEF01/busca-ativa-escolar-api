@@ -61,8 +61,8 @@ class DeleteUser implements ShouldQueue
                 function (Builder $query) {
                     $query->where('assigned_user_id', '=', $this->user->id);
                 }
-            )->chunk(5, function ($cases) {       
-            
+            )->chunk(100, function ($cases) {
+
                 DB::beginTransaction();
                 foreach ($cases as $case) {
                     $this->qtd++;
@@ -79,7 +79,7 @@ class DeleteUser implements ShouldQueue
                 }
                 DB::commit();
             });
-       
+
 
         Log::info($this->qtd);
     }
