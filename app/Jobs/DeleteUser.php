@@ -57,7 +57,7 @@ class DeleteUser implements ShouldQueue
                 function (Builder $query) {
                     $query->where('assigned_user_id', '=', $this->user->id);
                 }
-            )->skype(0)->take(20)->get();
+            )->skip(0)->take(20)->get();
 
         if ($cases->count() == 0) {
             return true;
