@@ -4,10 +4,12 @@ namespace BuscaAtivaEscolar\Jobs;
 
 use BuscaAtivaEscolar\CaseSteps\Alerta;
 use BuscaAtivaEscolar\CaseSteps\AnaliseTecnica;
+use BuscaAtivaEscolar\CaseSteps\CaseStep;
 use BuscaAtivaEscolar\CaseSteps\GestaoDoCaso;
 use BuscaAtivaEscolar\CaseSteps\Observacao;
 use BuscaAtivaEscolar\CaseSteps\Pesquisa;
 use BuscaAtivaEscolar\CaseSteps\Rematricula;
+use BuscaAtivaEscolar\Child;
 use BuscaAtivaEscolar\ChildCase;
 use BuscaAtivaEscolar\User;
 use DB;
@@ -42,39 +44,40 @@ class DeleteUser implements ShouldQueue
      */
     public function handle()
     {
-        /*
-            Retorna todos os childrenCases com respectivas etapas:
-            [Pesquisa::class, AnaliseTecnica::class, GestaoDoCaso::class, Observacao::class, Rematricula::class]
-            Desconsidera etapa Alerta
-            Busca apenas os casos com stats in_progress
-            Consultas do tipo chunk não retornar 100% dos dados -> https://laravel.com/docs/10.x/queries#chunking-results
-            O loop da linha 66 permite que retorne aos dados enquanto existir informação
-        */
+        $this->deleteUser();
+    }
 
-        DB::beginTransaction();
+    protected function deleteUser()
+    {
 
-        ChildCase::where('case_status', ChildCase::STATUS_IN_PROGRESS)
+        $cases = ChildCase::where('case_status', ChildCase::STATUS_IN_PROGRESS)
             ->whereHasMorph(
                 'currentStep',
                 [Pesquisa::class, AnaliseTecnica::class, GestaoDoCaso::class, Observacao::class, Rematricula::class],
                 function (Builder $query) {
                     $query->where('assigned_user_id', '=', $this->user->id);
                 }
-            )->chunk(100, function ($cases) {
-                foreach ($cases as $case) {
-                    try {
-                        $case->currentStep->detachUser();
-                        $case->currentStep->save();
-                        $case->assigned_user_id = null;
-                        $case->save();
-                        $case->child->save();
-                    } catch (\Exception $e) {
-                        DB::rollback();
-                        throw $e;
-                    }
-                }
-            });
+            )->skype(0)->take(20)->get();
 
+        if ($cases->count() == 0) {
+            return true;
+        }
+
+        DB::beginTransaction();
+        foreach ($cases as $case) {
+            try {
+                $case->currentStep->detachUser();
+                $case->currentStep->save();
+                $case->assigned_user_id = null;
+                $case->save();
+                $case->child->save();
+            } catch (\Exception $e) {
+                DB::rollback();
+                throw $e;
+            }
+        }
         DB::commit();
+
+        return $this->deleteUser();
     }
 }
