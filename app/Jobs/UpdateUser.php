@@ -8,6 +8,7 @@ use BuscaAtivaEscolar\CaseSteps\Observacao;
 use BuscaAtivaEscolar\CaseSteps\Pesquisa;
 use BuscaAtivaEscolar\CaseSteps\Rematricula;
 use BuscaAtivaEscolar\ChildCase;
+use BuscaAtivaEscolar\Group;
 use BuscaAtivaEscolar\User;
 use DB;
 use Illuminate\Bus\Queueable;
@@ -16,21 +17,24 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Log;
 
-class DeleteUser implements ShouldQueue
+class UpdateUser implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public $user;
+    public $newGroup;
 
     /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct(User $user)
+    public function __construct(User $user, $newGroupId)
     {
         $this->user = $user;
+        $this->newGroup = Group::where('id', $newGroupId)->get()->first();
     }
 
     /**
@@ -40,11 +44,13 @@ class DeleteUser implements ShouldQueue
      */
     public function handle()
     {
-        $this->deleteUser();
+        $this->updateUser();
     }
 
-    protected function deleteUser()
+    protected function updateUser()
     {
+
+        //ENTRA EM LOOP QUANDO NAO DÁ UPDATE....
 
         $cases = ChildCase::where('case_status', ChildCase::STATUS_IN_PROGRESS)
             ->whereHasMorph(
@@ -53,7 +59,7 @@ class DeleteUser implements ShouldQueue
                 function (Builder $query) {
                     $query->where('assigned_user_id', '=', $this->user->id);
                 }
-            )->select('currentStep', 'assigned_user_id')->skip(0)->take(20)->get();
+            )->skip(0)->take(20)->get();
 
         if ($cases->count() == 0) {
             return true;
@@ -62,11 +68,18 @@ class DeleteUser implements ShouldQueue
         DB::beginTransaction();
         foreach ($cases as $case) {
             try {
-                $case->currentStep->detachUser();
-                $case->currentStep->save();
-                $case->assigned_user_id = null;
-                $case->save();
-                $case->child->save();
+
+                Log::info($this->newGroup->id);
+                Log::info($case->group->id);
+
+                $parentsIdOfCase = $case->group->getArrayOfParentsId();
+                if (!in_array($this->newGroup->id, $parentsIdOfCase) and $this->newGroup->id != $case->group->id) {
+                    $case->currentStep->detachUser();
+                    $case->currentStep->save();
+                    $case->assigned_user_id = null;
+                    $case->save();
+                    $case->child->save();
+                }
             } catch (\Exception $e) {
                 DB::rollback();
                 throw $e;
@@ -74,6 +87,6 @@ class DeleteUser implements ShouldQueue
         }
         DB::commit();
 
-        return $this->deleteUser();
+        return $this->updateUser();
     }
 }
