@@ -20,7 +20,6 @@ use BuscaAtivaEscolar\CaseSteps\GestaoDoCaso;
 use BuscaAtivaEscolar\CaseSteps\Observacao;
 use BuscaAtivaEscolar\CaseSteps\Pesquisa;
 use BuscaAtivaEscolar\CaseSteps\Rematricula;
-use BuscaAtivaEscolar\ChildCase;
 use BuscaAtivaEscolar\Exports\UsersExport;
 use BuscaAtivaEscolar\ExportUsersJob;
 use BuscaAtivaEscolar\Group;
@@ -35,7 +34,8 @@ use League\Fractal\Pagination\IlluminatePaginatorAdapter;
 use Mail;
 use Maatwebsite\Excel\Excel as ExcelB;
 use BuscaAtivaEscolar\LGPD\Interfaces\ILgpd;
-use BuscaAtivaEscolar\Groups\GroupService;
+use BuscaAtivaEscolar\Jobs\UpdateUser;
+use Log;
 
 class UsersController extends BaseController
 {
@@ -52,7 +52,8 @@ class UsersController extends BaseController
         $query = User::with('group');
 
         // If user is global user, they can filter by tenant_id
-        if ($this->currentUser()
+        if (
+            $this->currentUser()
             ->isGlobal() && !empty(request()
                 ->get('tenant_id'))
         ) {
@@ -64,7 +65,8 @@ class UsersController extends BaseController
         }
 
         // If user is global user, they can filter by UF
-        if ($this->currentUser()
+        if (
+            $this->currentUser()
             ->isGlobal() && !empty(request()
                 ->get('uf'))
         ) {
@@ -84,20 +86,24 @@ class UsersController extends BaseController
         if ($this->currentUser()
             ->isRestrictedToTenant()
         ) {
-            if (!empty(request()
-                ->get('group_id')) && request()
+            if (
+                !empty(request()
+                    ->get('group_id')) && request()
                 ->get('tree') == 0
             ) $query->where('group_id', request('group_id'));
-            if (!empty(request()
-                ->get('group_id')) && request()
+            if (
+                !empty(request()
+                    ->get('group_id')) && request()
                 ->get('tree') == 1
             ) $query->where('tree_id', 'Like', '%' . request('group_id') . '%');
-            if (empty(request()
-                ->get('group_id')) && request()
+            if (
+                empty(request()
+                    ->get('group_id')) && request()
                 ->get('tree') == 1
             ) $query->where('tree_id', 'Like', '%' . $this->currentUser()->group_id . '%');
-            if (empty(request()
-                ->get('group_id')) && request()
+            if (
+                empty(request()
+                    ->get('group_id')) && request()
                 ->get('tree') == 0
             ) $query->where('group_id', \Auth::user()->group_id);
         }
@@ -155,7 +161,8 @@ class UsersController extends BaseController
 
         $query = User::with('group');
 
-        if ($this->currentUser()
+        if (
+            $this->currentUser()
             ->isGlobal() && isset($tenant_id) && $tenant_id != null
         ) {
             $query->where('tenant_id', $tenant_id);
@@ -165,7 +172,8 @@ class UsersController extends BaseController
             $query->where('tenant_id', '!=', 'global');
         }
 
-        if ($this->currentUser()
+        if (
+            $this->currentUser()
             ->isGlobal() && isset($uf) && $uf != null
         ) {
             $query->where('uf', $uf);
@@ -252,10 +260,9 @@ class UsersController extends BaseController
             if (isset($input['password'])) {
                 $input['password'] = password_hash($input['password'], PASSWORD_DEFAULT);
             }
-            if ($user->tenant_id && in_array($user->type, User::$TENANT_SCOPED_TYPES)) {
-                $userAssingedCase = new GroupService;
-                $userAssingedCase = $userAssingedCase->changeAssignedUserCaseData(['user_id' => $input['id'], 'name' => $input['name'], 'group_id' => $input['group_id'], 'group_name' => $input['group_name']]);
 
+            if ($user->tenant_id && in_array($user->type, User::$TENANT_SCOPED_TYPES) && $user->group_id != $input['group_id']) {
+                dispatch(new UpdateUser($user, $input['group_id']));
             }
             $input['tree_id'] = implode(', ', Group::where('id', $input['group_id'])->get()->first()->getTree());
             $user->fill($input);
