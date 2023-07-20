@@ -17,7 +17,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Log;
 
 class UpdateUser implements ShouldQueue
 {
@@ -49,29 +48,28 @@ class UpdateUser implements ShouldQueue
 
     protected function updateUser()
     {
-
-        //ENTRA EM LOOP QUANDO NAO DÁ UPDATE....
-
-        $cases = ChildCase::where('case_status', ChildCase::STATUS_IN_PROGRESS)
+        $count = ChildCase::where('case_status', ChildCase::STATUS_IN_PROGRESS)
             ->whereHasMorph(
                 'currentStep',
                 [Pesquisa::class, AnaliseTecnica::class, GestaoDoCaso::class, Observacao::class, Rematricula::class],
                 function (Builder $query) {
                     $query->where('assigned_user_id', '=', $this->user->id);
                 }
-            )->skip(0)->take(20)->get();
+            )->count();
 
-        if ($cases->count() == 0) {
-            return true;
-        }
+        for ($i = 0; $i < $count; $i++) {
 
-        DB::beginTransaction();
-        foreach ($cases as $case) {
+            $case = ChildCase::where('case_status', ChildCase::STATUS_IN_PROGRESS)
+                ->whereHasMorph(
+                    'currentStep',
+                    [Pesquisa::class, AnaliseTecnica::class, GestaoDoCaso::class, Observacao::class, Rematricula::class],
+                    function (Builder $query) {
+                        $query->where('assigned_user_id', '=', $this->user->id);
+                    }
+                )->get()->first();
+
+            DB::beginTransaction();
             try {
-
-                Log::info($this->newGroup->id);
-                Log::info($case->group->id);
-
                 $parentsIdOfCase = $case->group->getArrayOfParentsId();
                 if (!in_array($this->newGroup->id, $parentsIdOfCase) and $this->newGroup->id != $case->group->id) {
                     $case->currentStep->detachUser();
@@ -79,14 +77,14 @@ class UpdateUser implements ShouldQueue
                     $case->assigned_user_id = null;
                     $case->save();
                     $case->child->save();
+                } else {
+                    $case->child->save();
                 }
             } catch (\Exception $e) {
                 DB::rollback();
                 throw $e;
             }
+            DB::commit();
         }
-        DB::commit();
-
-        return $this->updateUser();
     }
 }
