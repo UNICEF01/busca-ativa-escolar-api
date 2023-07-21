@@ -1,0 +1,70 @@
+- name: Deploy Development
+  type: serial
+  tag: development
+  steps:
+    - name: Install SSH Private Key File
+      service: app
+      command: /bin/bash -c "echo -e $PRIVATE_SSH_KEY >> /root/.ssh/id_rsa"
+
+    - name: Change SSH Key Permissions
+      service: app
+      command: chmod 600 /root/.ssh/id_rsa
+
+    - name: Add Server to Known Hosts
+      service: app
+      command: /bin/bash -c "ssh-keyscan -H site.dev.buscaativaescolar.org.br >> /root/.ssh/known_hosts"
+
+    - name: Test SSH Command
+      service: app
+      command: ssh -o StrictHostKeyChecking=no -T unicef@site.dev.buscaativaescolar.org.br ls;exit
+
+    - name: GIT PULL Production
+      service: app
+      command: ssh -o StrictHostKeyChecking=no -T unicef@site.dev.buscaativaescolar.org.br cd /home/unicef/api.dev.buscaativaescolar.org.br;sudo chmod -R 775 ./;git reset --hard;git pull;exit
+
+    - name: Install the Dependencies
+      service: app
+      command: ssh -o StrictHostKeyChecking=no -T unicef@site.dev.buscaativaescolar.org.br cd /home/unicef/api.dev.buscaativaescolar.org.br;composer install;exit
+
+    - name: Install the Migrations
+      service: app
+      command: ssh -o StrictHostKeyChecking=no -T unicef@site.dev.buscaativaescolar.org.br cd /home/unicef/api.dev.buscaativaescolar.org.br;php artisan migrate;exit
+
+    - name: Set the Permissions
+      service: app
+      command: ssh -o StrictHostKeyChecking=no -T unicef@site.dev.buscaativaescolar.org.br /bin/bash laravel_perm_fix.sh;exit
+- name: Deploy Production
+  type: serial
+  tag: master
+  steps:
+    - name: Install SSH Private Key File
+      service: app
+      command: /bin/bash -c "echo -e $PRIVATE_SSH_KEY >> /root/.ssh/id_rsa"
+
+    - name: Change SSH Key Permissions
+      service: app
+      command: chmod 600 /root/.ssh/id_rsa
+
+    - name: Add Server to Known Hosts
+      service: app
+      command: /bin/bash -c "ssh-keyscan -H buscaativaescolar.org.br >> /root/.ssh/known_hosts"
+
+    - name: Test SSH Command
+      service: app
+      command: ssh -o StrictHostKeyChecking=no -T unicef@buscaativaescolar.org.br ls;exit
+
+    - name: GIT PULL Production
+      service: app
+      command: ssh -o StrictHostKeyChecking=no -T unicef@buscaativaescolar.org.br cd /home/unicef/buscaativaescolar/api;sudo chmod -R 775 ./;git reset --hard;git pull;exit
+
+    - name: Install the Dependencies
+      service: app
+      command: ssh -o StrictHostKeyChecking=no -T unicef@buscaativaescolar.org.br cd /home/unicef/buscaativaescolar/api;composer install;exit
+
+    - name: Install the Migrations
+      service: app
+      command: ssh -o StrictHostKeyChecking=no -T unicef@buscaativaescolar.org.br cd /home/unicef/buscaativaescolar/api;php artisan migrate;exit
+
+    - name: Set the Permissions
+      service: app
+      command: ssh -o StrictHostKeyChecking=no -T unicef@buscaativaescolar.org.br /bin/bash ~/buscaativaescolar/laravel_perm_fix.sh;exit
