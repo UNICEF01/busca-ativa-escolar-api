@@ -12,19 +12,19 @@
 
     - name: Add Server to Known Hosts
       service: app
-      command: /bin/bash -c "ssh-keyscan -H site.dev.site.testes.buscaativaescolar.org.br >> /root/.ssh/known_hosts"
+      command: /bin/bash -c "ssh-keyscan -H site.dev.buscaativaescolar.org.br >> /root/.ssh/known_hosts"
 
     - name: Test SSH Command
       service: app
-      command: ssh -o StrictHostKeyChecking=no -T unicef@site.dev.site.testes.buscaativaescolar.org.br ls;exit
+      command: ssh -o StrictHostKeyChecking=no -T unicef@site.dev.buscaativaescolar.org.br ls;exit
 
     - name: GIT PULL Production
       service: app
-      command: ssh -o StrictHostKeyChecking=no -T unicef@site.dev.site.testes.buscaativaescolar.org.br cd /home/unicef/api.dev.site.testes.buscaativaescolar.org.br;sudo chmod -R 775 ./;git reset --hard;git pull;exit
+      command: ssh -o StrictHostKeyChecking=no -T unicef@site.dev.buscaativaescolar.org.br cd /home/unicef/api.dev.buscaativaescolar.org.br;sudo chmod -R 775 ./;git reset --hard;git pull;exit
 
     - name: Install the Dependencies
       service: app
-      command: ssh -o StrictHostKeyChecking=no -T unicef@site.dev.site.testes.buscaativaescolar.org.br cd /home/unicef/api.dev.site.testes.buscaativaescolar.org.br;composer install;exit
+      command: ssh -o StrictHostKeyChecking=no -T unicef@site.dev.buscaativaescolar.org.br cd /home/unicef/api.dev.buscaativaescolar.org.br;composer install;exit
 
     - name: Install the Migrations
       service: app
