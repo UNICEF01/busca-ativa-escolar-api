@@ -36,6 +36,7 @@ use Maatwebsite\Excel\Excel as ExcelB;
 use BuscaAtivaEscolar\LGPD\Interfaces\ILgpd;
 use BuscaAtivaEscolar\Jobs\UpdateUser;
 use Log;
+use DB;
 
 class UsersController extends BaseController
 {
@@ -291,6 +292,8 @@ class UsersController extends BaseController
     {
         try {
 
+            DB::beginTransaction();
+
             $user = new User();
             $input = request()->all();
 
@@ -352,11 +355,16 @@ class UsersController extends BaseController
                 $user->save();
             }
 
-            Mail::to($user->email)
-                ->send(new UserRegisterNotification($user, UserRegisterNotification::TYPE_REGISTER_INITIAL));
+            if ($user->type != User::TYPE_GESTOR_NACIONAL && !str_contains($user->type, 'visitante')) {
+                Mail::to($user->email)
+                    ->send(new UserRegisterNotification($user, UserRegisterNotification::TYPE_REGISTER_INITIAL));
+            }
+
+            DB::commit();
 
             return response()->json(['status' => 'ok', 'id' => $user->id]);
         } catch (\Exception $ex) {
+            DB::rollback();
             return $this->api_exception($ex);
         }
     }
