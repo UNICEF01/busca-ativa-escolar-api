@@ -414,6 +414,11 @@ class ReportsBar extends BaseController
 
         $cache = new CacheService();
 
-        return response()->json($cache->returnMap($uf));
+        try {
+            return response()->json($cache->returnMap($uf));
+        } catch (\Throwable $th) {
+            return response()->json(['error' => 'Não foi possível encontrar o resultados para '.$uf], 404);
+        }    
+
     }
 }

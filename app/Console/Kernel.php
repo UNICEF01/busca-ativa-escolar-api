@@ -61,7 +61,8 @@ class Kernel extends ConsoleKernel
         Commands\ReindexChildrenByTenant::class,
         Commands\ReindexAllSchoolsOfCity::class,
         Commands\CheckCaseDeadlinesByTenant::class,
-        Commands\SendEmailMunicipal::class
+        Commands\SendEmailMunicipal::class,
+        Commands\ReindexCasesByUF::class
     ];
 
     /**

@@ -530,7 +530,6 @@ class Child extends Model implements Searchable, CanBeAggregated, CollectsDailyM
 
         $data = $this->getAttributes() + $data;
 
-
         if ($this->currentStep) {
             $data['assigned_user_id'] = $this->currentStep->assigned_user_id ?? null;
 
@@ -597,11 +596,6 @@ class Child extends Model implements Searchable, CanBeAggregated, CollectsDailyM
                 $data['tree_id'] = implode(', ', Group::where('id', $this->currentCase->group->id)->get()->first()->getTree());
             }
         }
-
-        $data['city_name'] = $this->city->name ?? null;
-        $data['uf'] = $this->city->uf ?? null;
-        $data['country_region'] = $this->city->region ?? null;
-        $data['nationality'] = $this->nationality ?? null;
 
         return $data;
     }
