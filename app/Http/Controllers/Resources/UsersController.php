@@ -265,7 +265,9 @@ class UsersController extends BaseController
             if ($user->tenant_id && in_array($user->type, User::$TENANT_SCOPED_TYPES) && $user->group_id != $input['group_id']) {
                 dispatch(new UpdateUser($user, $input['group_id']));
             }
-            $input['tree_id'] = implode(', ', Group::where('id', $input['group_id'])->get()->first()->getTree());
+            if (isset($input['group_id'])) {
+                $input['tree_id'] = implode(', ', Group::where('id', $input['group_id'])->get()->first()->getTree());
+            }
             $user->fill($input);
 
             // Block setting a tenant-scope user without a tenant ID set
