@@ -36,6 +36,7 @@ use Maatwebsite\Excel\Excel as ExcelB;
 use BuscaAtivaEscolar\LGPD\Interfaces\ILgpd;
 use BuscaAtivaEscolar\Jobs\UpdateUser;
 use Log;
+use DB;
 
 class UsersController extends BaseController
 {
@@ -264,7 +265,9 @@ class UsersController extends BaseController
             if ($user->tenant_id && in_array($user->type, User::$TENANT_SCOPED_TYPES) && $user->group_id != $input['group_id']) {
                 dispatch(new UpdateUser($user, $input['group_id']));
             }
-            $input['tree_id'] = implode(', ', Group::where('id', $input['group_id'])->get()->first()->getTree());
+            if (isset($input['group_id'])) {
+                $input['tree_id'] = implode(', ', Group::where('id', $input['group_id'])->get()->first()->getTree());
+            }
             $user->fill($input);
 
             // Block setting a tenant-scope user without a tenant ID set
@@ -290,6 +293,8 @@ class UsersController extends BaseController
     public function store()
     {
         try {
+
+            DB::beginTransaction();
 
             $user = new User();
             $input = request()->all();
@@ -352,11 +357,16 @@ class UsersController extends BaseController
                 $user->save();
             }
 
-            Mail::to($user->email)
-                ->send(new UserRegisterNotification($user, UserRegisterNotification::TYPE_REGISTER_INITIAL));
+            if ($user->type != User::TYPE_GESTOR_NACIONAL && !str_contains($user->type, 'visitante')) {
+                Mail::to($user->email)
+                    ->send(new UserRegisterNotification($user, UserRegisterNotification::TYPE_REGISTER_INITIAL));
+            }
+
+            DB::commit();
 
             return response()->json(['status' => 'ok', 'id' => $user->id]);
         } catch (\Exception $ex) {
+            DB::rollback();
             return $this->api_exception($ex);
         }
     }

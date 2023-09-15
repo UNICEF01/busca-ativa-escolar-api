@@ -101,7 +101,15 @@ class ChildrenController extends BaseController
 			}
 		}
 
-		$query->getGroups($params);
+		// Verifica se o tipo de usuário atual não contém a palavra 'estadual'.
+		if (!str_contains(Auth::user()->type, 'estadual')) {
+			// Se o tipo de usuário não contiver 'estadual', então...
+			// Chama o método getGroups no objeto $query, passando $params como argumento.
+			// Essa função adiciona uma cláusula de busca à query Elasticsearch para filtrar por grupos. 
+			// Ela recebe um array de parâmetros e verifica se foi passado 'tree' e 'group_id'.
+			$query->getGroups($params);
+		}
+
 
 		return $query;
 	}

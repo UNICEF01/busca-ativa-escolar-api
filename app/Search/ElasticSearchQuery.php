@@ -310,7 +310,8 @@ class ElasticSearchQuery
 		}
 		return $this->query;
 	}
-
+	
+	
 	public function getGroups(array $params)
 	{
 		$i = count($this->query['bool']['must']);

@@ -11,3 +11,5 @@ Homestead.yaml
 .settings/
 .DS_Store
 getAllBranches.sh
+scripts/
+scripts/*/*.*
