@@ -55,7 +55,7 @@ class ReportsController extends BaseController
         $filters = request('filters', []);
         $format = request('format', 'json');
 
-        Log::info($params);
+        // Log::info($params);
 
 
         // Verifica se usuário está restrito a município
