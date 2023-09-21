@@ -29,7 +29,8 @@ class TenantsExport implements FromArray, ShouldAutoSize, WithHeadings
             'Está configurado?',
             'Data de cadastro',
             'Data de ativação',
-            'Data de exclusão'
+            'Data de exclusão',
+            'Tipo'
         ];
     }
 }

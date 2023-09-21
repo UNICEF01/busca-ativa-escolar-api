@@ -82,7 +82,16 @@ class TenantSignupExport implements FromQuery, ShouldAutoSize, WithHeadings
     public function prepareRows($tenantsSignups)
     {
         return $tenantsSignups->transform(function ($tenantSignup) {
-            return $tenantSignup->toExportArray();
+            // Determine o tipo com base na condição 'is_state'
+            $tipo = $tenantSignup->is_state ? 'Estado' : 'Municipio';
+
+            // Obtenha o array de exportação do TenantSignup
+            $exportArray = $tenantSignup->toExportArray();
+
+            // Adicione a coluna 'Tipo' ao array de exportação
+            $exportArray['Tipo'] = $tipo;
+
+            return $exportArray;
         });
     }
 
@@ -112,7 +121,8 @@ class TenantSignupExport implements FromQuery, ShouldAutoSize, WithHeadings
             'Data exclusão/ rejeição',
             'Instância - Nome',
             'Código - IBGE',
-            'Ciclo'
+            'Ciclo',
+            'Tipo'
         ];
     }
 }

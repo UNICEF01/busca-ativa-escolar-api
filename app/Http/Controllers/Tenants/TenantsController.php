@@ -92,7 +92,7 @@ class TenantsController extends BaseController
         $tenants = Tenant::query()->with(['operationalAdmin', 'politicalAdmin', 'users']);
         Tenant::applySorting($tenants, $sort);
 
-        $tenants->where('is_state', 0);
+//        $tenants->where('is_state', 1);
 
         if (isset($filter['name']) && strlen($filter['name']) > 0) {
             $tenants->where('name_ascii', 'REGEXP', strtolower(Str::ascii($filter['name'])));
@@ -235,13 +235,20 @@ class TenantsController extends BaseController
         if ($this->currentUser()->isRestrictedToUF()) {
             $query->where('uf', $this->currentUser()->uf);
         }
-
+        // Obter os tenants com base nos filtros aplicados
         $tenants = $query
             ->get()
             ->map(function ($tenant) { /* @var $tenant Tenant */
-                return $tenant->toExportArray();
+                // Determinar o tipo com base em 'is_state' (0 para Município, diferente de 0 para Estado)
+                $tipo = $tenant->is_state ? 'Estado' : 'Municipio';
+
+                // Obter os dados do tenants e adicionar a coluna 'Tipo'
+                $exportArray = $tenant->toExportArray();
+                $exportArray['Tipo'] = $tipo;
+                return $exportArray;
             })
             ->toArray();
-        return $this->excel->download(new TenantsExport($tenants), 'buscaativaescolar_municipios.xls');
+
+        return $this->excel->download(new TenantsExport($tenants), 'buscaativaescolar_adesoes.xls');
     }
 }
