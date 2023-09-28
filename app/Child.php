@@ -719,7 +719,14 @@ class Child extends Model implements Searchable, CanBeAggregated, CollectsDailyM
         $data['alert_status'] = self::ALERT_STATUS_PENDING;
         $data['risk_level'] = $tenant->getSettings()->getAlertPriority($data['alert_cause_id']) ?? ChildCase::RISK_LEVEL_MEDIUM;
 
-        if (!array_key_exists("group_id", $data)) $data['group_id'] = $tenant->primary_group_id;
+        // Define-o como o 'primary_group_id' do Tenant.
+        $data['group_id'] = $tenant->primary_group_id;
+
+        // Define-o como o 'primary_group_id' do Tenant.
+        $data['tree_id'] = $tenant->primary_group_id;
+
+        // O código acima garante que 'group_id' e 'tree_id' tenham valores válidos no array $data,
+        // usando o 'primary_group_id' do Tenant como valor padrão se essas chaves não estiverem definidas.
 
         $child = self::create($data);
 

@@ -452,10 +452,12 @@ class ReportsController extends BaseController
             'reg' => request('reg'),
             'uf' => request('uf')
         ];
+
         $typeOfCache = 'country';
         foreach ($resqueted as $key => $value) {
             if (!empty($value)) $typeOfCache = $key;
         }
+
         $capitais = [
             2800308, 1501402, 3106200, 1400100, 5300108,
             5002704, 5103403, 4106902, 4205407, 2304400,
