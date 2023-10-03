@@ -46,7 +46,6 @@ class ImportXLSChildrenController extends BaseController
      */
     public function import_xls(){
 
-
         $file = request()->file('file');
 
         if(!in_array($file->getMimeType(), self::PERMITED_FILES_MIME_TYPES)){
