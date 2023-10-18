@@ -33,10 +33,6 @@ class CheckCaseDeadlinesByTenant extends Command
 
                 $stepDeadline = $child->tenant->getDeadlineFor($step->getSlug());
 
-                $this->comment($stepDeadline);
-
-                $currentStatus = $child->deadline_status;
-
                 if ($step->isLate($today, $stepDeadline)) {
                     $newStatus = 'late';
                 } else {
@@ -46,18 +42,6 @@ class CheckCaseDeadlinesByTenant extends Command
                 if ($child->child_status === Child::STATUS_CANCELLED || $child->child_status === Child::STATUS_IN_SCHOOL) {
                     $newStatus = 'normal';
                 }
-
-                if ($step->getSlug() === "gestao_do_caso") {
-                    $newStatus = 'normal';
-                }
-
-                $diffDays = $today->diffInDays($step->started_at);
-
-                $typeValueStepDeadline = gettype($stepDeadline);
-                $typeValueDiff = gettype($diffDays);
-
-                $this->comment("{$child->name} - {$stepDeadline} -> diferenca de dias: {$diffDays} -> tipo step: {$typeValueStepDeadline} -> tipo diff: {$typeValueDiff} ");
-
 
                 $child->update(['deadline_status' => $newStatus]);
             }
