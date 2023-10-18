@@ -51,15 +51,13 @@ class CheckCaseDeadlinesByTenant extends Command
                     $newStatus = 'normal';
                 }
 
-                $this->comment("Processing: {$child->id}: {$stepDeadline} \t Etapa: {$step->getSlug()} days \t {$step->started_at} \t {$currentStatus} -> {$newStatus}");
+                $diffDays = $today->diffInDays($step->started_at);
+
+                $this->comment("{$child->name} - {$stepDeadline} -> diferenca de dias: {$diffDays}");
 
 
                 $child->update(['deadline_status' => $newStatus]);
             }
-
         });
-
-
     }
-
 }
