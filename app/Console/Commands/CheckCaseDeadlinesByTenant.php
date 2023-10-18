@@ -53,7 +53,10 @@ class CheckCaseDeadlinesByTenant extends Command
 
                 $diffDays = $today->diffInDays($step->started_at);
 
-                $this->comment("{$child->name} - {$stepDeadline} -> diferenca de dias: {$diffDays}");
+                $typeValueStepDeadline = gettype($stepDeadline);
+                $typeValueDiff = gettype($diffDays);
+
+                $this->comment("{$child->name} - {$stepDeadline} -> diferenca de dias: {$diffDays} -> tipo step: {$typeValueStepDeadline} -> tipo diff: {$typeValueDiff} ");
 
 
                 $child->update(['deadline_status' => $newStatus]);
