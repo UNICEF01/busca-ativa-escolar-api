@@ -554,21 +554,18 @@ class Child extends Model implements Searchable, CanBeAggregated, CollectsDailyM
             $data['step_name'] = $this->currentStep->rename()[0] ?? null;
             $data['step_slug'] = $this->currentStep->rename()[1] ?? null;
 
-            $now = Carbon::now();
             // O tenant pode ser nulo quando o mesmo foi desativado
             if (!empty($this->tenant)) {
+                $now = Carbon::now();
                 $deadline = $this->tenant->getDeadlineFor($this->currentStep->getSlug());
 
                 if ($this->currentStep->isLate($now, $deadline)) {
                     $data['deadline_status'] = "late";
-
-                    //We need this rule because the step GESTAO DO CASO has not a pattern deadline
-                    if ($this->currentStep->getSlug() === "gestao_do_caso") {
-                        $data['deadline_status'] = "normal";
-                    }
                 } else {
                     $data['deadline_status'] = "normal";
                 }
+            } else {
+                $data['deadline_status'] = "late";
             }
         }
 
