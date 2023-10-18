@@ -43,6 +43,8 @@ class CheckCaseDeadlinesByTenant extends Command
                     $newStatus = 'normal';
                 }
 
+                $this->comment("STATUS: {$newStatus}");
+
                 $child->update(['deadline_status' => $newStatus]);
             }
         });
