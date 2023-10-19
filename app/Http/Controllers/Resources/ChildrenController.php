@@ -70,7 +70,7 @@ class ChildrenController extends BaseController
 		if (isset($params['assigned_uf']))
 			$params['assigned_uf'] = Str::lower($params['assigned_uf']);
 
-//            ->filterByTerms('deadline_status', $params['deadline_status'] ?? false)
+		//            ->filterByTerms('deadline_status', $params['deadline_status'] ?? false)
 
 		$query = ElasticSearchQuery::withParameters($params)
 			->filterByTerm('tenant_id', false)
@@ -88,13 +88,13 @@ class ChildrenController extends BaseController
 			->filterByTerms('place_kind', $params['place_kind_null'] ?? false)
 			->filterByRange('age', $params['age_null'] ?? false);
 
-        // Verifica se o parâmetro 'deadline_status' não está vazio (ou seja, não é um array vazio).
-        if (!empty($params['deadline_status'])) {
-            $query->filterByTerms('deadline_status', true);
-        }
+		// Verifica se o parâmetro 'deadline_status' não está vazio (ou seja, não é um array vazio).
+		if (!empty($params['deadline_status'])) {
+			$query->filterByTerms('deadline_status', true);
+		}
 
 
-        // Scope query within user, when relevant
+		// Scope query within user, when relevant
 		if (Auth::user()->type === User::TYPE_TECNICO_VERIFICADOR) {
 			$query->filterByOneOf(['assigned_user_id' => ['type' => 'term', 'search' => Auth::user()->id]]);
 		}
@@ -130,10 +130,10 @@ class ChildrenController extends BaseController
 		$query = $this->prepareSearchQuery();
 		$attempted = $query->getAttemptedQuery();
 		$query = $query->getQuery();
-//        Log::info('QUERY ELASTIC', $query);
+		//        Log::info('QUERY ELASTIC', $query);
 
 
-        $results = $search->search(new Child(), $query, $size, $from - 1); //need to use -1 (value of front is always 1 or more and eastic needs to start at 0)
+		$results = $search->search(new Child(), $query, $size, $from - 1); //need to use -1 (value of front is always 1 or more and eastic needs to start at 0)
 
 		return fractal()
 			->item($results)
@@ -460,7 +460,5 @@ class ChildrenController extends BaseController
 			],
 			200
 		);
-
 	}
-
 }

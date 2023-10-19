@@ -11,7 +11,6 @@ use BuscaAtivaEscolar\ImportJob;
 use BuscaAtivaEscolar\Tenant;
 use BuscaAtivaEscolar\User;
 use Carbon\Carbon;
-use Log;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use DB;
 
@@ -184,14 +183,12 @@ class EducacensoXLSChunkImporter
         $data['group_id'] = $this->tenant->primary_group_id;
         $data['tree_id'] = $this->tenant->primary_group_id;
 
-        Log::info($data);
 
-        //$child = Child::spawnFromAlertData($this->tenant, $this->agent->id, $data);
-        //$pesquisa = Pesquisa::fetchWithinCase($child->current_case_id, Pesquisa::class, 20);
-        //$pesquisa->setFields($data);
+        $child = Child::spawnFromAlertData($this->tenant, $this->agent->id, $data);
+        $pesquisa = Pesquisa::fetchWithinCase($child->current_case_id, Pesquisa::class, 20);
+        $pesquisa->setFields($data);
 
-        //Comment::post($child, $this->agent, "Caso importado na planilha do Educacenso");
-
+        Comment::post($child, $this->agent, "Caso importado na planilha do Educacenso");
     }
 
     public function isThereChild($row)
@@ -208,7 +205,6 @@ class EducacensoXLSChunkImporter
         if ($child == null) {
             return false;
         } else {
-            Log::info("Child already exists " . $child->name . " | ID: " . $child->id . " | ID Educacenso: " . $child->educacenso_id . " | Ano: " . $child->educacenso_year);
             return true;
         }
     }
@@ -263,7 +259,7 @@ class EducacensoXLSChunkImporter
         ];
 
         $placeKindMap = [
-            'URBANA' => 'urban',
+            'URBANA' => 'urbana',
             'RURAL' => 'rural',
         ];
 
@@ -274,7 +270,7 @@ class EducacensoXLSChunkImporter
             $data[$systemField] = $xlsData[$xlsField];
         }
 
-        isset($data['place_kind']) ? ($placeKindMap[$data['place_kind']] ?? null) : null;
+        $data['place_kind'] = $placeKindMap[$data['place_kind']];
 
         foreach ($fieldMap as $xlsField => $systemField) {
             if (!isset($data[$systemField]) || $data[$systemField] === null) {
