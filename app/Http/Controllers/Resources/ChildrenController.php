@@ -72,6 +72,9 @@ class ChildrenController extends BaseController
 
 		//            ->filterByTerms('deadline_status', $params['deadline_status'] ?? false)
 
+
+		Log::info(request()->all());
+
 		$query = ElasticSearchQuery::withParameters($params)
 			->filterByTerm('tenant_id', false)
 			->filterByTerm('uf', false)
@@ -117,6 +120,8 @@ class ChildrenController extends BaseController
 			// Ela recebe um array de parâmetros e verifica se foi passado 'tree' e 'group_id'.
 			$query->getGroups($params);
 		}
+
+
 
 
 		return $query;

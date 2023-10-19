@@ -259,7 +259,7 @@ class EducacensoXLSChunkImporter
         ];
 
         $placeKindMap = [
-            'URBANA' => 'urbana',
+            'URBANA' => 'urban',
             'RURAL' => 'rural',
         ];
 
