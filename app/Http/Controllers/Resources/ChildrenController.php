@@ -16,15 +16,12 @@ namespace BuscaAtivaEscolar\Http\Controllers\Resources;
 
 use Auth;
 use BuscaAtivaEscolar\City;
-use Illuminate\Support\Facades\Log;
-use function Aws\map;
 use BuscaAtivaEscolar\ActivityLog;
 use BuscaAtivaEscolar\Attachment;
 use BuscaAtivaEscolar\CaseSteps\Alerta;
 use BuscaAtivaEscolar\Child;
 use BuscaAtivaEscolar\Comment;
 use BuscaAtivaEscolar\Http\Controllers\BaseController;
-use BuscaAtivaEscolar\IBGE\UF;
 use BuscaAtivaEscolar\Jobs\ProcessExportChildrenJob;
 use BuscaAtivaEscolar\Search\ElasticSearchQuery;
 use BuscaAtivaEscolar\Search\Search;
@@ -57,6 +54,8 @@ class ChildrenController extends BaseController
 
 		$params = $this->filterAsciiFields(request()->all(), ['name', 'cause_name', 'assigned_user_name', 'location_full', 'step_name', 'city_name', 'group_id']);
 
+		$params['alert_status'] = "accepted";
+
 		// Scope the query within the tenant
 		if (Auth::user()->isRestrictedToTenant())
 			$params['tenant_id'] = Auth::user()->tenant_id;
@@ -70,19 +69,14 @@ class ChildrenController extends BaseController
 		if (isset($params['assigned_uf']))
 			$params['assigned_uf'] = Str::lower($params['assigned_uf']);
 
-		//            ->filterByTerms('deadline_status', $params['deadline_status'] ?? false)
-
-
-		Log::info(request()->all());
-
 		$query = ElasticSearchQuery::withParameters($params)
 			->filterByTerm('tenant_id', false)
 			->filterByTerm('uf', false)
+			->filterByTerm('alert_status', false)
 			->filterByTerm('assigned_uf', false)
 			->addTextFields(['name', 'cause_name', 'step_name', 'assigned_user_name', 'city_name'], 'match')
 			->searchTextInColumns('location_full', ['place_address^3', 'place_cep^2', 'place_city^2', 'place_uf', 'place_neighborhood', 'place_reference'])
 			->searchTextInColumns('city_name_full', ['place_uf', 'place_city_name'])
-			->filterByTerms('alert_status', false)
 			->filterByTerms('case_status', false)
 			->filterByTerms('risk_level', $params['risk_level_null'] ?? false)
 			->filterByTerm('current_step_type', false)
@@ -95,7 +89,6 @@ class ChildrenController extends BaseController
 		if (!empty($params['deadline_status'])) {
 			$query->filterByTerms('deadline_status', true);
 		}
-
 
 		// Scope query within user, when relevant
 		if (Auth::user()->type === User::TYPE_TECNICO_VERIFICADOR) {
@@ -121,9 +114,6 @@ class ChildrenController extends BaseController
 			$query->getGroups($params);
 		}
 
-
-
-
 		return $query;
 	}
 
@@ -135,8 +125,6 @@ class ChildrenController extends BaseController
 		$query = $this->prepareSearchQuery();
 		$attempted = $query->getAttemptedQuery();
 		$query = $query->getQuery();
-		//        Log::info('QUERY ELASTIC', $query);
-
 
 		$results = $search->search(new Child(), $query, $size, $from - 1); //need to use -1 (value of front is always 1 or more and eastic needs to start at 0)
 
