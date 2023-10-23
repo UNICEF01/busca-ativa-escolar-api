@@ -554,21 +554,18 @@ class Child extends Model implements Searchable, CanBeAggregated, CollectsDailyM
             $data['step_name'] = $this->currentStep->rename()[0] ?? null;
             $data['step_slug'] = $this->currentStep->rename()[1] ?? null;
 
-            $now = Carbon::now();
             // O tenant pode ser nulo quando o mesmo foi desativado
             if (!empty($this->tenant)) {
+                $now = Carbon::now();
                 $deadline = $this->tenant->getDeadlineFor($this->currentStep->getSlug());
 
                 if ($this->currentStep->isLate($now, $deadline)) {
                     $data['deadline_status'] = "late";
-
-                    //We need this rule because the step GESTAO DO CASO has not a pattern deadline
-                    if ($this->currentStep->getSlug() === "gestao_do_caso") {
-                        $data['deadline_status'] = "normal";
-                    }
                 } else {
                     $data['deadline_status'] = "normal";
                 }
+            } else {
+                $data['deadline_status'] = "late";
             }
         }
 
@@ -719,7 +716,18 @@ class Child extends Model implements Searchable, CanBeAggregated, CollectsDailyM
         $data['alert_status'] = self::ALERT_STATUS_PENDING;
         $data['risk_level'] = $tenant->getSettings()->getAlertPriority($data['alert_cause_id']) ?? ChildCase::RISK_LEVEL_MEDIUM;
 
-        if (!array_key_exists("group_id", $data)) $data['group_id'] = $tenant->primary_group_id;
+        // Verifica se 'group_id' não está definido em $data e, se não estiver, define-o como o 'primary_group_id' do Tenant.
+        if (!array_key_exists("group_id", $data)) {
+            $data['group_id'] = $tenant->primary_group_id;
+        }
+
+        // Verifica se 'tree_id' não está definido em $data e, se não estiver, define-o como o 'primary_group_id' do Tenant.
+        if (!array_key_exists("tree_id", $data)) {
+            $data['tree_id'] = $tenant->primary_group_id;
+        }
+
+        // O código acima garante que 'group_id' e 'tree_id' tenham valores válidos no array $data,
+        // usando o 'primary_group_id' do Tenant como valor padrão se essas chaves não estiverem definidas.
 
         $child = self::create($data);
 
