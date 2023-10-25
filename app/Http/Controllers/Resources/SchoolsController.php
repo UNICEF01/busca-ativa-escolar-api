@@ -116,10 +116,6 @@ class SchoolsController extends BaseController
 
             $job = EmailJob::createFromType(SchoolEducacensoEmail::TYPE, $user, $school);
             dispatch(new ProcessEmailJob($job));
-
-            if ($school->school_cell_phone != null && $school->school_cell_phone != "") {
-                Queue::pushOn('sms_school', new ProcessSmsEducacensoSchool($school));
-            }
         }
 
         $data['status'] = "ok";
