@@ -4,6 +4,7 @@ namespace BuscaAtivaEscolar\Mail;
 
 use Illuminate\Mail\Mailable;
 use Illuminate\Notifications\Messages\MailMessage;
+use Log;
 
 class SchoolEducacensoNotification extends Mailable
 {
@@ -34,19 +35,22 @@ class SchoolEducacensoNotification extends Mailable
             ->line("Agradecemos imensamente sua disposição em colaborar para a garantia do direito à educação de todas as crianças e/ou adolescentes que residem em nosso município!")
             ->action('Colaborar', $this->getUrlToken());
 
-		$this->subject("Precisamos da sua colaboração!");
-
-		/*
-        $this->withSwiftMessage(function($message){
-            $headers = $message->getHeaders();
-            $headers->addTextHeader('message-id', $this->job_id);
+        $message->withSwiftMessage(function ($message) {
+            $message->getHeaders()->addTextHeader(
+                'mail_id',
+                $this->job_id
+            );
         });
-        */
+
+        Log::info($message->data());
+
+        $this->subject("Busca Ativa Escolar | Notificação " . $this->job_id);
 
         return $this->view(['vendor.notifications.email', 'vendor.notifications.email-plain'], $message->toArray());
     }
 
-    private function getUrlToken (){
-        return env('APP_URL_ESCOLAS')."?i=".$this->school->id."&t=".$this->school->token;
+    private function getUrlToken()
+    {
+        return env('APP_URL_ESCOLAS') . "?i=" . $this->school->id . "&t=" . $this->school->token;
     }
 }

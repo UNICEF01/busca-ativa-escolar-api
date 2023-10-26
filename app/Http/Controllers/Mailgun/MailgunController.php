@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Created by PhpStorm.
  * User: manoelfilho
@@ -22,11 +23,12 @@ class MailgunController extends BaseController
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function update(Request $request){
+    public function update(Request $request)
+    {
 
         $message = $request->request;
 
-        if( $message->has('signature') AND $message->has('event-data')){
+        if ($message->has('signature') and $message->has('event-data')) {
 
             $signature = $message->get('signature');
 
@@ -38,30 +40,26 @@ class MailgunController extends BaseController
 
             $this->validateokenMailgun($timestamp, $token, $signature);
 
-            $message_id = $event_data['message']['headers']['message-id'];
+            $message_id = $event_data['message']['headers']['mail_id'];
             $status_message = $event_data['event'];
 
             $emailJob = EmailJob::find($message_id);
 
             $data['status'] = "success";
 
-            if($emailJob != null){
+            if ($emailJob != null) {
                 $emailJob->status = $status_message;
                 $emailJob->save();
-                $data['message'] = "Email #".$message_id." updated!";
+                $data['message'] = "Email #" . $message_id . " updated!";
             }
 
             return response()->json($data, 200);
-
-
-        }else{
+        } else {
 
             $data['status'] = "error";
             $data['message'] = "";
             return response()->json($data, 403);
-
         }
-
     }
 
 
@@ -71,13 +69,12 @@ class MailgunController extends BaseController
      * @param $signature
      * @return bool
      */
-    public function validateokenMailgun($timestamp, $token, $signature){
-        if ( hash_hmac("sha256", $timestamp.$token, env('MAILGUN_SECRET')) != $signature ){
+    public function validateokenMailgun($timestamp, $token, $signature)
+    {
+        if (hash_hmac("sha256", $timestamp . $token, env('MAILGUN_SECRET')) != $signature) {
             $data['status'] = "error";
             $data['message'] = "Invalid request";
             return response()->json($data, 403);
         }
     }
-
-
 }

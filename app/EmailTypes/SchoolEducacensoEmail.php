@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Created by PhpStorm.
  * User: manoelfilho
@@ -12,7 +13,7 @@ use BuscaAtivaEscolar\EmailJob;
 use BuscaAtivaEscolar\School;
 use Illuminate\Support\Facades\Mail;
 use BuscaAtivaEscolar\Mail\SchoolEducacensoNotification;
-
+use Event;
 
 class SchoolEducacensoEmail implements SendEmail
 {
@@ -50,7 +51,8 @@ class SchoolEducacensoEmail implements SendEmail
      * @param EmailJob $job
      * @throws \Exception
      */
-    public function handle(EmailJob $job) {
+    public function handle(EmailJob $job)
+    {
 
         $this->job_id = $job->id;
         $this->user_id = $job->user_id;
@@ -65,13 +67,9 @@ class SchoolEducacensoEmail implements SendEmail
             Mail::to($this->school_email)
                 ->cc($this->email_user)
                 ->send($message);
-
         } catch (\Exception $ex) {
 
             throw $ex;
-
         }
-
     }
-
 }

@@ -115,11 +115,7 @@ class SchoolsController extends BaseController
             }
 
             $job = EmailJob::createFromType(SchoolEducacensoEmail::TYPE, $user, $school);
-            Queue::pushOn('emails', new ProcessEmailJob($job));
-
-            if ($school->school_cell_phone != null && $school->school_cell_phone != "") {
-                Queue::pushOn('sms_school', new ProcessSmsEducacensoSchool($school));
-            }
+            dispatch(new ProcessEmailJob($job));
         }
 
         $data['status'] = "ok";
@@ -245,18 +241,18 @@ class SchoolsController extends BaseController
 
         $schools = DB::select(
             "select " .
-            "sc.id, sc.name, sc.city_name, sc.uf, sc.school_cell_phone, sc.school_phone, sc.school_email, " .
-            "count(csp.school_last_id) as count_children, " .
-            "count(case when csa.place_address is not null and csa.place_neighborhood is not null then 0 end) as count_with_cep " .
-            "from schools as sc " .
-            "inner join case_steps_pesquisa as csp on sc.id = csp.school_last_id " .
-            "inner join case_steps_alerta as csa on csp.child_id = csa.child_id " .
-            "inner join children as ch on ch.id = csa.child_id " .
-            "where sc.id in (" . implode(",", $schools_array_id) . ") " .
-            "and year(ch.created_at) = " . request('year_educacenso', date("Y")) . " " .
-            //"and csa.place_cep is null ".
-            "group by sc.id " .
-            "limit " . $cursor . ", " . request('max', 5) . ""
+                "sc.id, sc.name, sc.city_name, sc.uf, sc.school_cell_phone, sc.school_phone, sc.school_email, " .
+                "count(csp.school_last_id) as count_children, " .
+                "count(case when csa.place_address is not null and csa.place_neighborhood is not null then 0 end) as count_with_cep " .
+                "from schools as sc " .
+                "inner join case_steps_pesquisa as csp on sc.id = csp.school_last_id " .
+                "inner join case_steps_alerta as csa on csp.child_id = csa.child_id " .
+                "inner join children as ch on ch.id = csa.child_id " .
+                "where sc.id in (" . implode(",", $schools_array_id) . ") " .
+                "and year(ch.created_at) = " . request('year_educacenso', date("Y")) . " " .
+                //"and csa.place_cep is null ".
+                "group by sc.id " .
+                "limit " . $cursor . ", " . request('max', 5) . ""
         );
 
         //add a array of emailjobs to each school of the last query
