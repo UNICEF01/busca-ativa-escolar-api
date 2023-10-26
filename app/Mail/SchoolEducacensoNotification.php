@@ -36,15 +36,13 @@ class SchoolEducacensoNotification extends Mailable
             ->action('Colaborar', $this->getUrlToken());
 
         $message->withSwiftMessage(function ($message) {
-            $message->getHeaders()->addTextHeader(
-                'mail_id',
-                $this->job_id
-            );
+            $headers = $message->getHeaders();
+            $headers->addTextHeader('X-Mailgun-Variables', json_encode([
+                'mail_id' => $this->job_id
+            ]));
         });
 
-        Log::info($message->data());
-
-        $this->subject("Busca Ativa Escolar | Notificação " . $this->job_id);
+        $this->subject("Busca Ativa Escolar | Escolas");
 
         return $this->view(['vendor.notifications.email', 'vendor.notifications.email-plain'], $message->toArray());
     }
