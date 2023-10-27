@@ -35,17 +35,6 @@ class SchoolEducacensoNotification extends Mailable
             ->line("Agradecemos imensamente sua disposição em colaborar para a garantia do direito à educação de todas as crianças e/ou adolescentes que residem em nosso município!")
             ->action('Colaborar', $this->getUrlToken());
 
-        $message->withSwiftMessage(function ($message) {
-            $message->getHeaders()->addTextHeader(
-                'mail_id',
-                $this->job_id
-            );
-        });
-
-        Log::info($message->data());
-
-        $this->subject("Busca Ativa Escolar | Notificação " . $this->job_id);
-
         return $this->view(['vendor.notifications.email', 'vendor.notifications.email-plain'], $message->toArray());
     }
 
