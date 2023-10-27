@@ -13,7 +13,7 @@ use BuscaAtivaEscolar\EmailJob;
 use BuscaAtivaEscolar\School;
 use Illuminate\Support\Facades\Mail;
 use BuscaAtivaEscolar\Mail\SchoolEducacensoNotification;
-use Event;
+
 
 class SchoolEducacensoEmail implements SendEmail
 {
