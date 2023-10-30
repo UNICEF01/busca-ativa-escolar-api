@@ -9,12 +9,10 @@
 
 namespace BuscaAtivaEscolar\Http\Controllers\Mailgun;
 
-
-
 use BuscaAtivaEscolar\EmailJob;
 use BuscaAtivaEscolar\Http\Controllers\BaseController;
 use Illuminate\Http\Request;
-
+use PhpParser\Node\Expr\Cast\Bool_;
 
 class MailgunController extends BaseController
 {
@@ -38,9 +36,13 @@ class MailgunController extends BaseController
 
             $event_data = $message->get('event-data');
 
-            $this->validateokenMailgun($timestamp, $token, $signature);
+            if ($this->validateTokenMailgun($timestamp, $token, $signature) == false) {
+                $data['status'] = "error";
+                $data['message'] = "Invalid request";
+                return response()->json($data, 403);
+            }
 
-            $message_id = $event_data['message']['headers']['mail_id'];
+            $message_id = $this->getNumberOfNotification($event_data['message']['headers']['subject']);
             $status_message = $event_data['event'];
 
             $emailJob = EmailJob::find($message_id);
@@ -62,19 +64,28 @@ class MailgunController extends BaseController
         }
     }
 
-
     /**
      * @param $timestamp
      * @param $token
      * @param $signature
      * @return bool
      */
-    public function validateokenMailgun($timestamp, $token, $signature)
+    public function validateTokenMailgun($timestamp, $token, $signature)
     {
-        if (hash_hmac("sha256", $timestamp . $token, env('MAILGUN_SECRET')) != $signature) {
-            $data['status'] = "error";
-            $data['message'] = "Invalid request";
-            return response()->json($data, 403);
+        if (hash_hmac("sha256", $timestamp . $token, env('MAILGUN_SECRET_KEY_WEBHOOK')) != $signature) {
+            return false;
+        }
+        return true;
+    }
+
+    public function getNumberOfNotification($subject)
+    {
+        preg_match('/#(\d+)/', $subject, $matches);
+        if (isset($matches[1])) {
+            return (int) $matches[1];
+        } else {
+            $data['status'] = "success";
+            return response()->json($data, 200);
         }
     }
 }
