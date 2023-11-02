@@ -168,7 +168,6 @@ class AlertCause extends StaticObject
 	 */
 	public static function getLabelNameById($number)
 	{
-		$label = self::$data[$number]['label'];
-		return $label;
+		return self::$data[$number]['label'];
 	}
 }
