@@ -165,9 +165,10 @@ class CaseCause extends StaticObject
 
 
     /**
-     * This function returns a string with the causes of case step pesquisa
+     * This function receives an array of casereason numbers and returns an array of strings
      *
-     * @param array $causesId The array of numbers from CaseCauses
+     * @param array $causesId The array of casereason numbers
+     * @return String
      */
     public static function getLabelsByArrayOfId($causesId)
     {

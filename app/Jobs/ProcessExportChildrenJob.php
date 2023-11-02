@@ -4,6 +4,7 @@ namespace BuscaAtivaEscolar\Jobs;
 
 use BuscaAtivaEscolar\Child;
 use BuscaAtivaEscolar\ChildCase;
+use BuscaAtivaEscolar\Data\AlertCause;
 use BuscaAtivaEscolar\Data\CaseCause;
 use BuscaAtivaEscolar\Group;
 use BuscaAtivaEscolar\User;
@@ -73,7 +74,8 @@ class ProcessExportChildrenJob implements ShouldQueue
             'Bairro' => $child->place_neighborhood ?? '',
             'Referencia' => $child->place_reference ?? '',
             'CEP' => $child->place_cep ?? '',
-            'Causas' => CaseCause::getLabelsByArrayOfId($child->case_cause_ids) ?? '',
+            'Motivo do alerta' => AlertCause::getLabelNameById($child->alert_cause_id) ?? '',
+            'Motivos do caso' => CaseCause::getLabelsByArrayOfId($child->case_cause_ids) ?? '',
         ];
     }
 }
