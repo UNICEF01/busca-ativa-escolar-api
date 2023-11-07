@@ -1,4 +1,5 @@
 <?php
+
 /**
  * busca-ativa-escolar-api
  * CaseCause.php
@@ -14,7 +15,8 @@
 namespace BuscaAtivaEscolar\Data;
 
 
-class CaseCause extends StaticObject  {
+class CaseCause extends StaticObject
+{
 
     protected static $data = [
         10 => ['id' => 10, 'alert_cause_id' => 10, 'slug' => 'adolescente_em_conflito_com_a_lei', 'label' => "Adolescente em conflito com a lei "],
@@ -94,69 +96,91 @@ class CaseCause extends StaticObject  {
         ]
     ];
 
-	/**
-	 * @var integer The ID of the case cause
-	 */
-	public $id;
+    /**
+     * @var integer The ID of the case cause
+     */
+    public $id;
 
-	/**
-	 * @var string The slug of the case cause
-	 */
-	public $slug;
+    /**
+     * @var string The slug of the case cause
+     */
+    public $slug;
 
-	/**
-	 * @var string The human-readable name for the case cause
-	 */
-	public $label;
+    /**
+     * @var string The human-readable name for the case cause
+     */
+    public $label;
 
-	/**
-	 * @var integer The ID of the alert cause this case cause relates to
-	 */
-	public $alert_cause_id;
+    /**
+     * @var integer The ID of the alert cause this case cause relates to
+     */
+    public $alert_cause_id;
 
-	/**
-	 * @var bool Does this cause imply the child is handicapped?
-	 */
-	public $is_handicapped = false;
+    /**
+     * @var bool Does this cause imply the child is handicapped?
+     */
+    public $is_handicapped = false;
 
-	/**
-	 * @var bool Is this cause hidden from user selection?
-	 */
-	public $hidden = false;
+    /**
+     * @var bool Is this cause hidden from user selection?
+     */
+    public $hidden = false;
 
-	/**
-	 * Gets an alert cause by it's slug
-	 * @param string $slug
-	 * @return CaseCause
-	 */
-	public static function getBySlug($slug) {
-		return self::getByIndex('slug', $slug);
-	}
+    /**
+     * Gets an alert cause by it's slug
+     * @param string $slug
+     * @return CaseCause
+     */
+    public static function getBySlug($slug)
+    {
+        return self::getByIndex('slug', $slug);
+    }
 
-	/**
-	 * Gets all case cause IDs that indicate handicapped children
-	 * @return array
-	 */
-	public static function getAllHandicappedIDs() {
-		return collect(self::$data)
-			->filter(function ($item) {
-				return isset($item['is_handicapped']) && boolval($item['is_handicapped']) === true;
-			})
-			->pluck('id')
-			->toArray();
-	}
+    /**
+     * Gets all case cause IDs that indicate handicapped children
+     * @return array
+     */
+    public static function getAllHandicappedIDs()
+    {
+        return collect(self::$data)
+            ->filter(function ($item) {
+                return isset($item['is_handicapped']) && boolval($item['is_handicapped']) === true;
+            })
+            ->pluck('id')
+            ->toArray();
+    }
 
-	/**
-	 * Gets all alert causes that are visible for user selection
-	 * @return array
-	 */
-	public static function getAllVisible() {
-		return collect(self::getAllAsArray())
-			->filter(function ($cause) {
-				return !isset($cause['hidden']) || !boolval($cause['hidden']);
-			})
-			->toArray();
-	}
+    /**
+     * Gets all alert causes that are visible for user selection
+     * @return array
+     */
+    public static function getAllVisible()
+    {
+        return collect(self::getAllAsArray())
+            ->filter(function ($cause) {
+                return !isset($cause['hidden']) || !boolval($cause['hidden']);
+            })
+            ->toArray();
+    }
 
 
+    /**
+     * This function receives an array of casereason numbers and returns an array of strings
+     *
+     * @param array $causesId The array of casereason numbers
+     * @return String
+     */
+    public static function getLabelsByArrayOfId($causesId)
+    {
+        if ($causesId == null)
+            return "";
+
+        $labels = [];
+        foreach ($causesId as $cause) {
+            if (isset(self::$data[$cause])) {
+                $labels[] = self::$data[$cause]['label'];
+            }
+        }
+        return implode(', ', $labels);
+    }
 }
