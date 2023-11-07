@@ -8,9 +8,11 @@ use BuscaAtivaEscolar\Comment;
 use BuscaAtivaEscolar\Data\AlertCause;
 use BuscaAtivaEscolar\Importers\TypeImporters\ChunkEducacensoReadFilter;
 use BuscaAtivaEscolar\ImportJob;
+use BuscaAtivaEscolar\School;
 use BuscaAtivaEscolar\Tenant;
 use BuscaAtivaEscolar\User;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use DB;
 
@@ -92,7 +94,9 @@ class EducacensoXLSChunkImporter
 
                 //verifica o ano do educacenso informado no arquivo
                 $textWithYear = $records[5][1];
+
                 $patternYear = '/\b\d+\b/';
+
                 preg_match($patternYear, $textWithYear, $matches);
 
                 if (isset($matches[0])) {
@@ -169,14 +173,26 @@ class EducacensoXLSChunkImporter
     public function insertRow($data)
     {
 
+        $codigoEscola = $data['school_last_id'];
+
+        $result = School::findOrFail((int) $codigoEscola);
+
+        if (!empty($result)) {
+            // Adiciona o ID do município e o UF ao array $data
+            $data['place_city_id'] = $result->id;
+            $data['place_city_name'] = $result->city_name;
+            $data['place_uf'] = $result->uf;
+        }else{
+            $data['place_uf'] = $this->tenant->city->uf;
+            $data['place_city_id'] = strval($this->tenant->city->id);
+            $data['place_city_name'] = $this->tenant->city->name;
+        }
+
         $data['observation'] = "Escola: " . $data['school_last_name'] . " | Modalidade de ensino: " . $data['modalidade'] . " | Etapa: " . $data['etapa'];
         $data['alert_cause_id'] = AlertCause::getBySlug('educacenso_inep')->id;
         $data['educacenso_id'] = strval($data['educacenso_id'] ?? "unkn_" . uniqid());
         $data['name'] = $data['name'];
         $data['dob'] = isset($data['dob']) ? Carbon::createFromFormat('d/m/Y', $data['dob'])->format('Y-m-d') : null;
-        $data['place_uf'] = $this->tenant->city->uf;
-        $data['place_city_id'] = strval($this->tenant->city->id);
-        $data['place_city_name'] = $this->tenant->city->name;
         $data['place_kind'] = $data['place_kind'];
         $data['has_been_in_school'] = true;
         $data['educacenso_year'] = $this->educacenso_year;
