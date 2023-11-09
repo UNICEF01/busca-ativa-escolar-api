@@ -19,6 +19,7 @@ class UserRegisterNotification extends Mailable
     {
         $this->user = $user;
         $this->type_register = $type_register;
+        $this->type_tenant = "município";
     }
 
     /**
