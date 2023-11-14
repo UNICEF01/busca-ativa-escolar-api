@@ -268,12 +268,11 @@ class EducacensoXLSChunkImporter
      */
     public function insertRecord($data)
     {
-
         $codigoEscola = $data['school_last_id'];
 
         $result = School::where('id', (int)$codigoEscola)->first();
 
-        if (!empty($result)) {
+        if (!empty($result) && is_numeric($result->id)) {
             $data['place_city_id'] = $result->id;
             $data['place_city_name'] = $result->city_name;
             $data['place_uf'] = $result->uf;
