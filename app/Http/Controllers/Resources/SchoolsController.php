@@ -21,7 +21,6 @@ use BuscaAtivaEscolar\EmailTypes\SchoolFrequencyEmail;
 use BuscaAtivaEscolar\Http\Controllers\BaseController;
 use BuscaAtivaEscolar\Jobs\ProcessSmsFrequencySchool;
 use BuscaAtivaEscolar\Jobs\ProcessEmailJob;
-use BuscaAtivaEscolar\Jobs\ProcessSmsEducacensoSchool;
 use BuscaAtivaEscolar\School;
 use BuscaAtivaEscolar\Search\ElasticSearchQuery;
 use BuscaAtivaEscolar\Search\Search;
@@ -34,7 +33,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use League\Fractal\Pagination\IlluminatePaginatorAdapter;
 use Illuminate\Notifications\Notifiable;
-use Queue;
+use Illuminate\Support\Facades\Log;
+
+use function PHPUnit\Framework\isEmpty;
 
 class SchoolsController extends BaseController
 {
@@ -214,7 +215,10 @@ class SchoolsController extends BaseController
             ->whereHas('childCase', function ($query_childCase) {
                 $query_childCase->where('current_step_type', '=', 'BuscaAtivaEscolar\CaseSteps\Alerta');
             })
-            ->where('tenant_id', $tenant_id)
+            ->where([
+                ['tenant_id', '=', $tenant_id],
+                ['place_city_name', 'like', '%' . request('city_name') . '%']
+            ])
             ->whereNotNull('school_last_id')
             ->groupBy('school_last_id')
             ->pluck('school_last_id')
@@ -265,6 +269,11 @@ class SchoolsController extends BaseController
             [
                 'data' => $schools,
                 'meta' => $meta,
+                'cities' => Pesquisa::where('tenant_id', $tenant_id)
+                    ->whereYear('created_at', '=', request('year_educacenso'))
+                    ->orderBy('place_city_name')
+                    ->distinct()
+                    ->pluck('place_city_name')
             ]
         );
     }

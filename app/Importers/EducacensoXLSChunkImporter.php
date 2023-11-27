@@ -8,11 +8,18 @@ use BuscaAtivaEscolar\Comment;
 use BuscaAtivaEscolar\Data\AlertCause;
 use BuscaAtivaEscolar\Importers\TypeImporters\ChunkEducacensoReadFilter;
 use BuscaAtivaEscolar\ImportJob;
+use BuscaAtivaEscolar\School;
 use BuscaAtivaEscolar\Tenant;
 use BuscaAtivaEscolar\User;
 use Carbon\Carbon;
+use Exception;
+use Illuminate\Support\Facades\Log;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use DB;
+
+const MAX_ROW = 65536;
+const HEADER_ROW = 12;
+const DATA_START_ROW = 13;
 
 class EducacensoXLSChunkImporter
 {
@@ -33,183 +40,117 @@ class EducacensoXLSChunkImporter
      * @var string The XLS file absolute path
      */
     public $file;
-
+    /**
+     * @var int The year of Educacenso
+     * This is ony for register. The real value is registered in Children created_at.
+     */
+    public $educacenso_year = 0;
     /**
      * @var User The agent that is identified as the creator of the alerts
      */
     private $agent;
 
     /**
-     * @var int The year of Educacenso
-     * This is ony for register. The real value is registered in Children created_at.
-     */
-    public $educacenso_year = 0;
-
-    /**
-     * Handles the importing of Educacenso's XLS
-     * @param ImportJob $job
-     * @throws \Exception
+     * Manipula a importação do Educacenso a partir de um arquivo XLS
+     * @param ImportJob $job - O trabalho de importação enviado
+     * @throws Exception
      */
     public function handle(ImportJob $job)
     {
+        try {
 
-        $this->job = $job;
-        $this->tenant = $job->tenant;
-        $this->file = $job->getAbsolutePath();
+            $this->job = $job;
+            $this->tenant = $job->tenant;
+            $this->file = $job->getAbsolutePath();
 
-        $this->agent = User::find(User::ID_EDUCACENSO_BOT);
+            $this->agent = User::find(User::ID_EDUCACENSO_BOT);
 
-        if (!$this->agent) {
-            throw new \Exception("Failed to find Educacenso bot user!");
-        }
-
-        /** Cria o reader do PhpSpreadsheet */
-        $reader = IOFactory::createReader('Xlsx');
-
-        /**  Define a quantidade de linhas para cada chunk  **/
-        $chunkSize = 100;
-
-        /**  Instância de filtro ChunkEducacensoReadFilter **/
-        $chunkFilter = new ChunkEducacensoReadFilter();
-
-        $reader->setReadFilter($chunkFilter);
-
-        $this->job->total_records = 0;
-
-        /**  O limite de linha 65536 está relacionado ao número máximo de linhas de um XLS **/
-        for ($startRow = 0; $startRow <= 65536; $startRow += $chunkSize) {
-
-            $chunkFilter->setRows($startRow, $chunkSize);
-            $maxRow = ($startRow + $chunkSize) - 1;
-            $spreadsheet = $reader->load($this->file);
-            $records = $spreadsheet->getActiveSheet()->rangeToArray('A' . $startRow . ':N' . $maxRow);
-
-            if ($startRow > 0 and $records[0][0] == null) {
-                break;
+            if (!$this->agent) {
+                throw new Exception("Failed to find Educacenso bot user!");
             }
 
-            if ($startRow == 0) {
+            /** Cria o reader do PhpSpreadsheet */
+            $reader = IOFactory::createReader('Xlsx');
 
-                //verifica o ano do educacenso informado no arquivo
-                $textWithYear = $records[5][1];
-                $patternYear = '/\b\d+\b/';
-                preg_match($patternYear, $textWithYear, $matches);
+            /**  Define a quantidade de linhas para cada chunk  **/
+            $CHUNKSIZE = 100;
 
-                if (isset($matches[0])) {
-                    $this->educacenso_year = $matches[0];
-                } else {
-                    throw new \Exception("Ano do Educacenso não localizado - Arquivo pode estar fora do padrão");
+            /**  Instância de filtro ChunkEducacensoReadFilter **/
+            $chunkFilter = new ChunkEducacensoReadFilter();
+
+            $reader->setReadFilter($chunkFilter);
+
+            $this->job->total_records = 0;
+
+            for ($startRow = 0; $startRow <= MAX_ROW; $startRow += $CHUNKSIZE) {
+
+                $chunkFilter->setRows($startRow, $CHUNKSIZE);
+                $maxRow = ($startRow + $CHUNKSIZE) - 1;
+                $spreadsheet = $reader->load($this->file);
+                $records = $spreadsheet->getActiveSheet()->rangeToArray('A' . $startRow . ':N' . $maxRow);
+
+                if ($startRow > 0 and $records[0][0] == null) {
+                    break;
                 }
 
-                //verifica o cabecalho do educacenso informado no arquivo
-                $headerFileEducacenso = $records[12];
-                if ($this->isHeaderEducacenso($headerFileEducacenso)) {
-                } else {
-                    throw new \Exception("Cabeçalho padrão do Educacenso não localizado - Arquivo pode estar fora do padrão");
-                }
+                if ($startRow == 0) {
 
-                //verifica primeira linha de dados
-                if ($records[13][0] == null) {
-                    throw new \Exception("Arquivo correto, porém com primeira linha de informações vazia");
-                }
-            }
+                    $this->educacenso_year = $this->getEducacensoYear($records[5][1]);
 
-            if ($startRow == 0) {
-                // Primeiro bloco de 100 valores. Inicia a leitura na linha 13
-                DB::beginTransaction();
-                try {
-                    foreach ($records as $key => $record) {
-                        if ($key <= 12) {
-                            continue;
-                        }
-                        $parsedChild = $this->parseDataXlsToSystemFields($record);
-                        if ($parsedChild == null) {
-                            DB::commit();
-                            break 2;
-                        }
-                        $this->insertRow($parsedChild);
-                        $this->job->total_records++;
+                    if (!$this->isEducacensoHeader($records[HEADER_ROW])) {
+                        throw new Exception("Cabeçalho padrão do Educacenso não localizado - Arquivo pode estar fora do padrão");
                     }
-                    DB::commit();
-                } catch (\Exception $e) {
-                    DB::rollback();
-                    throw new \Exception("Erro ao inserir os dados. Tente novamente mais tarde");
-                }
-            } else {
-                // Segundo bloco de 100 valores em diante. Inicia a leitura na linha 0
-                DB::beginTransaction();
-                try {
-                    foreach ($records as $record) {
-                        $parsedChild = $this->parseDataXlsToSystemFields($record);
-                        if ($parsedChild == null) {
-                            DB::commit();
-                            break 2;
-                        }
-                        $this->insertRow($parsedChild);
-                        $this->job->total_records++;
+
+                    if ($this->isFirstDataRowEmpty($records[DATA_START_ROW])) {
+                        throw new Exception("Arquivo correto, porém com primeira linha de informações vazia");
                     }
-                    DB::commit();
-                } catch (\Exception $e) {
-                    DB::rollback();
-                    throw new \Exception("Erro ao inserir os dados. Tente novamente mais tarde");
+
+                    // Primeiro bloco de 100 valores. Inicia a leitura na linha 13
+                    $this->processRecords($records, $startRow, HEADER_ROW);
+                } else {
+                    // Segundo bloco de 100 valores em diante. Inicia a leitura na linha 0
+                    $this->processRecords($records, $startRow);
                 }
             }
+
+            $this->tenant->educacenso_import_details = [
+                'has_imported' => true,
+                'imported_at' => date('Y-m-d H:i:s'),
+                'last_job_id' => $this->job->id,
+                'file' => $this->file
+            ];
+
+            $this->tenant->save();
+
+        } catch (Exception $e) {
+            Log::error("Erro durante a importação do Educacenso: " . $e->getMessage());
+            throw new Exception("Erro durante a importação do Educacenso. Entre em contato com o Suporte.");
         }
-
-        $this->tenant->educacenso_import_details = [
-            'has_imported' => true,
-            'imported_at' => date('Y-m-d H:i:s'),
-            'last_job_id' => $this->job->id,
-            'file' => $this->file
-        ];
-
-        $this->tenant->save();
     }
 
-    public function insertRow($data)
+    /**
+     * Extrai o ano do Educacenso a partir de um texto fornecido usando uma expressão regular
+     * @param String $text - O texto a ser analisado
+     * @return string - O ano extraído como string
+     * @throws Exception
+     */
+    function getEducacensoYear($text)
     {
-
-        $data['observation'] = "Escola: " . $data['school_last_name'] . " | Modalidade de ensino: " . $data['modalidade'] . " | Etapa: " . $data['etapa'];
-        $data['alert_cause_id'] = AlertCause::getBySlug('educacenso_inep')->id;
-        $data['educacenso_id'] = strval($data['educacenso_id'] ?? "unkn_" . uniqid());
-        $data['name'] = $data['name'];
-        $data['dob'] = isset($data['dob']) ? Carbon::createFromFormat('d/m/Y', $data['dob'])->format('Y-m-d') : null;
-        $data['place_uf'] = $this->tenant->city->uf;
-        $data['place_city_id'] = strval($this->tenant->city->id);
-        $data['place_city_name'] = $this->tenant->city->name;
-        $data['place_kind'] = $data['place_kind'];
-        $data['has_been_in_school'] = true;
-        $data['educacenso_year'] = $this->educacenso_year;
-        $data['group_id'] = $this->tenant->primary_group_id;
-        $data['tree_id'] = $this->tenant->primary_group_id;
-
-
-        $child = Child::spawnFromAlertData($this->tenant, $this->agent->id, $data);
-        $pesquisa = Pesquisa::fetchWithinCase($child->current_case_id, Pesquisa::class, 20);
-        $pesquisa->setFields($data);
-
-        Comment::post($child, $this->agent, "Caso importado na planilha do Educacenso");
-    }
-
-    public function isThereChild($row)
-    {
-        $identificacao_unica = strval($row[8]);
-        $child = Child::where(
-            [
-                ['educacenso_year', '=', $this->educacenso_year],
-                ['educacenso_id', '=', $identificacao_unica],
-                ['city_id', '=', $this->tenant->city_id]
-            ]
-        )->first();
-
-        if ($child == null) {
-            return false;
+        $patternYear = '/\b\d+\b/';
+        preg_match($patternYear, $text, $matches);
+        if (isset($matches[0])) {
+            return $matches[0];
         } else {
-            return true;
+            throw new Exception("Ano do Educacenso não localizado - Arquivo pode estar fora do padrão");
         }
     }
 
-    public function isHeaderEducacenso($headerArray)
+    /**
+     * Verifica se o cabeçalho do Educacenso no arquivo XLS corresponde ao cabeçalho esperado
+     * @param array $headerArray - O array representando o cabeçalho
+     * @return bool - Verdadeiro se o cabeçalho estiver correto, falso caso contrário
+     */
+    public function isEducacensoHeader($headerArray)
     {
         //padrão do educacenso para o ano de 2022 - confirmado pelo inep
         $headerFileEducacenso = [
@@ -231,16 +172,55 @@ class EducacensoXLSChunkImporter
         return $headerArray == $headerFileEducacenso;
     }
 
-    public function isValidLineData($arrayValues)
+    /**
+     * Verifica se a primeira linha de dados no arquivo XLS está vazia
+     * @param array $dataRow - A linha de dados a ser verificada
+     * @return bool - Verdadeiro se a primeira célula estiver vazia, falso caso contrário
+     */
+    function isFirstDataRowEmpty($dataRow)
     {
-        foreach ($arrayValues as $element) {
-            if ($element == null) {
-                return false;
-            }
+        // Verifica se a primeira célula da primeira linha de dados está vazia
+        if ($dataRow[0] == null) {
+            return true;
         }
-        return true;
+        return false;
     }
 
+    /**
+     * Processa registros em pedaços, inserindo-os no banco de dados
+     * @param array $records - Os registros a serem processados
+     * @param int $startRow - A linha inicial de processamento
+     * @param int|null $keyLimit - Limite opcional de chaves a serem processadas
+     * @throws Exception
+     */
+    function processRecords($records, $startRow, $keyLimit = null)
+    {
+        DB::beginTransaction();
+        try {
+            foreach ($records as $key => $record) {
+                if ($keyLimit !== null && $key <= $keyLimit) {
+                    continue;
+                }
+                $parsedChild = $this->parseDataXlsToSystemFields($record);
+                if ($parsedChild == null) {
+                    DB::commit();
+                    break;
+                }
+                $this->insertRecord($parsedChild);
+                $this->job->total_records++;
+            }
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollback();
+            throw new Exception("Erro ao inserir os dados. Entre em contato com o Suporte.");
+        }
+    }
+
+    /**
+     * Analisa dados do XLS para campos do sistema
+     * @param array $xlsData - Os dados do XLS a serem analisados
+     * @return array|null - Um array de campos do sistema ou nulo se os dados estiverem incompletos ou ausentes
+     */
     public function parseDataXlsToSystemFields($xlsData)
     {
         $data = [];
@@ -279,5 +259,46 @@ class EducacensoXLSChunkImporter
         }
 
         return $data;
+    }
+
+    /**
+     * Insere um registro no banco de dados
+     * @param array $data - Os dados a serem inseridos
+     * @throws Exception
+     */
+    public function insertRecord($data)
+    {
+        $codigoEscola = $data['school_last_id'];
+
+        $result = School::where('id', (int)$codigoEscola)->first();
+
+        if (!empty($result) && is_numeric($result->id)) {
+            $data['place_city_id'] = $result->id;
+            $data['place_city_name'] = $result->city_name;
+            $data['place_uf'] = $result->uf;
+            $data['observation'] = "Escola: " . $data['school_last_name'] . " | Modalidade de ensino: " . $data['modalidade'] . " | Etapa: " . $data['etapa'];
+        } else {
+            $data['place_uf'] = $this->tenant->city->uf;
+            $data['place_city_id'] = strval($this->tenant->city->id);
+            $data['place_city_name'] = $this->tenant->city->name;
+            $data['observation'] = "ESCOLA NÃO ENCONTRADA NO SISTEMA: " . $data['school_last_name'] . " | Modalidade de ensino: " . $data['modalidade'] . " | Etapa: " . $data['etapa'];
+        }
+
+        $data['alert_cause_id'] = AlertCause::getBySlug('educacenso_inep')->id;
+        $data['educacenso_id'] = strval($data['educacenso_id'] ?? "unkn_" . uniqid());
+        $data['name'] = $data['name'];
+        $data['dob'] = isset($data['dob']) ? Carbon::createFromFormat('d/m/Y', $data['dob'])->format('Y-m-d') : null;
+        $data['place_kind'] = $data['place_kind'];
+        $data['has_been_in_school'] = true;
+        $data['educacenso_year'] = $this->educacenso_year;
+        $data['group_id'] = $this->tenant->primary_group_id;
+        $data['tree_id'] = $this->tenant->primary_group_id;
+
+
+        $child = Child::spawnFromAlertData($this->tenant, $this->agent->id, $data);
+        $pesquisa = Pesquisa::fetchWithinCase($child->current_case_id, Pesquisa::class, 20);
+        $pesquisa->setFields($data);
+
+        Comment::post($child, $this->agent, "Caso importado na planilha do Educacenso");
     }
 }
