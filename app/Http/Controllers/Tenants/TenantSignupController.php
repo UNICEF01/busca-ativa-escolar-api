@@ -144,7 +144,7 @@ class TenantSignupController extends BaseController
 				break;
 		}
 
-//		$pending->where('is_state', 0);
+		//		$pending->where('is_state', 0);
 
 		if (isset($filter['created_at']) && strlen($filter['created_at']) > 0) {
 			$numDays = intval($filter['created_at']);
@@ -186,7 +186,7 @@ class TenantSignupController extends BaseController
 		if ($token !== $validToken) return $this->api_failure('token_mismatch');
 		if (!$signup->is_approved) return $this->api_failure('not_approved');
 		if ($signup->is_provisioned) return $this->api_failure('already_provisioned');
-		$cityId = $signup['original']['city_id'];
+		$cityId = $signup->city_id;
 		$city = $signup->getCitybyId($cityId);
 		$signup->setAttribute('city', $city);
 
