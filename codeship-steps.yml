@@ -70,7 +70,7 @@
       command: ssh -o StrictHostKeyChecking=no -T unicef@buscaativaescolar.org.br /bin/bash ~/buscaativaescolar/laravel_perm_fix.sh;exit
 - name: Deploy Testing
   type: serial
-  tag: laravel8
+  tag: testing
   steps:
     - name: Install SSH Private Key File
       service: app
