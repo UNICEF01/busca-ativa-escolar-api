@@ -387,12 +387,6 @@ class SchoolsController extends BaseController
 				return response()->json(['status' => 'error', 'reason' => 'INEP has already been registered', 'message' => 'INEP code already exists'], 409);
 			}
 
-			// Verificar se o nome da escola já está cadastrado
-			$isNameRegistered = School::where('name', $parameters['name'])->exists();
-			if ($isNameRegistered) {
-				return response()->json(['status' => 'error', 'reason' => 'School name has already been registered', 'message' => 'School name already exists'], 409);
-			}
-
 			// Transação para garantir consistência no banco de dados
 			DB::beginTransaction();
 
