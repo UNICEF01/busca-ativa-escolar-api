@@ -102,21 +102,20 @@ class ReportsLandingPageController extends BaseController
                     if (!$case->hidden) {
                         $qtd =
                             \DB::table('children')
-                                ->join('case_steps_pesquisa', 'children.id', '=', 'case_steps_pesquisa.child_id')
-                                ->where(function ($query) use ($case, $tenantId) {
-                                    $query->whereJsonContains('case_steps_pesquisa.case_cause_ids', $case->id);
-                                    $query->where([
-                                        ['case_steps_pesquisa.tenant_id', $tenantId],
-                                        ['children.alert_status', 'accepted']
-                                    ]);
-                                })
-                                ->count();
+                            ->join('case_steps_pesquisa', 'children.id', '=', 'case_steps_pesquisa.child_id')
+                            ->where(function ($query) use ($case, $tenantId) {
+                                $query->whereJsonContains('case_steps_pesquisa.case_cause_ids', $case->id);
+                                $query->where([
+                                    ['case_steps_pesquisa.tenant_id', $tenantId],
+                                    ['children.alert_status', 'accepted']
+                                ]);
+                            })
+                            ->count();
 
                         if ($qtd > 0) {
                             array_push($causes, ['id' => $case->id, 'cause' => $case->label, 'qtd' => $qtd]);
                         }
                     }
-
                 }
 
                 $alerts = DB::select(
@@ -146,11 +145,11 @@ class ReportsLandingPageController extends BaseController
                 if ($cases)
                     $data['cases'] = [
                         'total' => $cases[0]->_in_school +
-                        $cases[0]->_in_observation +
-                        $cases[0]->_out_of_school +
-                        $cases[0]->_cancelled +
-                        $cases[0]->_transferred +
-                        $cases[0]->_interrupted,
+                            $cases[0]->_in_observation +
+                            $cases[0]->_out_of_school +
+                            $cases[0]->_cancelled +
+                            $cases[0]->_transferred +
+                            $cases[0]->_interrupted,
                         'in_progress' => $cases[0]->_in_progress,
                         'enrollment' => $cases[0]->_enrollment,
                         'in_school' => $cases[0]->_in_school,
@@ -180,7 +179,6 @@ class ReportsLandingPageController extends BaseController
             });
 
             return response()->json(['status' => 'ok', 'stats' => $stats]);
-
         } catch (\Exception $ex) {
             return $this->api_exception($ex);
         }
@@ -298,7 +296,6 @@ class ReportsLandingPageController extends BaseController
                 ]
             ]
         );
-
     }
     public function report_by_city()
     {
@@ -323,7 +320,7 @@ class ReportsLandingPageController extends BaseController
                 $join->on('goals.id', '=', 'cities.ibge_city_id');
             })
             ->join('tenants', function ($join) {
-                $join->on('cities.id', '=', 'tenants.city_id');
+                $join->on('cities.id', '=', 'tenants.city_id')->where('active', '=', 1);
             })
             ->get();
 
@@ -343,11 +340,8 @@ class ReportsLandingPageController extends BaseController
             $goal->final_date = $final_data;
 
             return $goal;
-
         });
 
         return response()->json($goals);
-
     }
-
 }
