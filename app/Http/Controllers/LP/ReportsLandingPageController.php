@@ -320,7 +320,7 @@ class ReportsLandingPageController extends BaseController
                 $join->on('goals.id', '=', 'cities.ibge_city_id');
             })
             ->join('tenants', function ($join) {
-                $join->on('cities.id', '=', 'tenants.city_id')->where('active', '=', 1);
+                $join->on('cities.id', '=', 'tenants.city_id')->where('tenants.active', '=', 1);
             })
             ->get();
 
