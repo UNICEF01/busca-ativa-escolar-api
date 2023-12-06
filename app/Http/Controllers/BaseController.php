@@ -86,15 +86,17 @@ class BaseController extends Controller {
     	return response()->json($data, 500);
     }
 
-    protected function api_validation_failed($reason, Validator $validator, $data = []) {
-	    if(!$data) $data = [];
+	protected function api_validation_failed($reason, Validator $validator, $data = [])
+	{
+		if (!$data) $data = [];
 
-	    $data['status'] = 'error';
-	    $data['reason'] = $reason;
-	    $data['messages'] = $validator->getMessageBag()->all();
+		$data['status'] = 'error';
+		$data['reason'] = $reason;
+		$data['messages'] = $validator->getMessageBag()->all();
 
-	    return response()->json($data);
-    }
+		return response()->json($data, 422); // Código HTTP 422 Unprocessable Entity para falhas de validação
+	}
+
 
 	protected function api_failure($reason, $fields = null, $data = []) {
     	if(!$data) $data = [];
