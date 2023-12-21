@@ -55,14 +55,11 @@ class ReportsController extends BaseController
         $filters = request('filters', []);
         $format = request('format', 'json');
 
-        // Log::info($params);
-
-
         // Verifica se usuário está restrito a município
         if (Auth::user()->isRestrictedToTenant()) $filters['tenant_id'] = Auth::user()->tenant_id;
 
         // Verifica se usuário está restrito a estado
-        if (Auth::user()->isRestrictedToUF()) $filters['uf'] = Auth::user()->uf;
+        if (Auth::user()->isRestrictedToUF()) $filters['place_uf'] = Auth::user()->uf;
 
         //Verifica se a cidade foi informada no filtro. Neste caso remove o filtro de cidade e cria-se um filtro de tenant
         if (isset($filters['place_city'])) {
