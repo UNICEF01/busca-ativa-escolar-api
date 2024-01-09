@@ -315,7 +315,7 @@ class ReportsLandingPageController extends BaseController
 
         $goals = DB::table('goals')
             ->where('goal', '>', 0)
-            ->select(['goals.id as id', 'cities.id as city_id', 'cities.name as city', 'goals.goal as goal', 'tenants.id as tenant_id'])
+            ->select(['goals.id as id', 'cities.id as city_id', 'cities.name as city', 'goals.goal as second_measure', 'goals.goal_ciclo2 as first_measure', 'tenants.id as tenant_id'])
             ->join('cities', function ($join) {
                 $join->on('goals.id', '=', 'cities.ibge_city_id');
             })
