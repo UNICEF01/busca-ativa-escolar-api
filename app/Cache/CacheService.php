@@ -240,7 +240,7 @@ class CacheService extends BaseController
         $this->generateArrayTenant($daily, $data, $i, "Cancelamento após (re)matrícula", "justified_cancelled");
         if (Auth::user()->isRestrictedToTenant()) {
             $data["goal"] = Auth::user()->tenant->city->goal ?
-                $this->currentUser()->tenant->city->goal->goal + $this->currentUser()->tenant->city->goal->accumulated_ciclo1 : 0;
+                $this->currentUser()->tenant->city->goal->goal + $this->currentUser()->tenant->city->goal->accumulated_ciclo2 : 0;
         } else {
             $goals = DB::table("tenants")
                 ->join("cities", function ($join) {
@@ -249,7 +249,7 @@ class CacheService extends BaseController
                 ->join("goals", function ($join) {
                     $join->on("goals.id", "=", "cities.ibge_city_id");
                 })
-                ->select(DB::raw("goal+accumulated_ciclo1  as goals"))
+                ->select(DB::raw("goal+accumulated_ciclo2  as goals"))
                 ->where("tenants.id", "=", $tenantId)
                 ->get()->toArray();
             if (count($goals) >= 1)
