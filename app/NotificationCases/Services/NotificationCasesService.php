@@ -23,16 +23,16 @@ class NotificationCasesService implements INotifications
 
     public function saveNotificationData(array $attributes): object
     {
-        
-        $validator = Validator::make($attributes,[
+
+        $validator = Validator::make($attributes, [
             'tenant_id' => 'required',
             'user_id' => 'required',
             'comment_id' => 'required',
             'children_case_id' => 'required',
             'notification' => 'required',
         ]);
-        
-        if($validator->fails()){
+
+        if ($validator->fails()) {
             throw new InvalidArgumentException($validator->errors()->first());
         }
         $attributes['case_tree_id'] = ChildCase::select('tree_id')->where('id', $attributes['children_case_id'])->get()->toArray()[0]['tree_id'];;
@@ -50,15 +50,15 @@ class NotificationCasesService implements INotifications
     {
         DB::beginTransaction();
 
-        try{
+        try {
             $notification = $this->noticationsCaseRepository->delete($id);
-        } catch(\Exception $e){
+        } catch (\Exception $e) {
             DB::rollBack();
             \Log::info($e->getMessage());
-            
+
             throw new InvalidArgumentException('Unable to delete notification case data');
         }
-        
+
         DB::commit();
 
         return $notification;
@@ -67,14 +67,14 @@ class NotificationCasesService implements INotifications
     public function resolveNotificationData(string $id): bool
     {
         $checkUserPermission = $this->noticationsCaseRepository->find($id);
-        if(\Auth::user()->tree_id != $checkUserPermission->users_tree_id)
+        if (\Auth::user()->tree_id != $checkUserPermission->users_tree_id)
             return false;
 
         DB::beginTransaction();
 
-        try{
-            $notification = $this->noticationsCaseRepository->update([],$id);
-        }catch(Exception $e){
+        try {
+            $notification = $this->noticationsCaseRepository->update([], $id);
+        } catch (Exception $e) {
             DB::rollBack();
             Log::info($e->getMessage());
 
@@ -86,17 +86,17 @@ class NotificationCasesService implements INotifications
     }
 
     public function getTrees(string $id): string
-    {  
-        if(strlen(\Auth::user()->tree_id) < 75)
+    {
+        if (strlen(\Auth::user()->tree_id) < 75)
             return substr(\Auth::user()->tree_id, 0, 36);
         $position = strlen(\Auth::user()->tree_id) == 150 ? 76 : 38;
-        for(;$position >= 0; $position = $position - 38){
+        for (; $position >= 0; $position = $position - 38) {
             $tree = substr(\Auth::user()->tree_id, $position, 36);
             $data = User::select('tree_id')->where('group_id', $tree)->where(function ($query) {
                 $query->where('type', 'coordenador_operacional')
-                      ->orWhere('type', 'supervisor_institucional');
+                    ->orWhere('type', 'supervisor_institucional');
             })->distinct()->first();
-            if($data)
+            if ($data)
                 return $data->tree_id;
         }
     }
@@ -107,13 +107,13 @@ class NotificationCasesService implements INotifications
         $result = [];
         $i = 0;
         foreach ($notificationData as $notification) {
-            $user = User::select('id', 'name')->where('id', $notification->user_id)->get()->toArray();
+            $user = User::withTrashed()->select('id', 'name')->where('id', $notification->user_id)->get()->toArray();
             $link = ChildCase::select('child_id')->where('id', $notification->children_case_id)->get()->toArray();
             $result[$i]['id'] = $notification->id;
             $result[$i]['notification'] = $notification->notification;
-            $result[$i]['user_id'] = $user[0]['id']; 
-            $result[$i]['user_name'] = $user[0]['name']; 
-            $result[$i]['link'] = $link[0]['child_id']; 
+            $result[$i]['user_id'] = $user[0]['id'];
+            $result[$i]['user_name'] = $user[0]['name'];
+            $result[$i]['link'] = $link[0]['child_id'];
             $result[$i]['create_date'] = $notification->created_at->format('d/m/Y');
             $i++;
         }
