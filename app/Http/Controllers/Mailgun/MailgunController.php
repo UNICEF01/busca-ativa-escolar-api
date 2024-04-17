@@ -24,17 +24,15 @@ class MailgunController extends BaseController
     public function update(Request $request)
     {
 
-        $message = $request->request;
+        $requestData = $request->all();
 
-        if ($message->has('signature') and $message->has('event-data')) {
-
-            $signature = $message->get('signature');
-
+        if (isset($requestData['signature']) && isset($requestData['event-data'])) {
+            $signature = $requestData['signature'];
             $timestamp = $signature['timestamp'];
             $token = $signature['token'];
             $signature = $signature['signature'];
 
-            $event_data = $message->get('event-data');
+            $event_data = $requestData['event-data'];
 
             if ($this->validateTokenMailgun($timestamp, $token, $signature) == false) {
                 $data['status'] = "error";
@@ -42,7 +40,16 @@ class MailgunController extends BaseController
                 return response()->json($data, 403);
             }
 
-            $message_id = $this->getNumberOfNotification($event_data['message']['headers']['subject']);
+            // Inicializa $message_id como null
+            // Em alguns casos subject nao existe e essa funcao retorna erro, ajustei para nao quebrar, mas temos que resolver esse problema. pq nao recebe o subject?
+            $message_id = null; 
+            if (isset($event_data['message']['headers']['subject'])) {
+                $message_id = $this->getNumberOfNotification($event_data['message']['headers']['subject']);
+            } else {
+                $data['status'] = "success";
+                return response()->json($data, 200);
+            }
+
             $status_message = $event_data['event'];
 
             $emailJob = EmailJob::find($message_id);
