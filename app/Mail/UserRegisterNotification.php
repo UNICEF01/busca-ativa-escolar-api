@@ -33,7 +33,7 @@ class UserRegisterNotification extends Mailable
             "[Busca Ativa Escolar] Confirmação de cadastro" :
             "[Busca Ativa Escolar] Confirmação de reativação";
 
-        if ($this->user->tenant()) {
+        if ($this->user->tenant) {
             $this->type_tenant = $this->user->tenant->is_state ? "estado" : "município";
         }
 
