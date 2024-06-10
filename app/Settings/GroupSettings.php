@@ -42,7 +42,7 @@ class GroupSettings extends SerializableObject {
         170 =>  true, // Mudança de domicílio, viagem ou deslocamentos frequentes
         180 =>  true, // Violência no território
 		500 =>  false, // Importados do Educacenso
-		600 => false // Evasão e/ou infrequência reportada pela escola ou município
+		600 => false // Evasão e/ou infrequência reportada pela escola, município ou estado
 
         //O ACRESCIMO DE UM CAMPO AQUI EXIGE UMA CORRECAO NO UPDATE SETTINGS DOS GRUPOS EM GROUPS-CONTROLLER!
         //OS DO TIPO FALSE DEVEM SER VALIDADOS NAS EDICOES DAS CONFIGURACOES DE GRUPOS

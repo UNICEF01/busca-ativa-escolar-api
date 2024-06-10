@@ -206,7 +206,7 @@ return [
         '170' => 'Mudança de domicílio, viagem ou deslocamentos frequentes',
         '180' => 'Violência no território',
         '500' => 'Evasão reportada pelo Educacenso/INEP',
-        '600' => 'Evasão e/ou infrequência reportada pela escola ou município',
+        '600' => 'Evasão e/ou infrequência reportada pela escola, município ou estado',
         'null' => 'Motivo em verificação'
     ],
 

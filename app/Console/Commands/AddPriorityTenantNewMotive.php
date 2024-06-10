@@ -75,7 +75,7 @@ class AddPriorityTenantNewMotive extends Command
             170 => true, // Mudança de domicílio, viagem ou deslocamentos frequentes
             180 => true, // Violência no território
             500 => false, // Importados do Educacenso
-            600 => false, // Evasão e/ou infrequência reportada pela escola ou município
+            600 => false, // Evasão e/ou infrequência reportada pela escola, município ou estado
         ];
     }
 
