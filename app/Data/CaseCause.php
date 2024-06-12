@@ -55,7 +55,7 @@ class CaseCause extends StaticObject
         170 => ['id' => 170, 'alert_cause_id' => 170, 'slug' => 'mudanca_endereco', 'label' => "Mudança de domicílio, viagem ou deslocamentos frequentes "],
         180 => ['id' => 180, 'alert_cause_id' => 180, 'slug' => 'violencia_territorio', 'label' => "Violência no território "],
         500 => ['id' => 500, 'alert_cause_id' => 500, 'slug' => 'educacenso_inep', 'label' => "Evasão reportada pelo Educacenso/INEP", 'hidden' => true],
-        600 => ['id' => 600, 'alert_cause_id' => 600, 'slug' => 'xls_import', 'label' => "Evasão e/ou infrequência reportada pela escola ou município", 'hidden' => true],
+        600 => ['id' => 600, 'alert_cause_id' => 600, 'slug' => 'xls_import', 'label' => "Evasão e/ou infrequência reportada pela escola, município ou estado", 'hidden' => true],
     ];
 
     protected static $indexes = [

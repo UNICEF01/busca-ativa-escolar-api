@@ -42,7 +42,7 @@ class AlertCause extends StaticObject
 		180 => ['id' => 180, 'sms_index' => 19, 'slug' => 'violencia_territorio', 'label' => "Violência no território"],
 
 		500 => ['id' => 500, 'sms_index' => null, 'slug' => 'educacenso_inep', 'label' => "Evasão reportada pelo Educacenso/INEP", "case_cause_ids" => [500], 'hidden' => true, 'blocked' => true],
-		600 => ['id' => 600, 'sms_index' => null, 'slug' => 'xls_import', 'label' => "Evasão e/ou infrequência reportada pela escola ou município", "case_cause_ids" => [600], 'hidden' => true, 'blocked' => true],
+		600 => ['id' => 600, 'sms_index' => null, 'slug' => 'xls_import', 'label' => "Evasão e/ou infrequência reportada pela escola, município ou estado", "case_cause_ids" => [600], 'hidden' => true, 'blocked' => true],
 	];
 
 	protected static $indexes = [
