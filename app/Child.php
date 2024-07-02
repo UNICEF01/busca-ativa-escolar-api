@@ -369,7 +369,7 @@ class Child extends Model implements Searchable, CanBeAggregated, CollectsDailyM
 
         if (sizeof($updatedDetails) > 0) {
             $updatedDetails = collect($updatedDetails)
-                ->only(['place_address', 'place_neighborhood', 'group_id', 'group_name'])
+                ->only(['place_address', 'place_neighborhood', 'group_id', 'group_name', 'mother_name'])
                 ->toArray();
 
             $alertStep->fill($updatedDetails);
