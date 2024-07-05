@@ -289,6 +289,10 @@ class EducacensoXLSChunkImporter
      */
     public function insertRecord($data)
     {
+
+        Log::info("comecando insercao ...");
+        Log::info($data);
+
         $codigoEscola = $data['school_last_id'];
 
         $result = School::where('id', (int)$codigoEscola)->first();
