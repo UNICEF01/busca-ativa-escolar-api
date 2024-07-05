@@ -21,7 +21,7 @@ use BuscaAtivaEscolar\ImportJob;
 use BuscaAtivaEscolar\Jobs\ProcessImportJob;
 use BuscaAtivaEscolar\Serializers\SimpleArraySerializer;
 use BuscaAtivaEscolar\Transformers\ImportJobTransformer;
-
+use Illuminate\Support\Facades\Log;
 
 class EducacensoController extends BaseController
 {
@@ -63,6 +63,7 @@ class EducacensoController extends BaseController
 			$attachment->save();
 
 			$job = ImportJob::createFromAttachment(EducacensoXLSChunkImporter::TYPE, $attachment);
+			Log::info("Arquivo importado ...");
 
 			dispatch(new ProcessImportJob($job));
 		} catch (\Exception $ex) {
