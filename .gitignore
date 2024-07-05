@@ -13,3 +13,4 @@ Homestead.yaml
 getAllBranches.sh
 scripts/
 scripts/*/*.*
+deploy.sh
