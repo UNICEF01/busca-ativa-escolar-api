@@ -51,8 +51,6 @@ class ProcessImportJob implements ShouldQueue
 	public function handle()
 	{
 
-		Log::info("Startando importacao ...");
-
 		if ($this->importJob->status === ImportJob::STATUS_COMPLETED) {
 			return;
 		}
@@ -70,7 +68,5 @@ class ProcessImportJob implements ShouldQueue
 			$this->importJob->save();
 			throw $ex;
 		}
-
-		Log::info("Importacao finalizada...");
 	}
 }

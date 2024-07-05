@@ -63,8 +63,6 @@ class EducacensoController extends BaseController
 			$attachment->save();
 
 			$job = ImportJob::createFromAttachment(EducacensoXLSChunkImporter::TYPE, $attachment);
-			Log::info("Arquivo importado ...");
-
 			dispatch(new ProcessImportJob($job));
 		} catch (\Exception $ex) {
 			return $this->api_exception($ex);

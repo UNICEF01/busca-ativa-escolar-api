@@ -57,6 +57,8 @@ class EducacensoXLSChunkImporter
      */
     public function handle(ImportJob $job)
     {
+        Log::info("handle ...");
+
         try {
 
             $this->job = $job;
@@ -317,8 +319,6 @@ class EducacensoXLSChunkImporter
         $child = Child::spawnFromAlertData($this->tenant, $this->agent->id, $data);
         $pesquisa = Pesquisa::fetchWithinCase($child->current_case_id, Pesquisa::class, 20);
         $pesquisa->setFields($data);
-
-        Log::info($child);
 
         Comment::post($child, $this->agent, "Caso importado na planilha do Educacenso");
     }
