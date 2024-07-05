@@ -199,6 +199,10 @@ class EducacensoXLSChunkImporter
         DB::beginTransaction();
         try {
             foreach ($records as $key => $record) {
+
+                Log::info($record);
+
+
                 if ($keyLimit !== null && $key <= $keyLimit) {
                     continue;
                 }
