@@ -121,12 +121,27 @@ class ChildrenController extends BaseController
 	{
 		$from = request()->input('from');
 		$size = request()->input('size');
+		$params = $this->filterAsciiFields(request()->all(), ['assigned_user_name']);
 
 		$query = $this->prepareSearchQuery();
 		$attempted = $query->getAttemptedQuery();
 		$query = $query->getQuery();
 
 		$results = $search->search(new Child(), $query, $size, $from - 1); //need to use -1 (value of front is always 1 or more and eastic needs to start at 0)
+
+		$filteredResults = [];
+
+		// Check if there are hits and if the 'assigned_user_name' parameter is not empty
+		if (!empty($results['hits']['hits']) && !empty($params['assigned_user_name'])) {
+			foreach ($results['hits']['hits'] as $hit) {
+				// Check if 'assigned_user_name' contains the string provided in $params['assigned_user_name']
+				if (strpos($hit['_source']['assigned_user_name'], $params['assigned_user_name']) !== false) {
+					$filteredResults[] = $hit;
+				}
+			}
+			// Replace the original hits with the filtered results
+			$results['hits']['hits'] = $filteredResults;
+		}
 
 		return fractal()
 			->item($results)
