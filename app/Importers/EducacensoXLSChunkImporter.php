@@ -57,8 +57,6 @@ class EducacensoXLSChunkImporter
      */
     public function handle(ImportJob $job)
     {
-        Log::info("handle ...");
-
         try {
 
             $this->job = $job;
@@ -199,10 +197,6 @@ class EducacensoXLSChunkImporter
         DB::beginTransaction();
         try {
             foreach ($records as $key => $record) {
-
-                Log::info($record);
-
-
                 if ($keyLimit !== null && $key <= $keyLimit) {
                     continue;
                 }
@@ -259,7 +253,7 @@ class EducacensoXLSChunkImporter
 
         // Verifica se o campo mother_name atende às condições especificadas
         if ($this->isInvalidMotherName(trim($data['mother_name']))) {
-            $data['mother_name'] = null;
+            $data['mother_name'] = 'NOME NÃO INFORMADO';
         }
 
         foreach ($fieldMap as $xlsField => $systemField) {
@@ -293,10 +287,6 @@ class EducacensoXLSChunkImporter
      */
     public function insertRecord($data)
     {
-
-        Log::info("comecando insercao ...");
-        Log::info($data);
-
         $codigoEscola = $data['school_last_id'];
 
         $result = School::where('id', (int)$codigoEscola)->first();
