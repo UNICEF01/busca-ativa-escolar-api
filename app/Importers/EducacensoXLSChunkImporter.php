@@ -200,6 +200,7 @@ class EducacensoXLSChunkImporter
                 if ($keyLimit !== null && $key <= $keyLimit) {
                     continue;
                 }
+
                 $parsedChild = $this->parseDataXlsToSystemFields($record);
                 if ($parsedChild == null) {
                     DB::commit();
@@ -243,7 +244,7 @@ class EducacensoXLSChunkImporter
         ];
 
         foreach ($fieldMap as $xlsField => $systemField) {
-            if (!isset($xlsData[$xlsField])) {
+            if (!isset($xlsData[$xlsField]) && $systemField != 'mother_name') {
                 return null;
             }
             $data[$systemField] = $xlsData[$xlsField];
