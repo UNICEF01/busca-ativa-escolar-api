@@ -121,7 +121,6 @@ class EducacensoXLSChunkImporter
             ];
 
             $this->tenant->save();
-
         } catch (Exception $e) {
             Log::error("Erro durante a importação do Educacenso: " . $e->getMessage());
             throw new Exception("Erro durante a importação do Educacenso. Entre em contato com o Suporte.");
@@ -201,6 +200,7 @@ class EducacensoXLSChunkImporter
                 if ($keyLimit !== null && $key <= $keyLimit) {
                     continue;
                 }
+
                 $parsedChild = $this->parseDataXlsToSystemFields($record);
                 if ($parsedChild == null) {
                     DB::commit();
@@ -244,13 +244,18 @@ class EducacensoXLSChunkImporter
         ];
 
         foreach ($fieldMap as $xlsField => $systemField) {
-            if (!isset($xlsData[$xlsField])) {
+            if (!isset($xlsData[$xlsField]) && $systemField != 'mother_name') {
                 return null;
             }
             $data[$systemField] = $xlsData[$xlsField];
         }
 
         $data['place_kind'] = $placeKindMap[$data['place_kind']];
+
+        // Verifica se o campo mother_name atende às condições especificadas
+        if ($this->isInvalidMotherName(trim($data['mother_name']))) {
+            $data['mother_name'] = 'NOME NÃO INFORMADO';
+        }
 
         foreach ($fieldMap as $xlsField => $systemField) {
             if (!isset($data[$systemField]) || $data[$systemField] === null) {
@@ -259,6 +264,21 @@ class EducacensoXLSChunkImporter
         }
 
         return $data;
+    }
+
+
+    /**
+     * Verifica se o nome da mãe é inválido
+     * @param string $str - O nome da mãe a ser verificado
+     * @return bool - Verdadeiro se o nome for inválido, falso caso contrário
+     */
+    public function isInvalidMotherName($str)
+    {
+        // Verifica se o campo é nulo, vazio, possui menos de 4 caracteres, possui caracteres especiais ou letras repetidas 3 vezes consecutivas
+        if (is_null($str) || strlen($str) < 4 || trim($str) == '' || preg_match('/[^a-zA-Z\u00C0-\u00FF\s]/', $str) || preg_match('/(.)\\1{2}/', $str)) {
+            return true;
+        }
+        return false;
     }
 
     /**
