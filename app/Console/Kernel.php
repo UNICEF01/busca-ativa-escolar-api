@@ -62,7 +62,8 @@ class Kernel extends ConsoleKernel
         Commands\ReindexAllSchoolsOfCity::class,
         Commands\CheckCaseDeadlinesByTenant::class,
         Commands\SendEmailMunicipal::class,
-        Commands\ReindexCasesByUF::class
+        Commands\ReindexCasesByUF::class,
+        Commands\AdvancesBlockedCases::class
     ];
 
     /**
@@ -79,7 +80,6 @@ class Kernel extends ConsoleKernel
 
         $schedule->command('workflow:check_case_deadlines')->dailyAt('21:00');
         $schedule->command('snapshot:daily_metrics')->dailyAt('22:00');
-
     }
 
 
