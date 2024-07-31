@@ -123,24 +123,35 @@ class ChildrenController extends BaseController
 		$size = request()->input('size');
 		$params = $this->filterAsciiFields(request()->all(), ['assigned_user_name']);
 
+		// Normaliza o valor de assigned_user_name para lowercase
+		if (isset($params['assigned_user_name'])) {
+			$params['assigned_user_name'] = Str::lower($params['assigned_user_name']);
+		}
+
 		$query = $this->prepareSearchQuery();
 		$attempted = $query->getAttemptedQuery();
 		$query = $query->getQuery();
 
 		$results = $search->search(new Child(), $query, $size, $from - 1); //need to use -1 (value of front is always 1 or more and eastic needs to start at 0)
 
-		$filteredResults = [];
-
-		// Check if there are hits and if the 'assigned_user_name' parameter is not empty
+		// Verifica se há resultados e se o parâmetro 'assigned_user_name' não está vazio
 		if (!empty($results['hits']['hits']) && !empty($params['assigned_user_name'])) {
 			foreach ($results['hits']['hits'] as $hit) {
-				// Check if 'assigned_user_name' contains the string provided in $params['assigned_user_name']
-				if (strpos($hit['_source']['assigned_user_name'], $params['assigned_user_name']) !== false) {
+				// Normaliza o valor de assigned_user_name no resultado para lowercase e ASCII
+				$assignedUserName = Str::ascii(Str::lower($hit['_source']['assigned_user_name']));
+				$searchTerm = Str::ascii($params['assigned_user_name']);
+
+				// Verifica se assigned_user_name contém a string fornecida em params['assigned_user_name']
+				if (strpos($assignedUserName, $searchTerm) !== false) {
 					$filteredResults[] = $hit;
 				}
 			}
-			// Replace the original hits with the filtered results
+
+			// Substitui os hits originais pelos resultados filtrados
 			$results['hits']['hits'] = $filteredResults;
+
+			// Atualiza o número total de resultados após a filtragem
+			$results['hits']['total'] = count($filteredResults);
 		}
 
 		return fractal()
